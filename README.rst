@@ -47,11 +47,12 @@ and note the location of the data as $DATA_DIR
     output_prefix: MQ2008-Fold1
     ====
 
-3) run the experiment using python
-  $ python src/python/learning-experiment.py -f config.yml
+3) run the experiment using python::
+        $ python src/python/learning-experiment.py -f config.yml
 
-4) summarize experiment outcomes
-  $ python src/python/summarize-learning-experiment.py --fold_dirs $OUTPUT_DIR > $SUMMARY_FILE
+4) summarize experiment outcomes::
+        $ python src/python/summarize-learning-experiment.py --fold_dirs $OUTPUT_DIR > $SUMMARY_FILE
+  
   Arbitrarily many folds can be listed per experiments. Results are aggregated 
   over runs and folds. The output format is a simple text file that can be 
   further processed using e.g., gnuplot. The columns are:
