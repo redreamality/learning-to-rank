@@ -25,7 +25,7 @@ Running experiments
 LETOR 4 from http://research.microsoft.com/en-us/um/beijing/projects/letor/letor4download.aspx, 
 and note the location of the data as $DATA_DIR
 
-2) prepare a configuration file in yml format, e.g., starting from the template below:
+2) prepare a configuration file in yml format, e.g., starting from the template below::
     ===> edit and safe as config.yml <===
     test_queries: $DATA_DIR/Fold1/test.txt
     training_queries: $DATA_DIR/Fold1/train.txt
