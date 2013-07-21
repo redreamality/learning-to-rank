@@ -1,5 +1,5 @@
 Lerot: an Online Learning to Rank Framework
-==============
+===========================================
 
 This project is designed to run experiments on online learning to rank methods 
 for information retrieval. Below is a short summary of its prerequisites, how 
@@ -8,12 +8,12 @@ to run an experiment, and possible extensions.
 Prerequisites
 -------------
 
-Python (2.7 or higher)
-PyYaml
-Numpy
-Scipy
-Celery
-Gurobi
+- Python (2.7 or higher)
+- PyYaml
+- Numpy
+- Scipy
+- Celery
+- Gurobi
 
 (all prerequisites are included in the academic distribution of Enthought 
 Python, e.g., version 7.1)
