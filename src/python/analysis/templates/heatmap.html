@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Heatmaps</h1>
+    {% for um in heatmaps|sort %}
+    <h2>{{ um }}</h2>
+        {% for data in heatmaps[um]|sort %}
+            <h3>{{ data }}</h3>
+            <table style="padding:0;spacing:0">
+                <tr>
+                	<td>var</td>
+                    {% for d in avgs[um][data] %}
+                        <td style="background-color: hsl({{ (d * 1500 )|int + 270  }}, 100%, 50%)"><span title="{{ d|round(3) }}">&nbsp;</span></td>
+                    {% endfor %}
+                </tr>
+            {% for run in heatmaps[um][data]|sort(reverse=True) %}
+                <tr>
+                    <td>{{ run[1] }}</td>
+                    {% for d in run[2] %}
+                        <td style="background-color: hsl({{ (d * 180 )|int + 180 }}, 100%, 50%)"><span title="{{ d|round(3) }}">&nbsp;</span></td>
+                    {% endfor %}
+                    <td>{{ run[0]|round(6) }}</td>
+                </tr>
+            {% endfor %}
+            </table>
+        {% endfor %}
+    {% endfor %}
+</body>
+{% endblock %}

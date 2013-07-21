@@ -1,0 +1,44 @@
+num_runs: 25
+num_queries: 1000
+query_sampling_method: random
+user_model: environment.CascadeUserModel
+system: retrieval_system.ListwiseLearningSystemWithCandidateSelection
+system_args: --init_weights random
+    --sample_weights sample_unit_sphere
+    --comparison comparison.ProbabilisticInterleave
+    --delta 0.1
+    --alpha 0.01
+    --ranker ranker.ProbabilisticRankingFunction
+    --ranker_arg 3
+    --ranker_tie random
+    --select_candidate select_candidate_repeated
+    --history_length 10
+    --num_candidates 6
+
+experimenter: experiment.LearningExperiment
+output_dir: outdir
+output_dir_overwrite: True
+evaluation:
+    - evaluation.NdcgEval
+
+meta: --data MQ2007,46,3
+    MQ2008,46,3
+    HP2003,64,2
+    HP2004,64,2
+    NP2003,64,2
+    NP2004,64,2
+    OHSUMED,45,3
+    TD2003,64,2
+    TD2004,64,2
+   --data_dir ~/data
+   --output_base ~/outdir
+   --experiment_name example-experiment
+   --platform celery
+   --um per nav inf
+   --uma per,2,0:0.0,1:1,0:0.0,1:0.0
+         nav,2,0:0.05,1:0.95,0:0.2,1:0.9
+         inf,2,0:0.4,1:0.9,0:0.1,1:0.5
+         per,3,0:0.0,1:0.5,2:1,0:0.0,1:0.0,2:0.0
+         nav,3,0:0.05,1:0.5,2:0.95,0:0.2,1:0.5,2:0.9
+         inf,3,0:0.4,1:0.7,2:0.9,0:0.1,1:0.3,2:0.5
+   --analysis analysis.HeatmapAnalysis analysis.SummarizeAnalysis

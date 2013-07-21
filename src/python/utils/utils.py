@@ -1,0 +1,106 @@
+# KH, 2012/06/20
+# Utility functions
+
+from random import sample
+from numpy import dot, sqrt
+from numpy.linalg import norm
+from numpy import array, zeros, ones
+from random import gauss
+
+
+def string_to_boolean(string):
+    string = string.lower()
+    if string in ['0', 'f', 'false', 'no', 'off']:
+        return False
+    elif string in ['1', 't', 'true', 'yes', 'on']:
+        return True
+    else:
+        raise ValueError()
+
+
+def get_class(name):
+    """Get the class for a given class name."""
+    parts = name.split(".")
+    module = ".".join(parts[:-1])
+    m = __import__(module)
+    for comp in parts[1:]:
+        m = getattr(m, comp)
+    return m
+
+
+def split_arg_str(arg_str):
+    s = []
+    max_index = 0
+    while max_index < len(arg_str):
+        index = arg_str.find("\"", max_index)
+        # no more quotes: split the remaining args
+        if index == -1:
+            s.extend(arg_str[max_index:].split())
+            break
+        # quote found: find end + add preceding and quoted elements
+        else:
+            if index > max_index:
+                s.extend(arg_str[max_index:index].split())
+            closing_index = arg_str.find("\"", index + 1)
+            if closing_index == -1:
+                raise ValueError("Argument string contains non-matched quotes:"
+                    " %s" % arg_str)
+            s.append(arg_str[index + 1:closing_index])
+            max_index = closing_index + 1
+    return s
+
+
+def rank(x, ties, reverse=False):
+    n = len(x)
+    if ties == "first":
+        ix = zip(x, reversed(range(n)), range(n))
+    elif ties == "last":
+        ix = zip(x, range(n), range(n))
+    elif ties == "random":
+        ix = zip(x, sample(range(n), n), range(n))
+    else:
+        raise Exception("Unknown method for breaking ties: \"%s\"" % ties)
+    ix.sort(reverse=reverse)
+    indexes = [i for _, _, i in ix]
+    return [i for _, i in sorted(zip(indexes, range(n)))]
+
+
+def get_cosine_similarity(v1, v2):
+    """Compute the cosine similarity between two vectors."""
+    if norm(v1) == 0 or norm(v2) == 0:
+        return 0.0
+    return dot(v1, v2) / (norm(v1) * norm(v2))
+
+
+def get_binomial_ci(p_hat, n):
+    """Compute the binomial (Wilson) confidence interval for a given proportion
+    estimate (p_hat) and sample size (n)."""
+    # z for p=0.05/2 (97.5)
+    # http://www.wepapers.com/Papers/17864/Percentiles_of_the_Standard_Normal_
+    # Distribution
+    zA = 1.960
+    # http://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval
+    # http://www.evanmiller.org/how-not-to-sort-by-average-rating.html
+        #n = float(totalW1 + totalW2)
+    lower = (p_hat + zA * zA / (2 * n) - zA * sqrt((p_hat * (1 - p_hat) +
+        zA * zA / (4 * n)) / n)) / (1 + zA * zA / n)
+    upper = (p_hat + zA * zA / (2 * n) + zA * sqrt((p_hat * (1 - p_hat) +
+        zA * zA / (4 * n)) / n)) / (1 + zA * zA / n)
+    return (lower, upper)
+
+
+def normalize_to_unit_sphere(v):
+    return v / norm(v)
+
+
+def sample_unit_sphere(n):
+    """See http://mathoverflow.net/questions/24688/efficiently-sampling-
+    points-uniformly-from-the-surface-of-an-n-sphere"""
+    v = zeros(n)
+    for i in range(0, n):
+        v[i] = gauss(0, 1)
+    return normalize_to_unit_sphere(v)
+
+
+def sample_fixed(self, n):
+    return normalize_to_unit_sphere(ones(n))
