@@ -52,23 +52,12 @@ Running experiments
 
         $ python src/python/summarize-learning-experiment.py --fold_dirs $OUTPUT_DIR > $SUMMARY_FILE
   
-  Arbitrarily many folds can be listed per experiments. Results are aggregated 
-  over runs and folds. The output format is a simple text file that can be 
-  further processed using e.g., gnuplot. The columns are:
-  mean_offline_perf stddev_offline_perf mean_online_perf stddev_online_perf
+    Arbitrarily many folds can be listed per experiments. Results are aggregated  over runs and folds. The output format is a simple text file that can be  further processed using e.g., gnuplot. The columns are: mean_offline_perf stddev_offline_perf mean_online_perf stddev_online_perf
 
 Extensions
 ----------
+The code is intended to be extended with new learning and/or feedback mechanisms for future experiments. The most obvious points for extension are:
 
-The code is intended to be extended with new learning and/or feedback mechanisms 
-for future experiments. The most obvious points for extension are:
-
-1) comparison - extend ComparisonMethod to add new interleaving or inference 
-methods; existing methods include balanced interleave, team draft, and 
-probabilistic interleave.
-
-2) retrieval_system - extend OnlineLearningSystem to add a new mechanism for 
-learning from click feedback. New implementations need to be able to provide a 
-ranked list for a given query, and ranking solutions should have the form of a
-vector.
+1) comparison - extend ComparisonMethod to add new interleaving or inference  methods; existing methods include balanced interleave, team draft, and  probabilistic interleave.
+2) retrieval_system - extend OnlineLearningSystem to add a new mechanism for  learning from click feedback. New implementations need to be able to provide a  ranked list for a given query, and ranking solutions should have the form of a vector.
 
