@@ -23,5 +23,5 @@ for information retrieval.")
     'ranker',
     'retrieval_system',
     'utils'],
-    long_description=read('README'),
+    long_description=read('README.rst'),
 )

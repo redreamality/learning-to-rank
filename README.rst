@@ -26,26 +26,26 @@ LETOR 4 from http://research.microsoft.com/en-us/um/beijing/projects/letor/letor
 and note the location of the data as $DATA_DIR
 
 2) prepare a configuration file in yml format, e.g., starting from the template below:
-===> edit and safe as config.yml <===
-test_queries: $DATA_DIR/Fold1/test.txt
-training_queries: $DATA_DIR/Fold1/train.txt
-feature_count: 46 # 64 for .Gov, 46 for MQ*, 136 for MSLR
-num_runs: 10
-num_queries: 500
-# binary cascade model with perfect (very reliable) user
-user_model: environment.CascadeUserModel
-# for p-click and p-stop provide mappings from relevance grades to probabilities
-user_model_args: --p_click 0:.0, 1:1.0, 2:1.0 --p_stop 0:.0, 1:.0, 2:.0
-# baseline listwise learning system with balanced interleave and deterministic
-# rankers
-system: retrieval_system.ListwiseLearningSystem
-system_args: --init_weights zero
-    --comparison comparison.StochasticBalancedInterleave --comparison_args 0.5
-    --delta 1.0 --alpha 0.01 --ranker ranker.DeterministicRankingFunction
-    --ranker_tie random
-output_dir: /some/output/dir
-output_prefix: MQ2008-Fold1
-====
+    ===> edit and safe as config.yml <===
+    test_queries: $DATA_DIR/Fold1/test.txt
+    training_queries: $DATA_DIR/Fold1/train.txt
+    feature_count: 46 # 64 for .Gov, 46 for MQ*, 136 for MSLR
+    num_runs: 10
+    num_queries: 500
+    # binary cascade model with perfect (very reliable) user
+    user_model: environment.CascadeUserModel
+    # for p-click and p-stop provide mappings from relevance grades to probabilities
+    user_model_args: --p_click 0:.0, 1:1.0, 2:1.0 --p_stop 0:.0, 1:.0, 2:.0
+    # baseline listwise learning system with balanced interleave and deterministic
+    # rankers
+    system: retrieval_system.ListwiseLearningSystem
+    system_args: --init_weights zero
+        --comparison comparison.StochasticBalancedInterleave --comparison_args 0.5
+        --delta 1.0 --alpha 0.01 --ranker ranker.DeterministicRankingFunction
+        --ranker_tie random
+    output_dir: /some/output/dir
+    output_prefix: MQ2008-Fold1
+    ====
 
 3) run the experiment using python
   $ python src/python/learning-experiment.py -f config.yml
@@ -67,7 +67,7 @@ for future experiments. The most obvious points for extension are:
 methods; existing methods include balanced interleave, team draft, and 
 probabilistic interleave.
 
-2) retrieval_syste - extend OnlineLearningSystem to add a new mechanism for 
+2) retrieval_system - extend OnlineLearningSystem to add a new mechanism for 
 learning from click feedback. New implementations need to be able to provide a 
 ranked list for a given query, and ranking solutions should have the form of a
 vector.
