@@ -1,4 +1,5 @@
 Lerot: an Online Learning to Rank Framework
+==============
 
 This project is designed to run experiments on online learning to rank methods 
 for information retrieval. Below is a short summary of its prerequisites, how 
