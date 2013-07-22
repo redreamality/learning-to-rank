@@ -32,6 +32,6 @@ setup(
     long_description=open('README.rst', 'r').read(),
     license = "GNU Lesser General Public License",
     scripts=['src/scripts/learning-experiment.py',
-             'src/scripts/meta-experiment.py']
-
+             'src/scripts/meta-experiment.py',
+             'src/scripts/summarize-learning-experiment.py']
 )
