@@ -25,11 +25,11 @@ Install the prerequisites plus Lerot as follows::
 
 Running experiments
 -------------------
-1) prepare data in svmlight format, e.g., download the NP2003 (see next section) and note the location of the data as $DATA_DIR
-2) prepare a configuration file in yml format, e.g., starting from the template below, store as config.yml ::
+1) prepare data in svmlight format, e.g., download the NP2003 (see next section on `Data`_) and note the location of the data as $DATA_DIR
+2) prepare a configuration file in yml format, e.g., starting from the template below, store as ``config/pi-experiment.yml`` (or simply use copy ``config/config.yml`` ) ::
 
-        training_queries:  ~/data/NP2003/Fold1/train.txt
-        test_queries: ~/data/NP2003/Fold1/test.txt
+        training_queries:  ~/data/MQ2007/Fold1/train.txt
+        test_queries: ~/data/MQ2007/Fold1/test.txt
         feature_count: 64
         num_runs: 25
         num_queries: 1000
@@ -56,11 +56,11 @@ Running experiments
 
 3) run the experiment using python::
         
-        $ python src/scripts/learning-experiment.py -f config.yml
+        $ python src/scripts/learning-experiment.py -f config/pi-experiment.yml
 
 4) summarize experiment outcomes::
    
-        $ python src/scripts/summarize-learning-experiment.py --fold_dirs $OUTPUT_DIR > $SUMMARY_FILE
+        $ python src/scripts/summarize-learning-experiment.py --fold_dirs outdir > $SUMMARY_FILE
    
    Arbitrarily many folds can be listed per experiments. Results are aggregated  over runs and folds. The output format is a simple text file that can be  further processed using e.g., gnuplot. The columns are: mean_offline_perf stddev_offline_perf mean_online_perf stddev_online_perf
 
@@ -68,13 +68,16 @@ Data
 ----
 You can download learning to rank data sets here:
 
-- GOV: http://research.microsoft.com/en-us/um/beijing/projects/letor/LETOR3.0/Gov.rar (you'll need files in QueryLevelNorm)
-- OHSUMED: http://research.microsoft.com/en-us/um/beijing/projects/letor/LETOR3.0/OHSUMED.zip
-- MQ2007: http://research.microsoft.com/en-us/um/beijing/projects/letor/LETOR4.0/Data/MQ2007.rar (files for supervised learning)
-- MQ2008: http://research.microsoft.com/en-us/um/beijing/projects/letor/LETOR4.0/Data/MQ2008.rar (files for supervised learning)
-- Yahoo!: http://webscope.sandbox.yahoo.com/catalog.php?datatype=c
-- MSLR-WEB10K: http://research.microsoft.com/en-us/um/beijing/projects/mslr/data/MSLR-WEB10K.zip
-- MSLR-WEB30K: http://research.microsoft.com/en-us/um/beijing/projects/mslr/data/MSLR-WEB30K.zip
+- **GOV**: http://research.microsoft.com/en-us/um/beijing/projects/letor/LETOR3.0/Gov.rar (you'll need files in QueryLevelNorm)
+- **OHSUMED**: http://research.microsoft.com/en-us/um/beijing/projects/letor/LETOR3.0/OHSUMED.zip
+- **MQ2007**: http://research.microsoft.com/en-us/um/beijing/projects/letor/LETOR4.0/Data/MQ2007.rar (files for supervised learning)
+- **MQ2008**: http://research.microsoft.com/en-us/um/beijing/projects/letor/LETOR4.0/Data/MQ2008.rar (files for supervised learning)
+- **Yahoo!**: http://webscope.sandbox.yahoo.com/catalog.php?datatype=c
+- **MSLR-WEB10K**: http://research.microsoft.com/en-us/um/beijing/projects/mslr/data/MSLR-WEB10K.zip
+- **MSLR-WEB30K**: http://research.microsoft.com/en-us/um/beijing/projects/mslr/data/MSLR-WEB30K.zip
+
+Note that Lerot reads from both plain text and .gz files.
+
 
 Extensions
 ----------
