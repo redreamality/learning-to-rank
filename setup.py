@@ -27,10 +27,13 @@ setup(
     description = ("This project is designed to run experiments on online\
                     learning to rank methods for information retrieval."),
     keywords = "online learning to rank for information retrieval",
-    url = "http://ilps.science.uva.nl",
+    url = "https://bitbucket.org/ilps/lerot",
+    download_url = "https://bitbucket.org/ilps/lerot/downloads",
     package_dir = {'': 'src/python'},
     packages=['analysis', 'comparison', 'environment', 'evaluation',
               'experiment', 'query', 'ranker', 'retrieval_system', 'utils'],
     long_description=read('README.rst'),
     license = "GNU Lesser General Public License",
+    scripts=['src/scripts/learning-experiment.py', 'src/scripts/meta-experiment.py']
+
 )
