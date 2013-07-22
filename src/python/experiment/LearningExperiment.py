@@ -1,10 +1,26 @@
-# KH, 2012/06/14
-# Runs an online learning experiment. The "environment" logic is located here,
-# e.g., sampling queries, observing user clicks, external evaluation of result
-# lists
-import logging
-#import yaml
+# This file is part of Lerot.
+#
+# Lerot is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Lerot is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with Lerot.  If not, see <http://www.gnu.org/licenses/>.
 
+# KH, 2012/06/14
+"""
+Runs an online learning experiment. The "environment" logic is located here,
+e.g., sampling queries, observing user clicks, external evaluation of result
+lists
+"""
+
+import logging
 from numpy.linalg import norm
 
 from utils import get_cosine_similarity

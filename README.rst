@@ -7,7 +7,6 @@ to run an experiment, and possible extensions.
 
 Prerequisites
 -------------
-
 - Python (2.7 or higher)
 - PyYaml
 - Numpy
@@ -45,13 +44,13 @@ Running experiments
         ====
 
 3) run the experiment using python::
-       
+        
         $ python src/python/learning-experiment.py -f config.yml
 
 4) summarize experiment outcomes::
-
+        
         $ python src/python/summarize-learning-experiment.py --fold_dirs $OUTPUT_DIR > $SUMMARY_FILE
-  
+
     Arbitrarily many folds can be listed per experiments. Results are aggregated  over runs and folds. The output format is a simple text file that can be  further processed using e.g., gnuplot. The columns are: mean_offline_perf stddev_offline_perf mean_online_perf stddev_online_perf
 
 Extensions
@@ -60,4 +59,20 @@ The code is intended to be extended with new learning and/or feedback mechanisms
 
 1) comparison - extend ComparisonMethod to add new interleaving or inference  methods; existing methods include balanced interleave, team draft, and  probabilistic interleave.
 2) retrieval_system - extend OnlineLearningSystem to add a new mechanism for  learning from click feedback. New implementations need to be able to provide a  ranked list for a given query, and ranking solutions should have the form of a vector.
+
+License
+-------
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
