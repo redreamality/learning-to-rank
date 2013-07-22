@@ -70,7 +70,7 @@ for fold in args.fold_dirs:
         data = yaml.load(fh)
         fh.close()
         if not is_initialized:
-            count_queries = len(data["online_ndcg"])
+            count_queries = len(data["online_evaluation.NdcgEval"])
             agg_online_ndcg = [ [] for i in range(count_queries) ]
             agg_offline_ndcg = [ [] for i in range(count_queries) ]
             is_initialized = True
@@ -78,13 +78,13 @@ for fold in args.fold_dirs:
         # (i is the index of the query, i.e., i=3 means performance after the
         # third query has been observed), the second index points to
         # the run id
-        for i, value in enumerate(data["online_ndcg"]):
+        for i, value in enumerate(data["online_evaluation.NdcgEval"]):
             prev = 0.0
             if i > 0:
                 prev = agg_online_ndcg[i-1][-1]
             # discount + cumsum
             agg_online_ndcg[i].append(prev + args.discount_factor**i * value)
-        for i, value in enumerate(data["offline_ndcg"]):
+        for i, value in enumerate(data["offline_test_evaluation.NdcgEval"]):
             agg_offline_ndcg[i].append(value)
 
 print >> sys.stderr, "Computing results for up to %d queries." % count_queries
