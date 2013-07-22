@@ -2,7 +2,7 @@ num_runs: 25
 num_queries: 1000
 query_sampling_method: random
 user_model: environment.CascadeUserModel
-system: retrieval_system.ListwiseLearningSystemWithCandidateSelection
+system: retrieval_system.ListwiseLearningSystem
 system_args: --init_weights random
     --sample_weights sample_unit_sphere
     --comparison comparison.ProbabilisticInterleave
@@ -11,16 +11,11 @@ system_args: --init_weights random
     --ranker ranker.ProbabilisticRankingFunction
     --ranker_arg 3
     --ranker_tie random
-    --select_candidate select_candidate_repeated
-    --history_length 10
-    --num_candidates 6
-
 experimenter: experiment.LearningExperiment
 output_dir: outdir
 output_dir_overwrite: True
 evaluation:
     - evaluation.NdcgEval
-
 meta: --data MQ2007,46,3
     MQ2008,46,3
     HP2003,64,2
