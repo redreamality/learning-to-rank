@@ -1,15 +1,18 @@
+training_queries:  ~/data/NP2003/Fold1/train.txt
 test_queries: ~/data/NP2003/Fold1/test.txt
-training_queries: ~/data/NP2003/Fold1/train.txt
-feature_count: 64 # 64 for .Gov, 46 for MQ*, 136 for MSLR
+feature_count: 64
 num_runs: 25
 num_queries: 1000
 query_sampling_method: random
+output_dir: outdir
+output_prefix: Fold1
 user_model: environment.CascadeUserModel
 user_model_args:
     --p_click 0:0.0,1:1
     --p_stop 0:0.0,1:0.0
-system: retrieval_system.ListwiseLearningSystemWithCandidateSelection
-system_args: --init_weights random
+system: retrieval_system.ListwiseLearningSystem
+system_args:
+    --init_weights random
     --sample_weights sample_unit_sphere
     --comparison comparison.ProbabilisticInterleave
     --delta 0.1
@@ -17,11 +20,5 @@ system_args: --init_weights random
     --ranker ranker.ProbabilisticRankingFunction
     --ranker_arg 3
     --ranker_tie random
-    --select_candidate select_candidate_repeated
-    --history_length 10
-    --num_candidates 6
-evaluation: 
+evaluation:
     - evaluation.NdcgEval
-output_dir: outdir
-output_dir_overwrite: False
-output_prefix: Fold1
