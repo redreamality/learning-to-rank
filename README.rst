@@ -1,9 +1,6 @@
 Lerot: an Online Learning to Rank Framework
 ===========================================
-
-This project is designed to run experiments on online learning to rank methods 
-for information retrieval. Below is a short summary of its prerequisites, how 
-to run an experiment, and possible extensions.
+This project is designed to run experiments on online learning to rank methods for information retrieval. Below is a short summary of its prerequisites, how to run an experiment, and possible extensions.
 
 Prerequisites
 -------------
@@ -29,7 +26,7 @@ Install the prerequisites plus Lerot as follows::
 Running experiments
 -------------------
 1) prepare data in svmlight format, e.g., download the MQ2008 data set of  LETOR 4 from http://research.microsoft.com/en-us/um/beijing/projects/letor/letor4download.aspx,  and note the location of the data as $DATA_DIR
-2) prepare a configuration file in yml format, e.g., starting from the template below ::
+2) prepare a configuration file in yml format, e.g., starting from the template below, store as config.yml ::
 
         training_queries:  ~/data/NP2003/Fold1/train.txt
         test_queries: ~/data/NP2003/Fold1/test.txt
@@ -63,7 +60,7 @@ Running experiments
 
 4) summarize experiment outcomes::
 
-        $ python src/python/summarize-learning-experiment.py --fold_dirs $OUTPUT_DIR > $SUMMARY_FILE
+        $ python src/scripts/summarize-learning-experiment.py --fold_dirs $OUTPUT_DIR > $SUMMARY_FILE
 
 Arbitrarily many folds can be listed per experiments. Results are aggregated  over runs and folds. The output format is a simple text file that can be  further processed using e.g., gnuplot. The columns are: mean_offline_perf stddev_offline_perf mean_online_perf stddev_online_perf
 
@@ -87,6 +84,4 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-
+along with this program.  If not, see http://www.gnu.org/licenses/.
