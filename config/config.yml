@@ -1,8 +1,8 @@
 training_queries: data/MQ2007/Fold1/train.txt
 test_queries: data/MQ2007/Fold1/test.txt
-feature_count: 64
-num_runs: 25
-num_queries: 1000
+feature_count: 46
+num_runs: 1
+num_queries: 10
 query_sampling_method: random
 output_dir: pi-outdir
 output_prefix: Fold1
