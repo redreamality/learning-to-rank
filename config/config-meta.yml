@@ -25,8 +25,8 @@ meta: --data MQ2007,46,3
     OHSUMED,45,3
     TD2003,64,2
     TD2004,64,2
-   --data_dir ~/data
-   --output_base ~/outdir
+   --data_dir data
+   --output_base outdir-pi
    --experiment_name example-experiment
    --platform celery
    --um per nav inf
