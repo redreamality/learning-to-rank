@@ -59,14 +59,15 @@ Running experiments
         $ python src/scripts/learning-experiment.py -f config.yml
 
 4) summarize experiment outcomes::
-
+   
         $ python src/scripts/summarize-learning-experiment.py --fold_dirs $OUTPUT_DIR > $SUMMARY_FILE
-
-Arbitrarily many folds can be listed per experiments. Results are aggregated  over runs and folds. The output format is a simple text file that can be  further processed using e.g., gnuplot. The columns are: mean_offline_perf stddev_offline_perf mean_online_perf stddev_online_perf
+   
+   Arbitrarily many folds can be listed per experiments. Results are aggregated  over runs and folds. The output format is a simple text file that can be  further processed using e.g., gnuplot. The columns are: mean_offline_perf stddev_offline_perf mean_online_perf stddev_online_perf
 
 Data
 ----
 You can download learning to rank data sets here:
+
 - GOV: http://research.microsoft.com/en-us/um/beijing/projects/letor/LETOR3.0/Gov.rar (you'll need files in QueryLevelNorm)
 - OHSUMED: http://research.microsoft.com/en-us/um/beijing/projects/letor/LETOR3.0/OHSUMED.zip
 - MQ2007: http://research.microsoft.com/en-us/um/beijing/projects/letor/LETOR4.0/Data/MQ2007.rar (files for supervised learning)
