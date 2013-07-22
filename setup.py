@@ -13,11 +13,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Lerot.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
 from setuptools import setup
-
-def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(
     name = "Lerot",
@@ -32,8 +28,9 @@ setup(
     package_dir = {'': 'src/python'},
     packages=['analysis', 'comparison', 'environment', 'evaluation',
               'experiment', 'query', 'ranker', 'retrieval_system', 'utils'],
-    long_description=read('README.rst'),
+    long_description=open('README.rst', 'r').read(),
     license = "GNU Lesser General Public License",
-    scripts=['src/scripts/learning-experiment.py', 'src/scripts/meta-experiment.py']
+    scripts=['src/scripts/learning-experiment.py',
+             'src/scripts/meta-experiment.py']
 
 )
