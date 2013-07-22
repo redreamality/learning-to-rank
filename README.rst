@@ -17,6 +17,15 @@ Prerequisites
 (all prerequisites are included in the academic distribution of Enthought 
 Python, e.g., version 7.1)
 
+Installation
+------------
+Install the prerequisites plus Lerot as follows::
+
+    $ pip install PyYAML numpy scipy celery
+    $ git clone https://bitbucket.org/ilps/lerot.git
+    $ cd lerot
+    $ python setup.py install
+
 Running experiments
 -------------------
 1) prepare data in svmlight format, e.g., download the MQ2008 data set of  LETOR 4 from http://research.microsoft.com/en-us/um/beijing/projects/letor/letor4download.aspx,  and note the location of the data as $DATA_DIR
@@ -50,7 +59,6 @@ Running experiments
 4) summarize experiment outcomes::
         
         $ python src/python/summarize-learning-experiment.py --fold_dirs $OUTPUT_DIR > $SUMMARY_FILE
-
     Arbitrarily many folds can be listed per experiments. Results are aggregated  over runs and folds. The output format is a simple text file that can be  further processed using e.g., gnuplot. The columns are: mean_offline_perf stddev_offline_perf mean_online_perf stddev_online_perf
 
 Extensions
