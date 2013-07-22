@@ -1,15 +1,15 @@
-training_queries:  ~/data/NP2003/Fold1/train.txt
-test_queries: ~/data/NP2003/Fold1/test.txt
+training_queries: data/MQ2007/Fold1/train.txt
+test_queries: data/MQ2007/Fold1/test.txt
 feature_count: 64
 num_runs: 25
 num_queries: 1000
 query_sampling_method: random
-output_dir: outdir
+output_dir: pi-outdir
 output_prefix: Fold1
 user_model: environment.CascadeUserModel
 user_model_args:
-    --p_click 0:0.0,1:1
-    --p_stop 0:0.0,1:0.0
+    --p_click 0:0.0,1:0.5,2:1.0
+    --p_stop 0:0.0,1:0.0,2:0.0
 system: retrieval_system.ListwiseLearningSystem
 system_args:
     --init_weights random
