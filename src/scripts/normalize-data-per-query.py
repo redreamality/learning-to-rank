@@ -17,7 +17,10 @@
 
 # KH, 2012/07/18
 
-from include import *
+try:
+    from include import *
+except:
+    pass
 import argparse
 import gzip
 import numpy as np
