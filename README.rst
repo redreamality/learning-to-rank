@@ -31,15 +31,15 @@ Running experiments
         $ wget http://research.microsoft.com/en-us/um/beijing/projects/letor/LETOR4.0/Data/MQ2007.rar -O data/MQ2007.rar
         $ unrar x data/MQ2007.rar data/
         
-2) prepare a configuration file in yml format, e.g., starting from the template below, store as ``config/pi-experiment.yml`` (or simply copy ``config/config.yml`` ) ::
+2) prepare a configuration file in yml format, e.g., starting from the template below, store as ``config/experiment.yml`` (or simply use ``config/config.yml`` instead ) ::
 
         training_queries: data/MQ2007/Fold1/train.txt
         test_queries: data/MQ2007/Fold1/test.txt
-        feature_count: 64
-        num_runs: 25
-        num_queries: 1000
+        feature_count: 46
+        num_runs: 1
+        num_queries: 10
         query_sampling_method: random
-        output_dir: pi-outdir
+        output_dir: outdir
         output_prefix: Fold1
         user_model: environment.CascadeUserModel
         user_model_args:
@@ -60,11 +60,11 @@ Running experiments
 
 3) run the experiment using python::
         
-        $ python src/scripts/learning-experiment.py -f config/pi-experiment.yml
+        $ python src/scripts/learning-experiment.py -f config/experiment.yml
 
 4) summarize experiment outcomes::
    
-        $ python src/scripts/summarize-learning-experiment.py --fold_dirs pi-outdir > $SUMMARY_FILE
+        $ python src/scripts/summarize-learning-experiment.py --fold_dirs outdir
    
    Arbitrarily many folds can be listed per experiments. Results are aggregated  over runs and folds. The output format is a simple text file that can be  further processed using e.g., gnuplot. The columns are: mean_offline_perf stddev_offline_perf mean_online_perf stddev_online_perf
 

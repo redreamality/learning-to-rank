@@ -4,7 +4,7 @@ feature_count: 46
 num_runs: 1
 num_queries: 10
 query_sampling_method: random
-output_dir: pi-outdir
+output_dir: outdir
 output_prefix: Fold1
 user_model: environment.CascadeUserModel
 user_model_args:
