@@ -31,35 +31,41 @@ Running experiments
 1) prepare data in svmlight format, e.g., download the MQ2008 data set of  LETOR 4 from http://research.microsoft.com/en-us/um/beijing/projects/letor/letor4download.aspx,  and note the location of the data as $DATA_DIR
 2) prepare a configuration file in yml format, e.g., starting from the template below ::
 
-        ===> edit and safe as config.yml <===
-        test_queries: $DATA_DIR/Fold1/test.txt
-        training_queries: $DATA_DIR/Fold1/train.txt
-        feature_count: 46 # 64 for .Gov, 46 for MQ*, 136 for MSLR
-        num_runs: 10
-        num_queries: 500
-        # binary cascade model with perfect (very reliable) user
+        training_queries:  ~/data/NP2003/Fold1/train.txt
+        test_queries: ~/data/NP2003/Fold1/test.txt
+        feature_count: 64
+        num_runs: 25
+        num_queries: 1000
+        query_sampling_method: random
+        output_dir: outdir
+        output_prefix: Fold1
         user_model: environment.CascadeUserModel
-        # for p-click and p-stop provide mappings from relevance grades to probabilities
-        user_model_args: --p_click 0:.0, 1:1.0, 2:1.0 --p_stop 0:.0, 1:.0, 2:.0
-        # baseline listwise learning system with balanced interleave and deterministic
-        # rankers
+        user_model_args:
+            --p_click 0:0.0,1:1
+            --p_stop 0:0.0,1:0.0
         system: retrieval_system.ListwiseLearningSystem
-        system_args: --init_weights zero
-            --comparison comparison.StochasticBalancedInterleave --comparison_args 0.5
-            --delta 1.0 --alpha 0.01 --ranker ranker.DeterministicRankingFunction
+        system_args:
+            --init_weights random
+            --sample_weights sample_unit_sphere
+            --comparison comparison.ProbabilisticInterleave
+            --delta 0.1
+            --alpha 0.01
+            --ranker ranker.ProbabilisticRankingFunction
+            --ranker_arg 3
             --ranker_tie random
-        output_dir: /some/output/dir
-        output_prefix: MQ2008-Fold1
-        ====
+        evaluation:
+            - evaluation.NdcgEval
+
 
 3) run the experiment using python::
         
-        $ python src/python/learning-experiment.py -f config.yml
+        $ python src/scripts/learning-experiment.py -f config.yml
 
 4) summarize experiment outcomes::
-        
+
         $ python src/python/summarize-learning-experiment.py --fold_dirs $OUTPUT_DIR > $SUMMARY_FILE
-    Arbitrarily many folds can be listed per experiments. Results are aggregated  over runs and folds. The output format is a simple text file that can be  further processed using e.g., gnuplot. The columns are: mean_offline_perf stddev_offline_perf mean_online_perf stddev_online_perf
+
+Arbitrarily many folds can be listed per experiments. Results are aggregated  over runs and folds. The output format is a simple text file that can be  further processed using e.g., gnuplot. The columns are: mean_offline_perf stddev_offline_perf mean_online_perf stddev_online_perf
 
 Extensions
 ----------
