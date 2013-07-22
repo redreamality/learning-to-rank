@@ -25,21 +25,26 @@ Install the prerequisites plus Lerot as follows::
 
 Running experiments
 -------------------
-1) prepare data in svmlight format, e.g., download the NP2003 (see next section on `Data`_) and note the location of the data as $DATA_DIR
-2) prepare a configuration file in yml format, e.g., starting from the template below, store as ``config/pi-experiment.yml`` (or simply use copy ``config/config.yml`` ) ::
+1) prepare data in svmlight format, e.g., download the *MQ2007* (see next section on `Data`_) ::
 
-        training_queries:  ~/data/MQ2007/Fold1/train.txt
-        test_queries: ~/data/MQ2007/Fold1/test.txt
+        $ mkdir data
+        $ wget http://research.microsoft.com/en-us/um/beijing/projects/letor/LETOR4.0/Data/MQ2007.rar -O data/MQ2007.rar
+        $ unrar x data/MQ2007.rar data/
+        
+2) prepare a configuration file in yml format, e.g., starting from the template below, store as ``config/pi-experiment.yml`` (or simply copy ``config/config.yml`` ) ::
+
+        training_queries: data/MQ2007/Fold1/train.txt
+        test_queries: data/MQ2007/Fold1/test.txt
         feature_count: 64
         num_runs: 25
         num_queries: 1000
         query_sampling_method: random
-        output_dir: outdir
+        output_dir: pi-outdir
         output_prefix: Fold1
         user_model: environment.CascadeUserModel
         user_model_args:
-            --p_click 0:0.0,1:1
-            --p_stop 0:0.0,1:0.0
+            --p_click 0:0.0,1:0.5,2:1.0
+            --p_stop 0:0.0,1:0.0,2:0.0
         system: retrieval_system.ListwiseLearningSystem
         system_args:
             --init_weights random
@@ -53,14 +58,13 @@ Running experiments
         evaluation:
             - evaluation.NdcgEval
 
-
 3) run the experiment using python::
         
         $ python src/scripts/learning-experiment.py -f config/pi-experiment.yml
 
 4) summarize experiment outcomes::
    
-        $ python src/scripts/summarize-learning-experiment.py --fold_dirs outdir > $SUMMARY_FILE
+        $ python src/scripts/summarize-learning-experiment.py --fold_dirs pi-outdir > $SUMMARY_FILE
    
    Arbitrarily many folds can be listed per experiments. Results are aggregated  over runs and folds. The output format is a simple text file that can be  further processed using e.g., gnuplot. The columns are: mean_offline_perf stddev_offline_perf mean_online_perf stddev_online_perf
 
