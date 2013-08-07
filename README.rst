@@ -80,6 +80,7 @@ You can download learning to rank data sets here:
 - **Yahoo!**: http://webscope.sandbox.yahoo.com/catalog.php?datatype=c
 - **MSLR-WEB10K**: http://research.microsoft.com/en-us/um/beijing/projects/mslr/data/MSLR-WEB10K.zip
 - **MSLR-WEB30K**: http://research.microsoft.com/en-us/um/beijing/projects/mslr/data/MSLR-WEB30K.zip
+- **Yandex Internet Mathematics 2009**: http://imat2009.yandex.ru/academic/mathematic/2009/en/datasets (query identifier need to be parsed out of comment into qid feature)
 
 Note that Lerot reads from both plain text and text.gz files.
 
