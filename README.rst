@@ -8,11 +8,11 @@ Prerequisites
 - PyYaml
 - Numpy
 - Scipy
-- Celery
-- Gurobi
+- Celery (only for distributed runs)
+- Gurobi (only for OptimizedInterleave)
 
-(all prerequisites are included in the academic distribution of Enthought 
-Python, e.g., version 7.1)
+All prerequisites (except for Celery and Gurobi) are included in the academic distribution of Enthought 
+Python, e.g., version 7.1.
 
 Installation
 ------------
@@ -66,10 +66,11 @@ Running experiments
    
         $ python src/scripts/summarize-learning-experiment.py --fold_dirs outdir
    
-   Arbitrarily many folds can be listed per experiments. Results are aggregated  over runs and folds. The output format is a simple text file that can be  further processed using e.g., gnuplot. The columns are: mean_offline_perf stddev_offline_perf mean_online_perf stddev_online_perf
+   Arbitrarily many folds can be listed per experiment. Results are aggregated  over runs and folds. The output format is a simple text file that can be  further processed using e.g., gnuplot. The columns are: mean_offline_perf stddev_offline_perf mean_online_perf stddev_online_perf
 
 Data
 ----
+Lerot acceptes data formatted in the SVMlight (see http://svmlight.joachims.org/) format.
 You can download learning to rank data sets here:
 
 - **GOV**: http://research.microsoft.com/en-us/um/beijing/projects/letor/LETOR3.0/Gov.rar (you'll need files in QueryLevelNorm)
@@ -80,15 +81,15 @@ You can download learning to rank data sets here:
 - **MSLR-WEB10K**: http://research.microsoft.com/en-us/um/beijing/projects/mslr/data/MSLR-WEB10K.zip
 - **MSLR-WEB30K**: http://research.microsoft.com/en-us/um/beijing/projects/mslr/data/MSLR-WEB30K.zip
 
-Note that Lerot reads from both plain text and .gz files.
+Note that Lerot reads from both plain text and text.gz files.
 
 
 Extensions
 ----------
-The code is intended to be extended with new learning and/or feedback mechanisms for future experiments. The most obvious points for extension are:
+The code doesn't need to be can easily be extended with new learning and/or feedback mechanisms for future experiments. The most obvious points for extension are:
 
-1) comparison - extend ComparisonMethod to add new interleaving or inference  methods; existing methods include balanced interleave, team draft, and  probabilistic interleave.
-2) retrieval_system - extend OnlineLearningSystem to add a new mechanism for  learning from click feedback. New implementations need to be able to provide a  ranked list for a given query, and ranking solutions should have the form of a vector.
+1) comparison - extend ComparisonMethod to add new interleaving or inference methods; existing methods include balanced interleave, team draft, and  probabilistic interleave.
+2) retrieval_system - extend OnlineLearningSystem to add a new mechanism for learning from click feedback. New implementations need to be able to provide a  ranked list for a given query, and ranking solutions should have the form of a vector.
 
 License
 -------
