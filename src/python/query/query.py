@@ -70,7 +70,7 @@ class Query:
         self.__qid__ = qid
         self.__feature_vectors__ = feature_vectors
         self.__labels__ = labels
-        self.__docids__ = [Document[x] for x in range(len(labels))]
+        self.__docids__ = [Document(x) for x in range(len(labels))]
         self.__comments__ = comments
 
     def has_ideal(self):
