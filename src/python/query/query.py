@@ -24,6 +24,8 @@ import gzip
 import numpy as np
 import os.path
 
+from document import Document
+
 
 class SimpleBufferedLineReader:
     """Read lines from a file, but keep a short buffer to allow rewinds"""
@@ -68,7 +70,7 @@ class Query:
         self.__qid__ = qid
         self.__feature_vectors__ = feature_vectors
         self.__labels__ = labels
-        self.__docids__ = range(0, len(labels))
+        self.__docids__ = [Document[x] for x in range(len(labels))]
         self.__comments__ = comments
 
     def has_ideal(self):
