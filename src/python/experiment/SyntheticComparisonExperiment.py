@@ -26,6 +26,7 @@ from random import randint, sample
 from utils import get_class
 from ranker import (SyntheticProbabilisticRankingFunction,
                     SyntheticDeterministicRankingFunction)
+from document import Document
 
 
 class SyntheticComparisonExperiment():
@@ -158,7 +159,7 @@ class SyntheticComparisonExperiment():
         assert(num_relevant > 0)
         assert(num_relevant < length)
 
-        docids = range(length)
+        docids = [Document(x) for x in range(length)]
         labels = [0] * length
         nonrel = set(docids)
         rel = set()

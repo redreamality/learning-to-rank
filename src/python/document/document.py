@@ -39,5 +39,17 @@ class Document(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def __hash__(self):
+        return self.docid
+
     def __repr__(self):
-        return self.docid, self.doctype
+        return self.docid
+
+    def set_type(self, doctype):
+        self.doctype = doctype
+
+    def get_type(self):
+        return self.doctype
+
+    def get_id(self):
+        return seld.docid
