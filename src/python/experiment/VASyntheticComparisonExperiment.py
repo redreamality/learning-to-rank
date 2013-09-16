@@ -21,7 +21,8 @@ from random import randint, sample
 
 from utils import get_class
 import comparison.VerticalAwareInterleave as va
-from ranker import SyntheticProbabilisticRankingFunction
+from ranker import (SyntheticProbabilisticRankingFunction,
+                    SyntheticDeterministicRankingFunction)
 
 
 class VASyntheticComparisonExperiment():
@@ -79,8 +80,8 @@ class VASyntheticComparisonExperiment():
             for ranker_args in self.rankers[ranker]:
                 if ranker == "det":
                     self.rankers[ranker][ranker_args] = \
-                        (SyntheticProbabilisticRankingFunction(ranker_args, # A
-                        self.ties), SyntheticProbabilisticRankingFunction(  # B
+                        (SyntheticDeterministicRankingFunction(ranker_args, # A
+                        self.ties), SyntheticDeterministicRankingFunction(  # B
                         ranker_args, self.ties))
                 elif ranker == "prob":
                     self.rankers[ranker][ranker_args] = \
