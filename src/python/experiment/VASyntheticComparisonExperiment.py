@@ -20,9 +20,9 @@ import numpy
 from random import randint, sample
 
 from utils import get_class
-import comparison.VerticalAwareInterleave as va
 from ranker import (SyntheticProbabilisticRankingFunction,
                     SyntheticDeterministicRankingFunction)
+from document import Document
 
 
 class VASyntheticComparisonExperiment():
@@ -203,24 +203,24 @@ class VASyntheticComparisonExperiment():
                                                                blocksize)
 
         if docmethod == "assign":
-            r1 = [va.Doc(d, pos1 <= i < (pos1 + blocksize))
+            r1 = [d.set_type(pos1 <= i < (pos1 + blocksize))
                   for i, d in enumerate(r1)]
-            r2 = [va.Doc(d, pos2 <= i < (pos2 + blocksize))
+            r2 = [d.set_type(pos2 <= i < (pos2 + blocksize))
                   for i, d in enumerate(r2)]
         elif docmethod == "insert":
             maxid = max(r1 + r2)
-            r1 = [va.Doc(d, False) for d in r1]
-            r2 = [va.Doc(d, False) for d in r2]
+            r1 = [d.set_type(False) for d in r1]
+            r2 = [d.set_type(False) for d in r2]
             for i in range(blocksize):
-                r1.insert(pos1, va.Doc(maxid + i + 1, True))
-                r2.insert(pos2, va.Doc(maxid + i + 1, True))
+                r1.insert(pos1, Document(maxid + i + 1, True))
+                r2.insert(pos2, Document(maxid + i + 1, True))
 
         labels = olabels[:]
         for doc in set(r1 + r2):
-            if not doc.vert:
+            if not doc.get_type:
                 continue
 
-            vdoc = doc.url
+            vdoc = doc.get_id()
             if vdoc >= len(labels):
                 labels += [0] * (vdoc - len(labels) + 1)
 
@@ -251,7 +251,7 @@ class VASyntheticComparisonExperiment():
         assert(num_relevant > 0)
         assert(num_relevant < length)
 
-        docids = range(length)
+        docids = [Document(x) for x in range(length)]
         labels = [0] * length
         nonrel = set(docids)
         rel = set()
@@ -281,8 +281,8 @@ class VASyntheticComparisonExperiment():
         a.sort(key=dict(zip(a, examination_a)).get, reverse=True)
         b.sort(key=dict(zip(b, examination_b)).get, reverse=True)
 
-        rel_a = [index for index, item in enumerate(a) if labels[item[0]] == 1]
-        rel_b = [index for index, item in enumerate(b) if labels[item[0]] == 1]
+        rel_a = [index for index, item in enumerate(a) if labels[item.get_id()] == 1]
+        rel_b = [index for index, item in enumerate(b) if labels[item.get_id()] == 1]
         # if a has fewer relevant documents it cannot dominate b
         if len(rel_a) < len(rel_b):
             return False
@@ -300,13 +300,6 @@ class VASyntheticComparisonExperiment():
         if distance > 0:
             return True
         return False
-
-    def _pareto_dominates_va(self, a, b, labels):
-        ca = cb = 0
-        for _ in range(500):
-            ca += sum(self.um.get_clicks(a, labels))
-            cb += sum(self.um.get_clicks(b, labels))
-        return 1 if ca > cb else -1 if ca < cb else 0
 
     def _generate_synthetic_rankings_randomly(self,
                                               docids, olabels,

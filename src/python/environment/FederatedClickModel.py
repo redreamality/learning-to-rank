@@ -39,7 +39,7 @@ class FederatedClickModel(AbstractUserModel):
 
     def get_clicks(self, result_list, labels):
         """simulate clicks on list l"""
-        hposs = [pos for pos, d in enumerate(result_list) if d[1]]
+        hposs = [pos for pos, d in enumerate(result_list) if d.get_type()]
         if len(hposs):
             A = np.random.binomial(1, self.h(min(hposs)))
         else:
@@ -61,7 +61,7 @@ class FederatedClickModel(AbstractUserModel):
         return c
 
     def get_examination_prob(self, result_list):
-        hposs = [pos for pos, d in enumerate(result_list) if d[1]]
+        hposs = [pos for pos, d in enumerate(result_list) if d.get_type()]
         if len(hposs):
             a = self.h(min(hposs))
         else:
