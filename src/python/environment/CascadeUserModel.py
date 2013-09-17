@@ -52,8 +52,8 @@ class CascadeUserModel(AbstractUserModel):
     def get_clicks(self, result_list, labels):
         """simulate clicks on list l"""
         c = zeros(len(result_list), dtype='int')
-        for pos, r in enumerate(result_list):
-            label = labels[r]
+        for pos, d in enumerate(result_list):
+            label = labels[d.get_id()]
             if label not in self.p_click:
                 raise Exception("Cardinality of labels does not match the user"
                                 " model.")

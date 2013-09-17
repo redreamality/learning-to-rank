@@ -43,7 +43,10 @@ class Document(object):
         return self.docid
 
     def __repr__(self):
-        return self.docid
+        return "Document(id=%d, type=%s)" % (self.docid, self.doctype)
+
+    def __str__(self):
+        return self.__repr__()
 
     def set_type(self, doctype):
         self.doctype = doctype
@@ -52,4 +55,4 @@ class Document(object):
         return self.doctype
 
     def get_id(self):
-        return seld.docid
+        return self.docid

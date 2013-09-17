@@ -16,40 +16,60 @@
 import random
 from numpy import asarray
 
-import VerticalAwareInterleave as va
-from TdiVa import TdiVa
+from TeamDraft import TeamDraft
 
 
 class CannotInterleave(Exception):
     pass
 
 
-class TdiVa1(TdiVa):
+class TdiVa1(TeamDraft):
     """ Algorithm 1 described in
     https://bitbucket.org/varepsilon/cikm2013-interleaving """
     def __init__(self, arg_str=None):
         pass
 
+    @staticmethod
+    def sampleSmoothly(a, b, maxVal):
+        if a > b:
+            a, b = b, a
+        if a > 0 and b < maxVal:
+            randVal = random.randint(a, b + 1)
+            if randVal == b + 1:
+                return a - 1 if random.randint(0, 1) == 0 else b + 1
+            else:
+                return randVal
+        elif a == 0 and b == maxVal:
+            return random.randint(a, b)
+        else:   # a > 0 or b < maxVal
+            randVal = random.randint(0, 2 * (b - a) + 2)
+            if randVal == 2 * (b - a) + 2:
+                return (a - 1) if a > 0 else b + 1
+            else:
+                return a + randVal // 2
+
     def interleave(self, r1, r2, query, length):
         r1.init_ranking(query)
         r2.init_ranking(query)
         A, B = (X.getDocs() for X in [r1, r2])
-        assert all(isinstance(d, va.Doc) for d in (A + B)), \
-            "all documents passed to TdiVa1 should be of the type \
-            VerticalAwareInterleave.Doc"
+#        assert all(isinstance(d, va.Doc) for d in (A + B)), \
+#            "all documents passed to TdiVa1 should be of the type \
+#            VerticalAwareInterleave.Doc"
         length = min(len(A), len(B), length)
 
-        sizeA = sum(1 for d in A if d.vert)
-        sizeB = sum(1 for d in B if d.vert)
+        sizeA = sum(1 for d in A if d.get_type())
+        sizeB = sum(1 for d in B if d.get_type())
 
         sizeL = self.sampleSmoothly(sizeA, sizeB, length - 1)
 
         def _addNextDocFrom(X, ranking, insideBlock, afterBlock):
             assert (X is A) or (X is B)
             if insideBlock:
-                X_left = [x for x in X if x.vert and (x not in ranking)]
+                X_left = [x for x in X if x.get_type() and (x not in
+                                                            ranking)]
             elif afterBlock:
-                X_left = [x for x in X if not x.vert and (x not in ranking)]
+                X_left = [x for x in X if not x.get_type() and (x not in
+                                                                ranking)]
             else:
                 X_left = [x for x in X if x not in ranking]
             if not X_left:
@@ -74,9 +94,9 @@ class TdiVa1(TdiVa):
             if afterBlock and doc is None:
                 raise CannotInterleave('no non-vertical documents left; try \
                 with bigger vertical block')
-            if doc is not None and doc.vert:
+            if doc is not None and doc.get_type():
                 insideBlock = True
-            if doc is None or sum(1 for x in L if x.vert) + 1 == sizeL:
+            if doc is None or sum(1 for x in L if x.get_type()) + 1 == sizeL:
                 # the block is built
                 insideBlock = False
                 afterBlock = True
