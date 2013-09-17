@@ -45,8 +45,8 @@ class FederatedClickModel(AbstractUserModel):
         else:
             A = 0
         c = np.zeros(len(result_list), dtype='int')
-        for pos, r in enumerate(result_list):
-            label = labels[r[0]]
+        for pos, d in enumerate(result_list):
+            label = labels[d.get_id()]
             if label == 0:
                 continue
             e = self.p(pos)
@@ -67,7 +67,7 @@ class FederatedClickModel(AbstractUserModel):
         else:
             a = 0.0
         e = np.zeros(len(result_list), dtype='float')
-        for pos, _ in enumerate(result_list):
+        for pos in range(len(result_list)):
             phi = self.p(pos)
             if len(hposs):
                 nearest = sorted([(abs(hpos - pos), hpos - pos)

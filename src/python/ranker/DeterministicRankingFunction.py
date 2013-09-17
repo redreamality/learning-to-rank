@@ -27,7 +27,7 @@ class DeterministicRankingFunction (AbstractRankingFunction):
         ranks = rank(scores, reverse=False, ties=self.ties)
         # sort documents by ranks, ties are broken at random by default
         ranked_docids = []
-        for pos, docid in enumerate(query.__docids__):
+        for pos, docid in enumerate(query.get_docids()):
             ranked_docids.append((ranks[pos], docid))
         ranked_docids.sort(reverse=True)
         self.docids = [docid for (_, docid) in ranked_docids]

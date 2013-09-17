@@ -258,7 +258,7 @@ class VASyntheticComparisonExperiment():
 
         while (len(docids) - len(nonrel)) < num_relevant:
             next_rel = sample(nonrel, 1)[0]
-            labels[next_rel] = 1
+            labels[next_rel.get_id()] = 1
             nonrel.remove(next_rel)
             rel.add(next_rel)
 
