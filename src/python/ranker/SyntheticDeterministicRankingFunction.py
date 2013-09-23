@@ -27,11 +27,6 @@ class SyntheticDeterministicRankingFunction(DeterministicRankingFunction):
             return
         self.docids = synthetic_docids
 
-    def getDocs(self, numdocs=None):
-        if numdocs != None:
-            return self.docids[:numdocs]
-        return self.docids
-
     def document_count(self):
         return len(self.docids)
 
