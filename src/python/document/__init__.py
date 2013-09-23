@@ -13,7 +13,4 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Lerot.  If not, see <http://www.gnu.org/licenses/>.
 
-from DeterministicRankingFunction import DeterministicRankingFunction
-from ProbabilisticRankingFunction import ProbabilisticRankingFunction
-from SyntheticDeterministicRankingFunction import SyntheticDeterministicRankingFunction
-from SyntheticProbabilisticRankingFunction import SyntheticProbabilisticRankingFunction
+from document import Document

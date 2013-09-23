@@ -20,6 +20,11 @@ import math
 from utils import split_arg_str
 from AbstractInterleavedComparison import AbstractInterleavedComparison
 
+try:
+    import gurobipy
+except:
+    pass
+
 
 class OptimizedInterleave(AbstractInterleavedComparison):
     """
@@ -36,7 +41,6 @@ class OptimizedInterleave(AbstractInterleavedComparison):
     """
 
     def __init__(self, arg_str=None):
-        import gurobipy
         self.verbose = False
         self.credit = getattr(self, "linear_credit")
         if not arg_str is None:

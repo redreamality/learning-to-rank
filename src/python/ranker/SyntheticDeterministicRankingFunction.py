@@ -14,23 +14,18 @@
 # along with Lerot.  If not, see <http://www.gnu.org/licenses/>.
 
 from random import randint
-from utils import rank
-from AbstractRankingFunction import AbstractRankingFunction
+from DeterministicRankingFunction import DeterministicRankingFunction
 
 
-class DeterministicRankingFunction (AbstractRankingFunction):
+class SyntheticDeterministicRankingFunction(DeterministicRankingFunction):
+    """"synthetic deterministic ranker for use in this experiment"""
+    def __init__(self, ranker_arg_str, ties="random"):
+        self.ties = ties
 
-    def init_ranking(self, query):
-        self.qid = query.get_qid()
-        scores = self.ranking_model.score(query.get_feature_vectors(),
-                                          self.w.transpose())
-        ranks = rank(scores, reverse=False, ties=self.ties)
-        # sort documents by ranks, ties are broken at random by default
-        ranked_docids = []
-        for pos, docid in enumerate(query.get_docids()):
-            ranked_docids.append((ranks[pos], docid))
-        ranked_docids.sort(reverse=True)
-        self.docids = [docid for (_, docid) in ranked_docids]
+    def init_ranking(self, synthetic_docids):
+        if not synthetic_docids:
+            return
+        self.docids = synthetic_docids
 
     def document_count(self):
         return len(self.docids)
@@ -63,8 +58,12 @@ class DeterministicRankingFunction (AbstractRankingFunction):
         return 1.0 if pos == 0 else 0.0
 
     def rm_document(self, docid):
-        """remove doc from list of available docs and adjust probabilities"""
+        """remove doc from list of available docs, adjust probabilities"""
         # find position of the document
         pos = self.docids.index(docid)
         # delete doc and renormalize
         self.docids.pop(pos)
+
+    def update_weights(self, new_weights):
+        """not required under synthetic data"""
+        pass

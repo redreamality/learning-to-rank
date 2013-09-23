@@ -28,7 +28,8 @@ class AbstractEval:
         self.prev_score = None
 
     def evaluate_all(self, solution, queries, cutoff=-1, ties="random"):
-        if self.prev_solution_w != None and (self.prev_solution_w == solution.w).all():
+        if self.prev_solution_w != None and (self.prev_solution_w ==
+                                             solution.w).all():
             return self.prev_score
         outcomes = []
         for query in queries:

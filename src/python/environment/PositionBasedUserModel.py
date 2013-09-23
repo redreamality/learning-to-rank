@@ -33,7 +33,7 @@ class PositionBasedUserModel(AbstractUserModel):
         c = zeros(len(result_list), dtype='int')
         for pos, d in enumerate(result_list):
             E = np.random.binomial(1, self.p(pos))
-            label = labels[d]
+            label = labels[d.get_id()]
             if E and label:
                 c[pos] = 1
         return c
