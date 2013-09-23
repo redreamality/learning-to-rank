@@ -15,12 +15,14 @@
 
 import argparse
 import yaml
-from numpy import array, cumsum, delete, mean, where
+from numpy import mean, where
 import numpy
-from random import randint, random, sample
+from random import randint, sample
 
 from utils import get_class
-import comparison.VerticalAwareInterleave as va
+from ranker import (SyntheticProbabilisticRankingFunction,
+                    SyntheticDeterministicRankingFunction)
+from document import Document
 
 
 class VASyntheticComparisonExperiment():
@@ -78,13 +80,13 @@ class VASyntheticComparisonExperiment():
             for ranker_args in self.rankers[ranker]:
                 if ranker == "det":
                     self.rankers[ranker][ranker_args] = \
-                        (self.SyntheticDeterministicRanker(ranker_args,  # A
-                        self.ties), self.SyntheticDeterministicRanker(   # B
+                        (SyntheticDeterministicRankingFunction(ranker_args, # A
+                        self.ties), SyntheticDeterministicRankingFunction(  # B
                         ranker_args, self.ties))
                 elif ranker == "prob":
                     self.rankers[ranker][ranker_args] = \
-                        (self.SyntheticProbabilisticRanker(ranker_args,  # A
-                        self.ties), self.SyntheticProbabilisticRanker(   # B
+                        (SyntheticProbabilisticRankingFunction(ranker_args, # A
+                        self.ties), SyntheticProbabilisticRankingFunction(  # B
                         ranker_args, self.ties))
                 else:
                     raise ValueError("Unknown ranker: " + ranker)
@@ -201,24 +203,24 @@ class VASyntheticComparisonExperiment():
                                                                blocksize)
 
         if docmethod == "assign":
-            r1 = [va.Doc(d, pos1 <= i < (pos1 + blocksize))
+            r1 = [d.set_type(pos1 <= i < (pos1 + blocksize))
                   for i, d in enumerate(r1)]
-            r2 = [va.Doc(d, pos2 <= i < (pos2 + blocksize))
+            r2 = [d.set_type(pos2 <= i < (pos2 + blocksize))
                   for i, d in enumerate(r2)]
         elif docmethod == "insert":
             maxid = max(r1 + r2)
-            r1 = [va.Doc(d, False) for d in r1]
-            r2 = [va.Doc(d, False) for d in r2]
+            r1 = [d.set_type(False) for d in r1]
+            r2 = [d.set_type(False) for d in r2]
             for i in range(blocksize):
-                r1.insert(pos1, va.Doc(maxid + i + 1, True))
-                r2.insert(pos2, va.Doc(maxid + i + 1, True))
+                r1.insert(pos1, Document(maxid + i + 1, True))
+                r2.insert(pos2, Document(maxid + i + 1, True))
 
         labels = olabels[:]
         for doc in set(r1 + r2):
-            if not doc.vert:
+            if not doc.get_type:
                 continue
 
-            vdoc = doc.url
+            vdoc = doc.get_id()
             if vdoc >= len(labels):
                 labels += [0] * (vdoc - len(labels) + 1)
 
@@ -249,14 +251,14 @@ class VASyntheticComparisonExperiment():
         assert(num_relevant > 0)
         assert(num_relevant < length)
 
-        docids = range(length)
+        docids = [Document(x) for x in range(length)]
         labels = [0] * length
         nonrel = set(docids)
         rel = set()
 
         while (len(docids) - len(nonrel)) < num_relevant:
             next_rel = sample(nonrel, 1)[0]
-            labels[next_rel] = 1
+            labels[next_rel.get_id()] = 1
             nonrel.remove(next_rel)
             rel.add(next_rel)
 
@@ -279,8 +281,8 @@ class VASyntheticComparisonExperiment():
         a.sort(key=dict(zip(a, examination_a)).get, reverse=True)
         b.sort(key=dict(zip(b, examination_b)).get, reverse=True)
 
-        rel_a = [index for index, item in enumerate(a) if labels[item[0]] == 1]
-        rel_b = [index for index, item in enumerate(b) if labels[item[0]] == 1]
+        rel_a = [index for index, item in enumerate(a) if labels[item.get_id()] == 1]
+        rel_b = [index for index, item in enumerate(b) if labels[item.get_id()] == 1]
         # if a has fewer relevant documents it cannot dominate b
         if len(rel_a) < len(rel_b):
             return False
@@ -298,13 +300,6 @@ class VASyntheticComparisonExperiment():
         if distance > 0:
             return True
         return False
-
-    def _pareto_dominates_va(self, a, b, labels):
-        ca = cb = 0
-        for _ in range(500):
-            ca += sum(self.um.get_clicks(a, labels))
-            cb += sum(self.um.get_clicks(b, labels))
-        return 1 if ca > cb else -1 if ca < cb else 0
 
     def _generate_synthetic_rankings_randomly(self,
                                               docids, olabels,
@@ -343,159 +338,3 @@ class VASyntheticComparisonExperiment():
                 return (b, a, labels)
         raise(ValueError, "Could not find pareto dominated ranker for labels "
               "%s after 1000 trials." % ", ".join([str(x) for x in labels]))
-
-    class SyntheticProbabilisticRanker:
-        """Synthetic ranker for use in this experiment only"""
-
-        def __init__(self, ranker_arg_str, ties="random"):
-            self.ranker_type = float(ranker_arg_str)
-            self.ties = ties
-
-        def init_ranking(self, synthetic_docids):
-            if not synthetic_docids:
-                return
-            # assume that synthetic_docids are in rank order
-            self.docids = synthetic_docids
-            ranks = array(range(1, len(self.docids) + 1))
-            # determine probabilities based on (reverse) document ranks
-            tmp_val = 1. / pow(ranks, self.ranker_type)
-            self.probs = tmp_val / sum(tmp_val)
-
-        def document_count(self):
-            return len(self.docids)
-
-        def next(self):
-            """produce the next document by random sampling, or
-            deterministically"""
-            # if there are no more documents
-            if len(self.docids) < 1:
-                raise Exception("There are no more documents to be selected")
-
-            # if there's only one document
-            if len(self.docids) == 1:
-                self.probs = delete(self.probs, 0)  # should be empty now
-                pick = self.docids.pop()  # pop, because it's a list
-                return pick
-
-            # sample if there are more documents
-            cumprobs = cumsum(self.probs)
-            pick = -1
-            rand = random()  # produces a float in range [0.0, 1.0)
-            for pos, cp in enumerate(cumprobs):
-                if rand < cp:
-                    pick = self.docids.pop(pos)  # pop, because it's a list
-                    break
-
-            if (pick == -1):
-                print "Cumprobs:", cumprobs
-                print "rand", rand
-                raise Exception("Could not select document!")
-            # renormalize
-            self.probs = delete(self.probs, pos)  # delete, it's a numpy array
-            self.probs = self.probs / sum(self.probs)
-            return pick
-
-        def next_det(self):
-            pos = 0  # first is the most likely document
-            pick = self.docids.pop(pos)
-            # renormalize
-            self.probs = delete(self.probs, pos)  # delete, it's a numpy array
-            self.probs = self.probs / sum(self.probs)
-            return pick
-
-        def next_random(self):
-            """produce a random next document"""
-
-            # if there are no more documents
-            if len(self.docids) < 1:
-                raise Exception("There are no more documents to be selected")
-            # otherwise, return a random document
-            rn = randint(0, len(self.docids) - 1)
-            return self.docids.pop(rn)
-
-        def _get_doc_pos(self, docid):
-            try:
-                pos = self.docids.index(docid)
-            except:
-                pos = [i for i, d in
-                       enumerate(self.docids) if d[0] == docid][0]
-            return pos
-
-        def get_document_probability(self, docid):
-            """get probability of producing doc as the next document drawn"""
-            pos = self._get_doc_pos(docid)
-            return self.probs[pos]
-
-        def rm_document(self, docid):
-            """remove doc from list of available docs, adjust probabilities"""
-            # find position of the document
-            try:
-                pos = self._get_doc_pos(docid)
-            except ValueError:
-                print "cannot remove", docid,
-                print "current document list:", self.docids
-                print "qid:", self.qid
-            # delete doc and renormalize
-            self.docids.pop(pos)
-            self.probs = delete(self.probs, pos)
-            self.probs = self.probs / sum(self.probs)
-
-        def update_weights(self, new_weights):
-            """not required under synthetic data"""
-            pass
-
-    class SyntheticDeterministicRanker:
-        """"synthetic deterministic ranker for use in this experiment"""
-        def __init__(self, ranker_arg_str, ties="random"):
-            self.ties = ties
-
-        def init_ranking(self, synthetic_docids):
-            if not synthetic_docids:
-                return
-            self.docids = synthetic_docids
-
-        def getDocs(self, numdocs=None):
-            if numdocs != None:
-                return self.docids[:numdocs]
-            return self.docids
-
-        def document_count(self):
-            return len(self.docids)
-
-        def next(self):
-            """produce the next document"""
-
-            # if there are no more documents
-            if len(self.docids) < 1:
-                raise Exception("There are no more documents to be selected")
-            # otherwise, return highest ranked document
-            return self.docids.pop(0)  # pop first element
-
-        def next_det(self):
-            return self.next()
-
-        def next_random(self):
-            """produce a random next document"""
-
-            # if there are no more documents
-            if len(self.docids) < 1:
-                raise Exception("There are no more documents to be selected")
-            # otherwise, return a random document
-            rn = randint(0, len(self.docids) - 1)
-            return self.docids.pop(rn)
-
-        def get_document_probability(self, docid):
-            """get probability of producing doc as the next document drawn"""
-            pos = self.docids.index(docid)
-            return 1.0 if pos == 0 else 0.0
-
-        def rm_document(self, docid):
-            """remove doc from list of available docs, adjust probabilities"""
-            # find position of the document
-            pos = self.docids.index(docid)
-            # delete doc and renormalize
-            self.docids.pop(pos)
-
-        def update_weights(self, new_weights):
-            """not required under synthetic data"""
-            pass

@@ -21,13 +21,14 @@ from random import shuffle
 sys.path.insert(0, os.path.abspath('..'))
 
 from CascadeUserModel import CascadeUserModel
+from document import Document
 
 
 class TestEnvironment(unittest.TestCase):
     def testPerfectUser(self):
         # initialize toy data (smaller docids are more relevant)
         labels = [4, 3, 2, 2, 1, 1, 0, 0, 0, 0]
-        docids = range(len(labels))
+        docids = [Document(x) for x in range(len(labels))]
         # initialize user model
         um = CascadeUserModel("--p_click 0:.0, 1:1.0, 2:1.0, 3:1.0, 4:1.0"
                               " --p_stop 0:.0, 1:.0, 2:.0, 3:.0, 4:.0")

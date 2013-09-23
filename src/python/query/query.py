@@ -24,6 +24,8 @@ import gzip
 import numpy as np
 import os.path
 
+from document import Document
+
 
 class SimpleBufferedLineReader:
     """Read lines from a file, but keep a short buffer to allow rewinds"""
@@ -68,7 +70,7 @@ class Query:
         self.__qid__ = qid
         self.__feature_vectors__ = feature_vectors
         self.__labels__ = labels
-        self.__docids__ = range(0, len(labels))
+        self.__docids__ = [Document(x) for x in range(len(labels))]
         self.__comments__ = comments
 
     def has_ideal(self):
@@ -93,19 +95,19 @@ class Query:
         return self.__feature_vectors__
 
     def set_feature_vector(self, docid, feature_vector):
-        self.__feature_vectors__[docid] = feature_vector
+        self.__feature_vectors__[docid.get_id()] = feature_vector
 
     def get_feature_vector(self, docid):
-        return self.__feature_vectors__[docid]
+        return self.__feature_vectors__[docid.get_id()]
 
     def get_labels(self):
         return self.__labels__
 
     def set_label(self, docid, label):
-        self.__labels__[docid] = label
+        self.__labels__[docid.get_id()] = label
 
     def get_label(self, docid):
-        return self.__labels__[docid]
+        return self.__labels__[docid.get_id()]
 
     def set_labels(self, labels):
         self.__labels__ = labels
@@ -115,7 +117,7 @@ class Query:
 
     def get_comment(self, docid):
         if self.__comments__ is not None:
-            return self.__comments__[docid]
+            return self.__comments__[docid.get_id()]
         return None
 
     def get_predictions(self):
@@ -123,7 +125,7 @@ class Query:
 
     def get_prediction(self, docid):
         if self.__predictions__:
-            return self.__predictions__[docid]
+            return self.__predictions__[docid.get_id()]
         return None
 
     def set_predictions(self, predictions):
