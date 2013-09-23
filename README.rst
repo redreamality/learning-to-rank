@@ -108,3 +108,14 @@ GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see http://www.gnu.org/licenses/.
+
+Citation
+-------
+If you use Lerot to produce results for your scientific publication, please refer to this paper::
+    @inproceedings{schuth_lerot_2013,
+      title = {Lerot: an Online Learning to Rank Framework},
+      author = {A. Schuth, K. Hofmann, S. Whiteson, M. de Rijke},
+      url = {http://www.anneschuth.nl/wp-content/uploads/2013/09/cikm-livinglab-2013-lerot.pdf},
+      year = {2013},
+      booktitle = {Living Labs for Information Retrieval Evaluation workshop at CIKM’13.}
+    }
