@@ -67,6 +67,12 @@ class AbstractRankingFunction:
         raise NotImplementedError("Derived class needs to implement "
             "get_document_probability.")
 
+
+    def getDocs(self, numdocs=None):
+        if numdocs != None:
+            return self.docids[:numdocs]
+        return self.docids
+
     def rm_document(self, docid):
         raise NotImplementedError("Derived class needs to implement "
             "rm_document.")
