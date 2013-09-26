@@ -26,15 +26,18 @@ class BM25(AbstractRankingModel):
         return np.array([2.5, 0, 0.8])
 
     def score(self, features, w):
-        k1, k3, b = w
-        s = 0.0
-        nr_terms = len(features)/4
-        for i in range(nr_terms):
-            idf = features[i*4]
-            tf = features[i*4+1]
-            qtf = features[i*4+2]
-            dl = features[i*4+3]
-            # s += ((idf * tf * (k1 + 1)) / (tf + k1 * (1-b+b*dl))) * (((k3+1)*qtf)/(k3+qtf))
-            s += idf 
-        return s
+        scores = []
+        for docfeatures in features:
+            k1, k3, b = w
+            s = 0.0
+            nr_terms = len(docfeatures)/4
+            for i in range(nr_terms):
+                idf = docfeatures[i*4]
+                tf = docfeatures[i*4+1]
+                qtf = docfeatures[i*4+2]
+                dl = docfeatures[i*4+3]
+                if dl == 0: continue
+                s += ((idf * tf * (k1 + 1)) / (tf + k1 * (1-b+b*dl))) * (((k3+1)*qtf)/(k3+qtf))
+            scores.append(s)
+        return scores
     
