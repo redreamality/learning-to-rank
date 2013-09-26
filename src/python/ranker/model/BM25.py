@@ -34,6 +34,7 @@ class BM25(AbstractRankingModel):
             tf = features[i*4+1]
             qtf = features[i*4+2]
             dl = features[i*4+3]
-            s += ((idf * tf * (k1 + 1)) / (tf + k1 * (1-b+b*dl))) * (((k3+1)*qtf)/(k3+qtf)) 
+            # s += ((idf * tf * (k1 + 1)) / (tf + k1 * (1-b+b*dl))) * (((k3+1)*qtf)/(k3+qtf))
+            s += idf 
         return s
     
