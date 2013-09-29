@@ -6,7 +6,7 @@ Below is a short summary of its prerequisites, how to run an experiment, and pos
 
 Prerequisites
 -------------
-- Python (2.7 or higher)
+- Python (2.6, 2.7)
 - PyYaml
 - Numpy
 - Scipy
