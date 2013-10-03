@@ -89,7 +89,7 @@ Note that Lerot reads from both plain text and text.gz files.
 
 Extensions
 ----------
-The code doesn't need to be can easily be extended with new learning and/or feedback mechanisms for future experiments. The most obvious points for extension are:
+The code can easily be extended with new learning and/or feedback mechanisms for future experiments. The most obvious points for extension are:
 
 1) comparison - extend ComparisonMethod to add new interleaving or inference methods; existing methods include balanced interleave, team draft, and  probabilistic interleave.
 2) retrieval_system - extend OnlineLearningSystem to add a new mechanism for learning from click feedback. New implementations need to be able to provide a  ranked list for a given query, and ranking solutions should have the form of a vector.
