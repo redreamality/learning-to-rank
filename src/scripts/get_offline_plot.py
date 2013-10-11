@@ -49,6 +49,13 @@ if __name__ == "__main__":
     parser.add_argument("--traintest", type=str, default="test", choices=["train", "test"])
     args = parser.parse_args()
     
+    if not type(args.aggregate) is list:
+        args.aggregate = [args.aggregate]
+    if not type(args.metric) is list:
+        args.metric = [args.metric]
+    if not type(args.um) is list:
+        args.um = [args.um]
+
     uniqvalues = args.root_dir + args.aggregate + args.um + args.metric + [args.raw, args.traintest]
     uniq = str(hash(tuple(uniqvalues)))
     uniqfile = os.path.join(basedir, 'out', uniq + ".ndcgpoints.pickle")
@@ -88,10 +95,12 @@ if __name__ == "__main__":
    
             exps.append(exp)
             if args.raw:
+                print "loading RAW"
                 for um in glob.glob(os.path.join(indir, "output", "*")):
                     for data in glob.glob(os.path.join(um, "*")):
                         for fold in glob.glob(os.path.join(data, "*")):
                             for f in glob.glob(os.path.join(fold, "*.txt.gz")):
+                                print "loading", f
                                 parts = os.path.normpath(os.path.abspath(f)).split(os.sep)
                                 umshort, datashort, foldshort = parts[-4:-1]
                                 if not umshort in args.um:
@@ -161,6 +170,8 @@ if __name__ == "__main__":
                 cindex += 1
                 lindex = 0
                 if args.raw:
+                    if not 'raw' in  ndcgpoints[exp]:
+                        continue
                     if not user in ndcgpoints[exp]['raw']:
                         continue
                     if not data in ndcgpoints[exp]['raw'][user]:
@@ -181,8 +192,8 @@ if __name__ == "__main__":
                                     else:
                                         for i, x in enumerate(w):
                                             aggregation[metric][i] += x
-                                l = P.plot(w, color, linewidth=.3)
-                                l[0].set_dashes(rawlines)
+                                #l = P.plot(w, color, linewidth=.3)
+                                #l[0].set_dashes(rawlines)
                         if args.plotperexp:
                             l = P.legend(loc=4)
                             #P.ylim(0., 1.0)
@@ -197,10 +208,10 @@ if __name__ == "__main__":
                     if not user in ndcgpoints[exp]:
                         if 'raw' in ndcgpoints[exp]:
                             for metric in args.metric:
-                                w = aggregation[metric][:200]
+                                w = aggregation[metric][:1000]
                                 seq = lines[lindex % len(lines)]
                                 #l = P.plot(w, color, label="-".join([label, agg, metric]))
-                                l = P.plot(w, color, label=metric)
+                                l = P.plot(w, color, label=label)
                                 l[0].set_dashes(seq)
                                 P.legend()
                                 lindex += 1

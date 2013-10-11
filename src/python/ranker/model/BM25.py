@@ -14,6 +14,7 @@
 # along with Lerot.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
+from utils import sample_unit_sphere
 from AbstractRankingModel import AbstractRankingModel
 
 
@@ -23,6 +24,8 @@ class BM25(AbstractRankingModel):
         self.feature_count = 3
 
     def initialize_weights(self, init_method):
+        if init_method == "random":
+            return sample_unit_sphere(self.feature_count)
         return np.array([2.5, 0, 0.8])
 
     def score(self, features, w):
