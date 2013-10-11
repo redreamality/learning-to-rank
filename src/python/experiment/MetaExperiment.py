@@ -87,12 +87,14 @@ class MetaExperiment:
             if k in self.experiment_args:
                 del self.experiment_args[k]
 
-        self.experiment_args["processes"] = 0
 
         if self.meta_args["platform"] == "local":
             self.run = self.run_local
         elif self.meta_args["platform"] == "celery":
+            self.experiment_args["processes"] = 0
             self.run = self.run_celery
+        elif self.meta_args["platform"] == "conf":
+            self.run = self.run_conf
         else:
             parser.error("Please specify a valid platform.")
 
@@ -134,40 +136,40 @@ class MetaExperiment:
 
         skip = 0
         self.configurations = []
-        for run_id in range(self.experiment_args["num_runs"]):
-            for um in self.meta_args["um"]:
-                for dstr in self.meta_args["data"]:
-                    data, d, r = dstr.split(',')
-                    d, r = int(d), int(r)
-                    user_model_args = usermodels[um][r]
-                    folds = glob.glob(os.path.join(
-                                os.path.abspath(self.meta_args["data_dir"]),
+#        for run_id in range(self.experiment_args["num_runs"]):
+        for um in self.meta_args["um"]:
+            for dstr in self.meta_args["data"]:
+                data, d, r = dstr.split(',')
+                d, r = int(d), int(r)
+                user_model_args = usermodels[um][r]
+                folds = glob.glob(os.path.join(
+                            os.path.abspath(self.meta_args["data_dir"]),
+                            data,
+                            "Fold*"))
+                for fold in folds:
+                    args = self.experiment_args.copy()
+                    args["data_dir"] = self.meta_args["data_dir"]
+                    args["fold_dir"] = fold
+        #            args["run_id"] = run_id
+                    args["feature_count"] = d
+                    args["user_model_args"] = user_model_args
+                    args["output_dir"] = os.path.join(basedir,
+                                'output',
+                                um,
                                 data,
-                                "Fold*"))
-                    for fold in folds:
-                        args = self.experiment_args.copy()
-                        args["data_dir"] = self.meta_args["data_dir"]
-                        args["fold_dir"] = fold
-                        args["run_id"] = run_id
-                        args["feature_count"] = d
-                        args["user_model_args"] = user_model_args
-                        args["output_dir"] = os.path.join(basedir,
-                                    'output',
-                                    um,
-                                    data,
-                                    os.path.basename(fold))
-                        args["output_prefix"] = os.path.basename(fold)
-                        if self.meta_args["rerun"]:
-                            if not os.path.exists(os.path.join(
-                                                    args["output_dir"],
-                                                    "%s-%d.txt.gz" %
-                                                    (args["output_prefix"],
-                                                     run_id))):
-                                self.configurations.append(args)
-                            else:
-                                skip += 1
-                        else:
+                                os.path.basename(fold))
+                    args["output_prefix"] = os.path.basename(fold)
+                    if self.meta_args["rerun"]:
+                        if not os.path.exists(os.path.join(
+                                                args["output_dir"],
+                                                "%s-%d.txt.gz" %
+                                                (args["output_prefix"],
+                                                 run_id))):
                             self.configurations.append(args)
+                        else:
+                            skip += 1
+                    else:
+                        self.configurations.append(args)
         logging.info("Created %d configurations (and %d skipped)" % (
                                                     len(self.configurations),
                                                     skip))
@@ -202,6 +204,31 @@ class MetaExperiment:
         yaml.dump(r, log_fh, default_flow_style=False, Dumper=Dumper)
         log_fh.close()
         return log_file
+    
+    def run_conf(self):
+        if self.meta_args["rerun"]:
+            self.update_analytics()
+
+        logging.info("Creating log files %d tasks locally" % len(self.configurations))
+        for conf in self.configurations:
+            train = glob.glob(os.path.join(conf["fold_dir"], "*train.txt*"))[0]
+            test = glob.glob(os.path.join(conf["fold_dir"], "*test.txt*"))[0]
+            conf["test_queries"] = test
+            conf["training_queries"] = train
+
+            if not os.path.exists(conf["output_dir"]):
+                try:
+                    os.makedirs(conf["output_dir"])
+                except:
+                    pass
+            config_bk = os.path.join(conf["output_dir"], "config_bk.yml")
+            config_bk_file = open(config_bk, "w")
+            yaml.dump(conf,
+                      config_bk_file,
+                      default_flow_style=False,
+                      Dumper=Dumper)
+            config_bk_file.close()
+        logging.info("Done")
 
     def run_local(self):
         if self.meta_args["rerun"]:
@@ -281,16 +308,16 @@ class MetaExperiment:
 
 # TODO: move this to config
 celery = Celery('tasks',
-            broker='amqp://USER:PW@HOST/QUEUE',
-            backend='amqp',
-            include=['environment',
-                     'retrieval_system',
-                     'comparison',
-                     'evaluation',
-                     'query',
-                     'ranker',
-                     'sampler',
-                     'analysis'])
+            #broker='amqp://USER:PW@HOST/QUEUE',
+            backend='amqp')
+            #include=['environment',
+            #         'retrieval_system',
+            #         'comparison',
+            #         'evaluation',
+            #         'query',
+            #         'ranker',
+            #         'sampler',
+            #         'analysis'])
 celery.conf.CELERYD_PREFETCH_MULTIPLIER = 1
 celery.conf.CELERYD_HIJACK_ROOT_LOGGER = False
 celery.conf.BROKER_POOL_LIMIT = 2
