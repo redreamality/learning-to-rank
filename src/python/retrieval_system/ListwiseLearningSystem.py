@@ -19,7 +19,7 @@ Retrieval system implementation for use in learning experiments.
 """
 
 import argparse
-from numpy import ones
+from numpy import ones, array
 from numpy.linalg import norm
 import copy
 
@@ -47,8 +47,8 @@ class ListwiseLearningSystem(AbstractLearningSystem):
         parser.add_argument("-r", "--ranker", required=True)
         parser.add_argument("-s", "--ranker_args", nargs="*")
         parser.add_argument("-t", "--ranker_tie", default="random")
-        parser.add_argument("-d", "--delta", required=True, type=float)
-        parser.add_argument("-a", "--alpha", required=True, type=float)
+        parser.add_argument("-d", "--delta", required=True, type=str)
+        parser.add_argument("-a", "--alpha", required=True, type=str)
         parser.add_argument("--anneal", type=int, default=0)
         parser.add_argument("--normalize", default="False")
         args = vars(parser.parse_known_args(split_arg_str(arg_str))[0])
@@ -65,10 +65,17 @@ class ListwiseLearningSystem(AbstractLearningSystem):
                                         sample=self.sample_weights,
                                         init=self.init_weights)
 
-        self.delta = args["delta"]
-        self.alpha = args["alpha"]
+        if "," in args["delta"]:
+            self.delta = array([float(x) for x in args["delta"].split(",")])
+        else:
+            self.delta = float(args["delta"])
+        if "," in args["alpha"]:
+            self.alpha = array([float(x) for x in args["alpha"].split(",")])
+        else:
+            self.alpha = float(args["alpha"])
+
         self.anneal = args["anneal"]
-    
+
         self.comparison_class = get_class(args["comparison"])
         if "comparison_args" in args and args["comparison_args"] != None:
             self.comparison_args = " ".join(args["comparison_args"])
