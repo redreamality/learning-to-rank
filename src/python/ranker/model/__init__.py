@@ -16,3 +16,4 @@
 from Linear import Linear
 from OneHiddenLayer import OneHiddenLayer
 from BM25 import BM25
+from BM25Ensemble import BM25Ensemble
