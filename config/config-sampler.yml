@@ -1,0 +1,26 @@
+test_queries: data/MQ2008/Fold1/test.txt
+training_queries: data/MQ2008/Fold1/train.txt
+feature_count: 64 # 64 for .Gov, 46 for MQ*, 136 for MSLR
+num_runs: 1
+num_queries: 10000
+query_sampling_method: random
+user_model: environment.CascadeUserModel
+# for p-click and p-stop provide mappings from relevance grades to probabilities
+user_model_args: --p_click 0:0.0,1:0.5,2:1 --p_stop 0:0.0,1:0.0,2:0.0
+system: retrieval_system.SamplerSystem
+system_args: --init_weights random
+    --comparison comparison.ProbabilisticInterleave 
+    --comparison_args random
+    --delta 0.1 
+    --alpha 0.01 
+    --ranker ranker.ProbabilisticRankingFunction
+    --ranker_arg 3
+    --ranker_tie random
+    --sampler sampler.BeatTheMeanSampler
+    --sampler_decay 1
+    
+output_dir: outdir
+output_dir_overwrite: True
+output_prefix: Fold1
+
+evaluation: evaluation.NdcgEval
