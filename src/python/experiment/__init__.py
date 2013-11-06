@@ -19,3 +19,4 @@ from MetaExperiment import MetaExperiment
 from HistoricalComparisonExperiment import HistoricalComparisonExperiment
 from SyntheticComparisonExperiment import SyntheticComparisonExperiment
 from VASyntheticComparisonExperiment import VASyntheticComparisonExperiment
+from SamplingExperiment import SamplingExperiment
