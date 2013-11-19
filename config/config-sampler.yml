@@ -1,13 +1,14 @@
 test_queries: data/MQ2008/Fold1/test.txt
 training_queries: data/MQ2008/Fold1/train.txt
 feature_count: 64 # 64 for .Gov, 46 for MQ*, 136 for MSLR
-num_runs: 1
+num_runs: 2
 num_queries: 10000
 query_sampling_method: random
 user_model: environment.CascadeUserModel
 # for p-click and p-stop provide mappings from relevance grades to probabilities
-user_model_args: --p_click 0:0.0,1:0.5,2:1 --p_stop 0:0.0,1:0.0,2:0.0
-system: retrieval_system.SamplerSystem
+user_model_args: --p_click 0:0.0,1:1,2:1 --p_stop 0:0.0,1:0.0,2:0.0
+#system: retrieval_system.MultiLeaveSamplerSystem
+system: retrieval_system.BaselineSamplerSystem
 system_args: --init_weights random
     --comparison comparison.ProbabilisticInterleave 
     --comparison_args random
@@ -15,12 +16,16 @@ system_args: --init_weights random
     --alpha 0.01 
     --ranker ranker.ProbabilisticRankingFunction
     --ranker_arg 3
-    --ranker_tie random
-    --sampler sampler.BeatTheMeanSampler
+    --ranker_tie first
+    --sampler sampler.BaselineSampler
     --sampler_decay 1
+    --nr_rankers 3
     
-output_dir: outdir
+experimenter: experiment.SamplingExperiment
+    
+output_dir: /Users/aschuth/Documents/lerot-multileave/outdir/tmp/baseline/output/per/MQ2008/
 output_dir_overwrite: True
 output_prefix: Fold1
 
-evaluation: evaluation.NdcgEval
+evaluation:
+    - evaluation.NdcgEval

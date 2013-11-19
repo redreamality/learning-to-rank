@@ -113,7 +113,7 @@ def normalize_to_unit_sphere(v):
 def sample_unit_sphere(n):
     """See http://mathoverflow.net/questions/24688/efficiently-sampling-
     points-uniformly-from-the-surface-of-an-n-sphere"""
-    v = zeros(n)
+ 
     for i in range(0, n):
         v[i] = gauss(0, 1)
     return normalize_to_unit_sphere(v)
