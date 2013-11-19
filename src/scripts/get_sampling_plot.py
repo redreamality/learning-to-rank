@@ -38,7 +38,7 @@ if __name__ == "__main__":
     parser.add_argument("root_dir", help="directory that holds an "
                         " anaylics directory.", nargs="+")
     parser.add_argument("--um", default="per", nargs="+")
-    parser.add_argument("-m", "--metric", type=str, default="diff", nargs="+")
+    parser.add_argument("-m", "--metric", type=str, default="binary_diff", nargs="+")
     parser.add_argument("--reload", action="store_true", default=False)
     args = parser.parse_args()
     args.metric = [args.metric]
@@ -52,24 +52,27 @@ if __name__ == "__main__":
         exps = []
         for indir in args.root_dir:
             indir = os.path.realpath(indir)
-            exp = indir.split("/")[-1]
+            exp = indir.split("/")[-2]
             ndcgpoints[exp] = {}
             print exp
             exps.append(exp)
             print os.path.join(indir, "output", "*")
             for um in glob.glob(os.path.join(indir, "output", "*")):
+                print "um", um
                 for data in glob.glob(os.path.join(um, "*")):
+                    print "data", data
                     for fold in glob.glob(os.path.join(data, "*")):
+                        print "fold", fold
                         for f in glob.glob(os.path.join(fold, "*.txt.gz")):
                             parts = os.path.normpath(os.path.abspath(f)).split(os.sep)
                             umshort, datashort, foldshort = parts[-4:-1]
+                            print f, umshort, datashort
                             if not umshort in args.um:
                                 continue
                             if not umshort in ndcgpoints[exp]:
                                 ndcgpoints[exp][umshort] = {}
                             if not datashort in ndcgpoints[exp][umshort]:
                                 ndcgpoints[exp][umshort][datashort] = {}
-                            print f, umshort, datashort
                             if f.endswith(".gz"):
                                 fh = gzip.open(f, "r")
                             else:
@@ -138,4 +141,7 @@ if __name__ == "__main__":
                                                      data))
             P.savefig(outfile,
                       format='pdf')
+            P.clf()
+            P.ioff()
+
             print outfile
