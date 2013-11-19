@@ -59,30 +59,29 @@ if __name__ == "__main__":
             print os.path.join(indir, "output", "*")
             for um in glob.glob(os.path.join(indir, "output", "*")):
                 for data in glob.glob(os.path.join(um, "*")):
-                    for f in glob.glob(os.path.join(data, "*.txt.gz")):
-                        parts = os.path.normpath(os.path.abspath(f)).split(os.sep)
-                        print parts
-                        umshort, datashort = parts[-3:-1]
-                        print umshort, datashort
-                        if not umshort in args.um:
-                            continue
-                        if not umshort in ndcgpoints[exp]:
-                            ndcgpoints[exp][umshort] = {}
-                        if not datashort in ndcgpoints[exp][umshort]:
-                            ndcgpoints[exp][umshort][datashort] = {}
-                        print f, umshort, datashort
-                        if f.endswith(".gz"):
-                            fh = gzip.open(f, "r")
-                        else:
-                            fh = open(f, "r")
-                        yamldata = yaml.load(fh, Loader=Loader)
-                        fh.close()
-
-                        for metric in args.metric:
-                            if not metric in ndcgpoints[exp][umshort][datashort]:
-                                ndcgpoints[exp][umshort][datashort][metric] = []
-                            scores = yamldata["%s" % (metric)]
-                            ndcgpoints[exp][umshort][datashort][metric].append(scores)
+                    for fold in glob.glob(os.path.join(data, "*")):
+                        for f in glob.glob(os.path.join(fold, "*.txt.gz")):
+                            parts = os.path.normpath(os.path.abspath(f)).split(os.sep)
+                            umshort, datashort, foldshort = parts[-4:-1]
+                            if not umshort in args.um:
+                                continue
+                            if not umshort in ndcgpoints[exp]:
+                                ndcgpoints[exp][umshort] = {}
+                            if not datashort in ndcgpoints[exp][umshort]:
+                                ndcgpoints[exp][umshort][datashort] = {}
+                            print f, umshort, datashort
+                            if f.endswith(".gz"):
+                                fh = gzip.open(f, "r")
+                            else:
+                                fh = open(f, "r")
+                            yamldata = yaml.load(fh, Loader=Loader)
+                            fh.close()
+    
+                            for metric in args.metric:
+                                if not metric in ndcgpoints[exp][umshort][datashort]:
+                                    ndcgpoints[exp][umshort][datashort][metric] = []
+                                scores = yamldata["%s" % (metric)]
+                                ndcgpoints[exp][umshort][datashort][metric].append(scores)
 
         pickle.dump(ndcgpoints, open(uniqfile, "w"))
     else:
