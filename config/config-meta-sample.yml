@@ -1,0 +1,41 @@
+num_runs: 25
+processes: 0
+num_queries: 1000
+query_sampling_method: random
+user_model: environment.CascadeUserModel
+#system: retrieval_system.MultiLeaveSamplerSystem
+system: retrieval_system.BaselineSamplerSystem
+system_args: --init_weights random
+    --comparison comparison.ProbabilisticInterleave 
+    --comparison_args random
+    --delta 0.1 
+    --alpha 0.01 
+    --ranker ranker.ProbabilisticRankingFunction
+    --ranker_arg 3
+    --ranker_tie first
+    --sampler sampler.BaselineSampler
+    --sampler_decay 1
+    --nr_rankers 5
+experimenter: experiment.SamplingExperiment
+output_dir: outdir
+output_dir_overwrite: True
+evaluation:
+    - evaluation.NdcgEval
+meta: --data HP2003,64,2
+    HP2004,64,2
+    NP2003,64,2
+    NP2004,64,2
+    TD2003,64,2
+    TD2004,64,2
+   --data_dir /home/aschuth1/online-learning-data/
+   --output_base /datastore/aschuth/online-learning-output/sigir2014/
+   --experiment_name baseline-r5
+   --platform conf
+   --um per
+   --uma per,2,0:0.0,1:1,0:0.0,1:0.0
+         nav,2,0:0.05,1:0.95,0:0.2,1:0.9
+         inf,2,0:0.4,1:0.9,0:0.1,1:0.5
+         per,3,0:0.0,1:0.5,2:1,0:0.0,1:0.0,2:0.0
+         nav,3,0:0.05,1:0.5,2:0.95,0:0.2,1:0.5,2:0.9
+         inf,3,0:0.4,1:0.7,2:0.9,0:0.1,1:0.3,2:0.5
+   --analysis analysis.SummarizeAnalysis
