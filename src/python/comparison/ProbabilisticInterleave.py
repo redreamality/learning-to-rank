@@ -17,7 +17,7 @@
 
 import argparse
 
-from numpy import asarray, e, log, where
+from numpy import asarray, e, log, where, exp
 from random import randint
 from utils import split_arg_str
 
@@ -94,7 +94,7 @@ class ProbabilisticInterleave(AbstractInterleavedComparison):
         # are there any clicks? (otherwise it's a tie)
         click_ids = where(asarray(c) == 1)
         if not len(click_ids[0]):  # no clicks, will be a tie
-            return 0
+            return 0, 0
 
         r1.init_ranking(query)
         r2.init_ranking(query)
@@ -180,7 +180,7 @@ class ProbabilisticInterleave(AbstractInterleavedComparison):
             outcome = -1 if o1 > o2 else 1 if o2 > o1 else 0
         else:
             raise ValueError("Unknown aggregation method: %s", self.aggregate)
-        return outcome
+        return outcome, exp(log_p_l)
 
     def get_probability_of_list(self, result_list, context, query):
         # P(l) = \prod_{doc in result_list} 1/2 P_1(doc) + 1/2 P_2(doc)

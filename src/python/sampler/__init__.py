@@ -1,3 +1,3 @@
-from RelativeThompsonSampler import RelativeThompsonSampler
+#from RelativeThompsonSampler import RelativeThompsonSampler
 from BeatTheMeanSampler import BeatTheMeanSampler
 from BaselineSampler import BaselineSampler

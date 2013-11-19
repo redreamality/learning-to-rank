@@ -1,3 +1,18 @@
+# This file is part of Lerot.
+#
+# Lerot is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Lerot is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with Lerot.  If not, see <http://www.gnu.org/licenses/>.
+
 from numpy import *
 import argparse
 import logging
@@ -10,7 +25,7 @@ from AbstractLearningSystem import AbstractLearningSystem
 from utils import get_class
 
 
-class SamplerSystem(AbstractLearningSystem):
+class BaselineSamplerSystem(AbstractLearningSystem):
     def __init__(self, feature_count, arg_str):
         logging.info("Initializing SamplerSystem")
         self.feature_count = feature_count
@@ -57,8 +72,9 @@ class SamplerSystem(AbstractLearningSystem):
             self.ranker_args = None
         self.ranker_tie = args["ranker_tie"]
         self.rankers = [self.ranker_class(self.ranker_args,
-                                          array(w),
-                                          self.ranker_tie)
+                                          self.ranker_tie,
+                                          self.feature_count,
+                                          init=",".join([str(x) for x in w]))
                         for w in weights]
         
         self.comparison_class = get_class(args["comparison"])
@@ -79,14 +95,14 @@ class SamplerSystem(AbstractLearningSystem):
 
     def get_ranked_list(self, query):
         self.r1, self.r2, i1, i2 = self.sampler.get_arms()
-        i1s = [i1]
-        i2s = [i2]
-        while self.r1 == self.r2:
-            self.iteration += 1
-            self.sampler.update_scores(self.r1, self.r2)
-            self.r1, self.r2, i1, i2 = self.sampler.get_arms()
-            i1s.append(i1)
-            i2s.append(i2)
+#        i1s = [i1]
+#        i2s = [i2]
+#        while self.r1 == self.r2:
+#            self.iteration += 1
+#            self.sampler.update_scores(self.r1, self.r2)
+#            self.r1, self.r2, i1, i2 = self.sampler.get_arms()
+#            i1s.append(i1)
+#            i2s.append(i2)
 
         (l, context) = self.comparison.interleave(self.r1, self.r2,
                                                   query,
@@ -94,21 +110,21 @@ class SamplerSystem(AbstractLearningSystem):
         self.current_l = l
         self.current_context = context
         self.current_query = query
-        return l, i1s, i2s
+        return l
 
     def update_solution(self, clicks):
-        outcome = self.comparison.infer_outcome(
-                                                self.current_l,
+        outcome, _ = self.comparison.infer_outcome(self.current_l,
                                                 self.current_context,
                                                 clicks,
                                                 self.current_query)
         if outcome <= 0:
-            win = self.sampler.update_scores(self.r1, self.r2)#, -outcome)
+            self.sampler.update_scores(self.r1, self.r2, score=1, play=1)
         else:
-            win = self.sampler.update_scores(self.r2, self.r1)#, outcome)
+            self.sampler.update_scores(self.r2, self.r1, score=1, play=1)
+
         self.iteration += 1
-        return self.get_solution(), win
+        return self.get_solution()
 
     def get_solution(self):
-        logging.info("Iteration %d" % self.iteration)
-        return self.sampler.get_winner().w
+        #logging.info("Iteration %d" % self.iteration)
+        return self.sampler.get_sheet()
