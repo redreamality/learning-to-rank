@@ -42,7 +42,7 @@ class SamplingExperiment(AbstractLearningExperiment):
         self.query_keys = sorted(self.training_queries.keys())
         self.query_length = len(self.query_keys)
 
-        for query_count in range(10000):
+        for query_count in range(100000):
             qid = self._sample_qid(self.query_keys, query_count,
                                    self.query_length)
             query = self.training_queries[qid]
