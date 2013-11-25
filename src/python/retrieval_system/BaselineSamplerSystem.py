@@ -52,6 +52,12 @@ class BaselineSamplerSystem(AbstractLearningSystem):
                 for i in range(0, self.feature_count):
                     v[i] = gauss(0, 1)
                 weights.append(list(v))
+        if args["init_weights"].startswith("selected"):
+            selection = [4, 24, 39, 41, 50]
+            for i in range(args["nr_rankers"]):
+                v = zeros(self.feature_count)
+                v[selection[i]] = 1.0
+                weights.append(list(v))
         else:
             for f in sorted(glob.glob(os.path.join(args["init_weights"],
                                             "*.txt")))[:args["nr_rankers"]]:
