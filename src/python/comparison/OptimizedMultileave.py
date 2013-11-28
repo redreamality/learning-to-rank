@@ -27,7 +27,7 @@ except:
     pass
 
 
-class OptimizedInterleave(AbstractInterleavedComparison):
+class OptimizedMultileave(AbstractInterleavedComparison):
     """
     An implementation of Optimized Interleave as described in:
 

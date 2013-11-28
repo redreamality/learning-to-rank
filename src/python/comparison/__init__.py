@@ -27,3 +27,4 @@ from ProbabilisticInterleaveWithHistory import \
     ProbabilisticInterleaveWithHistory
 from OptimizedInterleave import OptimizedInterleave
 from TdiVa1 import TdiVa1
+from OptimizedMultileave import OptimizedMultileave
