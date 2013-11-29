@@ -15,7 +15,7 @@
 
 import random
 import argparse
-from numpy import asarray, where, array,  zeros
+#from numpy import asarray, where, array,  zeros
 import numpy as np
 import math
 from utils import split_arg_str
@@ -64,10 +64,18 @@ class OptimizedMultileave(AbstractInterleavedComparison):
             return R[li]
         return len(R) + 1
 
+    def aggregate_credit(self, C, clicked=None):
+        c = np.zeros(len(C))
+        for k in range(len(C)):
+            if clicked != None and clicked[k] != 1:
+                continue
+            c += ((C[k] + len(C) / 2) / len(C)) * (1.0 / k)
+        return c
+
     def binary_credit(self, li, ranks):
         indexes = [index for _, index in sorted([(self.rank(li, ranks), i)
                                          for i in range(len(ranks))])]
-        scores = array(range(len(ranks))) - (len(ranks) / 2)
+        scores = np.array(range(len(ranks))) - (len(ranks) / 2)
         credit = [scores[indexes.index(i)] for i in range(len(ranks))]
         return credit
 
@@ -141,39 +149,22 @@ class OptimizedMultileave(AbstractInterleavedComparison):
         # Constraints for equation(8) for each k
         for k in range(length):
             m.addConstr(np.sum([P[n] * np.sum([C[n][i]
-                                                                     for i in
-                                                                     range(k)],
-                                                         axis=0)
-                                           for n in
-                                           range(len(L))],
+                                               for i in
+                                               range(k)],
+                                              axis=0)
+                                for n in range(len(L))],
                                axis=0) == 0.0,
                         "c%d" % k)
 
         # Add sensitivity as an objective to the optimization, equation (13)
         S = []
+
         for i in range(len(L)):
             # Attempts at replacing Equation (9, 10, 11)
             # TODO: this is really not thought through yet
-            c = zeros(len(rankers))
-            for k in range(len(L[i])):
-                c += C[i][k] * (1.0 / k)
-            s = np.product(c)
+            s = np.product(self.aggregate_credit(C[i]))
             S.append(P[i] * s)
 
-#            # Equation (9)
-#            wa = sum([self.f(k + 1)
-#                      for k in range(len(L[i])) if C[i][k] > 0])
-#            # Equation (10)
-#            wb = sum([self.f(k + 1)
-#                      for k in range(len(L[i])) if C[i][k] < 0])
-#            # Equation (11)
-#            wt = sum([self.f(k + 1)
-#                      for k in range(len(L[i])) if C[i][k] == 0])
-#            if wa + wb > 0:
-#                s = -((1 - wt) /
-#                      (wa + wb)) * math.log(((wa ** wa) * (wb ** wb)) /
-#                                             ((wa + wb) ** (wa + wb)), 2)
-#                S.append(P[i] * s)
         m.setObjective(gurobipy.quicksum(S), gurobipy.GRB.MAXIMIZE)
 
         # Optimize the system and if it is infeasible, relax the constraints
@@ -192,14 +183,14 @@ class OptimizedMultileave(AbstractInterleavedComparison):
                            for i in range(len(L)) if P[i].x > 0])
         cumprob = 0.0
         randsample = random.random()
-        for (p, l, a) in problist:
+        for (p, l, C) in problist:
             cumprob += p
             if randsample <= cumprob:
                 break
-        return (asarray(l), a)
+        return (np.asarray(l), C)
 
-    def infer_outcome(self, l, a, c, query):
-        creditsum = 0
-        for clicked in where(c == 1)[0]:
-            creditsum += a[clicked]
-        return creditsum
+    def infer_outcome(self, l, C, clicked, query):
+        agg = self.aggregate_credit(C, clicked)
+        ranking = [x for (_, x) in sorted([(agg[i], i)
+                                           for i in range(len(agg))])]
+        return ranking
