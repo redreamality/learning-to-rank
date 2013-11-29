@@ -15,7 +15,6 @@
 
 import random
 import argparse
-#from numpy import asarray, where, array,  zeros
 import numpy as np
 import math
 from utils import split_arg_str
@@ -43,14 +42,14 @@ class OptimizedMultileave(AbstractInterleavedComparison):
 
     def __init__(self, arg_str=None):
         self.verbose = False
-        self.credit = getattr(self, "linear_credit")
+        self.credit = getattr(self, "binary_credit")
         if not arg_str is None:
             parser = argparse.ArgumentParser(description=self.__doc__,
                                              prog=self.__class__.__name__)
             parser.add_argument("-c", "--credit", choices=["linear_credit",
                                                            "binary_credit",
                                                            "inverse_credit"],
-                                required=True)
+                                required=True, default="binary_credit")
             args = vars(parser.parse_known_args(split_arg_str(arg_str))[0])
             self.credit = getattr(self, args["credit"])
 
@@ -105,16 +104,18 @@ class OptimizedMultileave(AbstractInterleavedComparison):
                     d = None
                     if index < len(ranking):
                         d = ranking[index]
-                        while d in prefix or d in addedthislevel:
+                        while d in prefix:
                             d = None
                             index += 1
                             if index < len(ranking):
                                 d = ranking[index]
                             else:
                                 break
+                        if  d in addedthislevel:
+                            continue
                         if d != None:
                             addedthislevel.append(d)
-                            branchindexes = indexes
+                            branchindexes = indexes[:]
                             branchindexes[i] = index + 1
                             branch = (prefix + [d], branchindexes)
                             nextlevel.append(branch)
@@ -123,7 +124,7 @@ class OptimizedMultileave(AbstractInterleavedComparison):
             nextlevel = []
 
         # L contains allowed multileavings, according to equation (5)
-        L = [n.list for n in currentlevel]
+        L = [n for n, _ in currentlevel]
         del currentlevel
         del nextlevel
 
@@ -194,3 +195,19 @@ class OptimizedMultileave(AbstractInterleavedComparison):
         ranking = [x for (_, x) in sorted([(agg[i], i)
                                            for i in range(len(agg))])]
         return ranking
+
+if __name__ == '__main__':
+    class TestRanker:
+        def __init__(self, docids):
+            self.docids = docids
+
+        def init_ranking(self, query):
+            pass
+
+    r1 = TestRanker(["a", "b", "c", "d"])
+    r2 = TestRanker(["b", "d", "c", "a"])
+
+    comparison = OptimizedMultileave()
+    l, C = comparison.interleave([r1, r2], None, 4)
+    outcome = comparison.infer_outcome(l, C, [0, 1, 0, 0], None)
+    print outcome
