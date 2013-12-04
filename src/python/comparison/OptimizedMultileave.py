@@ -139,12 +139,12 @@ class OptimizedMultileave(AbstractInterleavedComparison):
             for x in range(len(rankings)):
                 for j in range(length):
                     mu += self.f(j + 1) * C[i][j][x]
+            mu /= len(rankings)
 
             for x in range(len(rankings)):
-                s.append(
-                         sum([
-                          self.f(j + 1) * C[i][j][x] - mu
-                          for j in range(length)]) ** 2
+                s.append((sum([
+                          self.f(j + 1) * C[i][j][x]
+                          for j in range(length)]) - mu) ** 2
                          )
             S.append(P[i] * gurobipy.quicksum(s))
 
