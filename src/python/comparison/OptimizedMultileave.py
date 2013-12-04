@@ -19,11 +19,7 @@ import numpy as np
 import math
 from utils import split_arg_str
 from AbstractInterleavedComparison import AbstractInterleavedComparison
-
-try:
-    import gurobipy
-except:
-    pass
+import gurobipy
 
 
 class OptimizedMultileave(AbstractInterleavedComparison):
@@ -41,15 +37,12 @@ class OptimizedMultileave(AbstractInterleavedComparison):
     """
 
     def __init__(self, arg_str=None):
-        self.verbose = False
-        self.credit = getattr(self, "binary_credit")
+        self.verbose = True
         if not arg_str is None:
             parser = argparse.ArgumentParser(description=self.__doc__,
                                              prog=self.__class__.__name__)
-            parser.add_argument("-c", "--credit", choices=["linear_credit",
-                                                           "binary_credit",
-                                                           "inverse_credit"],
-                                required=True, default="binary_credit")
+            parser.add_argument("-c", "--credit", choices=["credit"],
+                                required=True, default="credit")
             args = vars(parser.parse_known_args(split_arg_str(arg_str))[0])
             self.credit = getattr(self, args["credit"])
 
@@ -57,34 +50,11 @@ class OptimizedMultileave(AbstractInterleavedComparison):
         # Implemented as footnote 4 suggests
         return 1. / i
 
-    def rank(self, li, R):
-        # Implemented as in d'.1
-        if li in R:
-            return R[li]
-        return len(R) + 1
-
-    def aggregate_credit(self, C, clicked=None):
-        c = np.zeros(len(C))
-        for k in range(len(C)):
-            if clicked != None and clicked[k] != 1:
-                continue
-            c += ((C[k] + len(C) / 2) / len(C)) * (1.0 / k)
-        return c
-
-    def binary_credit(self, li, ranks):
-        indexes = [index for _, index in sorted([(self.rank(li, ranks), i)
-                                         for i in range(len(ranks))])]
-        scores = np.array(range(len(ranks))) - (len(ranks) / 2)
-        credit = [scores[indexes.index(i)] for i in range(len(ranks))]
-        return credit
-
-#    def linear_credit(self, li, rankA, rankB):
-#        # Equation (14)
-#        return self.rank(li, rankA) - self.rank(li, rankB)
-#
-#    def inverse_credit(self, li, rankA, rankB):
-#        # Equation (15)
-#        return 1. / self.rank(li, rankB) - 1. / self.rank(li, rankA)
+    def credit(self, li, ranking):
+        rank = len(ranking) + 1
+        if li in ranking:
+            rank = ranking.index(li) + 1
+        return 1.0 / rank
 
     def interleave(self, rankers, query, length):
         rankings = []
@@ -129,13 +99,10 @@ class OptimizedMultileave(AbstractInterleavedComparison):
         del nextlevel
 
         # Pre-compute credit for each list l in L
-        ranks = []
-        for ranking in rankings:
-            ranks.append({})
-            for i in range(len(ranking)):
-                ranks[-1][ranking[i]] = i + 1
-
-        C = [[self.credit(li, ranks) for li in l] for l in L]
+        C = [[[self.credit(li, ranking)
+               for ranking in rankings]
+              for li in l]
+             for l in L]
 
         # Construct a set of constraints
         m = gurobipy.Model("system")
@@ -148,23 +115,38 @@ class OptimizedMultileave(AbstractInterleavedComparison):
         # Constraint for equation (7)
         m.addConstr(gurobipy.quicksum(P) == 1, 'sum')
         # Constraints for equation(8) for each k
+        V = []
         for k in range(length):
-            m.addConstr(np.sum([P[n] * np.sum([C[n][i]
-                                               for i in
-                                               range(k)],
-                                              axis=0)
-                                for n in range(len(L))],
-                               axis=0) == 0.0,
-                        "c%d" % k)
+            V.append(m.addVar(name='var%d' % k))
+        m.update()
+
+        for k in range(length):
+            for x in range(len(rankings)):
+                s = []
+                for i in range(len(L)):
+                    s.append(P[i] * gurobipy.quicksum(
+                                            [C[i][j][x] for j in range(k)]))
+                s = gurobipy.quicksum(s)
+                m.addConstr(s == V[k], "c%d" % k)
 
         # Add sensitivity as an objective to the optimization, equation (13)
         S = []
 
         for i in range(len(L)):
-            # Attempts at replacing Equation (9, 10, 11)
-            # TODO: this is really not thought through yet
-            s = np.product(self.aggregate_credit(C[i]))
-            S.append(P[i] * s)
+            # Replacing Equation (9, 10, 11)
+            s = []
+            mu = 0.0
+            for x in range(len(rankings)):
+                for j in range(length):
+                    mu += self.f(j + 1) * C[i][j][x]
+
+            for x in range(len(rankings)):
+                s.append(
+                         sum([
+                          self.f(j + 1) * C[i][j][x] - mu
+                          for j in range(length)]) ** 2
+                         )
+            S.append(P[i] * gurobipy.quicksum(s))
 
         m.setObjective(gurobipy.quicksum(S), gurobipy.GRB.MAXIMIZE)
 
@@ -174,14 +156,14 @@ class OptimizedMultileave(AbstractInterleavedComparison):
             m.feasRelaxS(1, False, False, True)
             m.optimize()
 
-        if self.verbose:
-            for i in range(len(L)):
-                print L[i], C[i], P[i].x
-            m.printStats()
-
         # Sample a list l from L using the computed probabilities
         problist = sorted([(P[i].x, L[i], C[i])
                            for i in range(len(L)) if P[i].x > 0])
+        if self.verbose:
+            m.printStats()
+            for (p, l, C) in problist:
+                print l, p
+
         cumprob = 0.0
         randsample = random.random()
         for (p, l, C) in problist:
@@ -191,10 +173,10 @@ class OptimizedMultileave(AbstractInterleavedComparison):
         return (np.asarray(l), C)
 
     def infer_outcome(self, l, C, clicked, query):
-        agg = self.aggregate_credit(C, clicked)
-        ranking = [x for (_, x) in sorted([(agg[i], i)
-                                           for i in range(len(agg))])]
-        return ranking
+        creditsum = np.zeros(len(C[0]))
+        for c in np.where(np.array(clicked) == 1)[0]:
+            creditsum += C[c]
+        return creditsum
 
 if __name__ == '__main__':
     class TestRanker:
@@ -206,8 +188,15 @@ if __name__ == '__main__':
 
     r1 = TestRanker(["a", "b", "c", "d"])
     r2 = TestRanker(["b", "d", "c", "a"])
+    r3 = TestRanker(["c", "d", "b", "a"])
 
     comparison = OptimizedMultileave()
-    l, C = comparison.interleave([r1, r2], None, 4)
-    outcome = comparison.infer_outcome(l, C, [0, 1, 0, 0], None)
-    print outcome
+    l, C = comparison.interleave([r1, r2, r3], None, 4)
+    print "interleaving", l
+    clicks = np.zeros(len(r1.docids))
+    for rdoc in ["b", "a", "c"]:
+        rindex = l.tolist().index(rdoc)
+        clicks[rindex] = 1
+    print "clicks", clicks
+    outcome = comparison.infer_outcome(l, C, clicks, None)
+    print "outcome", outcome
