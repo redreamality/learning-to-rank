@@ -33,30 +33,52 @@ class SamplingExperiment(AbstractLearningExperiment):
                                             test_queries, feature_count,
                                             log_fh, args)
 
-        evalsystemclass = get_class("retrieval_system.BaselineSamplerSystem")
-        evalsystemarguments = self.system_args
-        evalsystemarguments = evalsystemarguments.replace("OptimizedMultileave",
-                                                          "OptimizedInterleave")
-        self.evalsystem = evalsystemclass(self.feature_count, 
-                                          evalsystemarguments)
-        self.evalsystem.rankers = self.system.rankers
-        evalumargs = self.um_args
-        evalum = self.um_class(evalumargs)
+        evaluation_class = get_class("evaluation.NdcgEval")
+        evaluation = evaluation_class()
 
-        self.query_keys = sorted(self.training_queries.keys())
-        self.query_length = len(self.query_keys)
+        rankers = self.system.rankers
+        n = len(rankers)
+        ndcgs = []
+        for r in range(n):
+            ndcgs.append(evaluation.evaluate_all(rankers[r], test_queries))
 
-        for query_count in range(1):
-            qid = self._sample_qid(self.query_keys, query_count,
-                                   self.query_length)
-            query = self.training_queries[qid]
-            # get result list for the current query from the system
-            result_list = self.evalsystem.get_ranked_list(query)
-            # generate click feedback
-            clicks = evalum.get_clicks(result_list, query.get_labels())
-            # send feedback to system
-            self.groundtruth = self.evalsystem.update_solution(clicks)
-        print self.groundtruth
+        wins = np.zeros([n, n])
+        plays = np.zeros([n, n])
+
+        for r1 in range(n):
+            for r2 in range(n):
+                if ndcgs[r1] > ndcgs[r2]:
+                    wins[r1, r2] += 1
+                else:
+                    wins[r2, r1] += 1
+                plays[r1, r2] += 1
+                plays[r2, r1] += 1
+        self.groundtruth = wins / plays
+
+#        evalsystemclass = get_class("retrieval_system.BaselineSamplerSystem")
+#        evalsystemarguments = self.system_args
+#        evalsystemarguments = evalsystemarguments.replace("OptimizedMultileave",
+#                                                          "OptimizedInterleave")
+#        self.evalsystem = evalsystemclass(self.feature_count, 
+#                                          evalsystemarguments)
+#        self.evalsystem.rankers = self.system.rankers
+#        evalumargs = self.um_args
+#        evalum = self.um_class(evalumargs)
+#
+#        self.query_keys = sorted(self.training_queries.keys())
+#        self.query_length = len(self.query_keys)
+#
+#        for query_count in range(1):
+#            qid = self._sample_qid(self.query_keys, query_count,
+#                                   self.query_length)
+#            query = self.training_queries[qid]
+#            # get result list for the current query from the system
+#            result_list = self.evalsystem.get_ranked_list(query)
+#            # generate click feedback
+#            clicks = evalum.get_clicks(result_list, query.get_labels())
+#            # send feedback to system
+#            self.groundtruth = self.evalsystem.update_solution(clicks)
+#        print self.groundtruth
 
     def evaluate(self, solution):
         def largerthan05(v):
