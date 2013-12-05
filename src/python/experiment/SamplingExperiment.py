@@ -65,8 +65,8 @@ class SamplingExperiment(AbstractLearningExperiment):
 #        evalumargs = self.um_args
 #        evalum = self.um_class(evalumargs)
 #
-#        self.query_keys = sorted(self.training_queries.keys())
-#        self.query_length = len(self.query_keys)
+        self.query_keys = sorted(self.training_queries.keys())
+        self.query_length = len(self.query_keys)
 #
 #        for query_count in range(1):
 #            qid = self._sample_qid(self.query_keys, query_count,
@@ -102,7 +102,6 @@ class SamplingExperiment(AbstractLearningExperiment):
                    "diff": []}
         # process num_queries queries
         for query_count in range(self.num_queries):
-            print "query", query_count
             qid = self._sample_qid(self.query_keys, query_count,
                                    self.query_length)
             query = self.training_queries[qid]
@@ -112,8 +111,8 @@ class SamplingExperiment(AbstractLearningExperiment):
             clicks = self.um.get_clicks(result_list, query.get_labels())
             # send feedback to system
             solution = self.system.update_solution(clicks)
-            print solution
             s1, s2 = self.evaluate(solution)
+            print "query", query_count, s1, s2
             summary["binary_diff"].append(s1)
             summary["diff"].append(s2)
         return summary
