@@ -34,7 +34,11 @@ class SamplingExperiment(AbstractLearningExperiment):
                                             log_fh, args)
 
         evalsystemclass = get_class("retrieval_system.BaselineSamplerSystem")
-        self.evalsystem = evalsystemclass(self.feature_count, self.system_args)
+        evalsystemarguments = self.system_args
+        evalsystemarguments = evalsystemarguments.replace("OptimizedMultileave",
+                                                          "OptimizedInterleave")
+        self.evalsystem = evalsystemclass(self.feature_count, 
+                                          evalsystemarguments)
         self.evalsystem.rankers = self.system.rankers
         evalumargs = self.um_args
         evalum = self.um_class(evalumargs)
@@ -42,7 +46,7 @@ class SamplingExperiment(AbstractLearningExperiment):
         self.query_keys = sorted(self.training_queries.keys())
         self.query_length = len(self.query_keys)
 
-        for query_count in range(100000):
+        for query_count in range(1):
             qid = self._sample_qid(self.query_keys, query_count,
                                    self.query_length)
             query = self.training_queries[qid]
@@ -52,6 +56,7 @@ class SamplingExperiment(AbstractLearningExperiment):
             clicks = evalum.get_clicks(result_list, query.get_labels())
             # send feedback to system
             self.groundtruth = self.evalsystem.update_solution(clicks)
+        print self.groundtruth
 
     def evaluate(self, solution):
         def largerthan05(v):
@@ -75,6 +80,7 @@ class SamplingExperiment(AbstractLearningExperiment):
                    "diff": []}
         # process num_queries queries
         for query_count in range(self.num_queries):
+            print "query", query_count
             qid = self._sample_qid(self.query_keys, query_count,
                                    self.query_length)
             query = self.training_queries[qid]
@@ -84,6 +90,7 @@ class SamplingExperiment(AbstractLearningExperiment):
             clicks = self.um.get_clicks(result_list, query.get_labels())
             # send feedback to system
             solution = self.system.update_solution(clicks)
+            print solution
             s1, s2 = self.evaluate(solution)
             summary["binary_diff"].append(s1)
             summary["diff"].append(s2)

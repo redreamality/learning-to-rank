@@ -49,7 +49,7 @@ class OptimizedInterleave(AbstractInterleavedComparison):
             parser.add_argument("-c", "--credit", choices=["linear_credit",
                                                            "binary_credit",
                                                            "inverse_credit"],
-                                required=True)
+                                default="linear_credit")
             args = vars(parser.parse_known_args(split_arg_str(arg_str))[0])
             self.credit = getattr(self, args["credit"])
 

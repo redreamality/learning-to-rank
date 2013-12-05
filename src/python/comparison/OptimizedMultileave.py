@@ -37,12 +37,12 @@ class OptimizedMultileave(AbstractInterleavedComparison):
     """
 
     def __init__(self, arg_str=None):
-        self.verbose = True
+        self.verbose = False
         if not arg_str is None:
             parser = argparse.ArgumentParser(description=self.__doc__,
                                              prog=self.__class__.__name__)
             parser.add_argument("-c", "--credit", choices=["credit"],
-                                required=True, default="credit")
+                                default="credit")
             args = vars(parser.parse_known_args(split_arg_str(arg_str))[0])
             self.credit = getattr(self, args["credit"])
 
@@ -190,11 +190,16 @@ if __name__ == '__main__':
     r2 = TestRanker(["b", "d", "c", "a"])
     r3 = TestRanker(["c", "d", "b", "a"])
 
+    rankers = [r1, r2, r3]
+
+    for i in range(len(rankers)):
+        print "r%d" % i, rankers[i].docids
+
     comparison = OptimizedMultileave()
-    l, C = comparison.interleave([r1, r2, r3], None, 4)
+    l, C = comparison.interleave(rankers, None, 4)
     print "interleaving", l
     clicks = np.zeros(len(r1.docids))
-    for rdoc in ["b", "a", "c"]:
+    for rdoc in ["c", "d"]:
         rindex = l.tolist().index(rdoc)
         clicks[rindex] = 1
     print "clicks", clicks
