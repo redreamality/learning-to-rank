@@ -2,7 +2,7 @@ test_queries: data/MQ2008/Fold1/test.txt
 training_queries: data/MQ2008/Fold1/train.txt
 feature_count: 64 # 64 for .Gov, 46 for MQ*, 136 for MSLR
 num_runs: 1
-num_queries: 100
+num_queries: 1000
 query_sampling_method: random
 user_model: environment.CascadeUserModel
 # for p-click and p-stop provide mappings from relevance grades to probabilities
