@@ -24,7 +24,7 @@ import gurobipy
 
 class OptimizedMultileave(AbstractInterleavedComparison):
     """
-    An implementation of Optimized Interleave as described in:
+    An implementation of Optimized Multileaved inspired by:
 
     @see: Radlinski, F., & Craswell, N. (2013, February). Optimized
     interleaving for online retrieval evaluation. In Proceedings of the sixth
@@ -32,7 +32,7 @@ class OptimizedMultileave(AbstractInterleavedComparison):
 
     @author: Anne Schuth
     @contact: anne.schuth@uva.nl
-    @since: February 2013
+    @since: December 2013
     @requires: Gurobi from http://www.gurobi.com/
     """
 
@@ -56,11 +56,18 @@ class OptimizedMultileave(AbstractInterleavedComparison):
             rank = ranking.index(li) + 1
         return 1.0 / rank
 
+#    def credit(self, li, ranking):
+#        rank = len(ranking) + 1
+#        if li in ranking:
+#            rank = ranking.index(li) + 1
+#        return -rank
+
     def interleave(self, rankers, query, length):
         rankings = []
         for r in rankers:
             r.init_ranking(query)
-            rankings.append(r.docids[:length])
+#            rankings.append(r.docids[:length])
+            rankings.append(r.docids)
         length = min(min([len(r) for r in rankings]), length)
 
         currentlevel = [([], [0] * len(rankings))]
@@ -108,30 +115,26 @@ class OptimizedMultileave(AbstractInterleavedComparison):
         m = gurobipy.Model("system")
         m.params.outputFlag = 0
         P = []
+        V = []
         # Add a parameter Pi for each list that adheres to equation (6)
         for i in range(len(L)):
             P.append(m.addVar(lb=0.0, ub=1.0, name='p%d' % i))
+        for k in range(length):
+            V.append(m.addVar(name='var%d' % k))
         m.update()
         # Constraint for equation (7)
         m.addConstr(gurobipy.quicksum(P) == 1, 'sum')
         # Constraints for equation(8) for each k
-        V = []
-        for k in range(length):
-            V.append(m.addVar(name='var%d' % k))
-        m.update()
-
         for k in range(length):
             for x in range(len(rankings)):
                 s = []
                 for i in range(len(L)):
                     s.append(P[i] * gurobipy.quicksum(
                                             [C[i][j][x] for j in range(k)]))
-                s = gurobipy.quicksum(s)
-                m.addConstr(s == V[k], "c%d" % k)
+                m.addConstr(gurobipy.quicksum(s) == V[k], "c%d" % k)
 
         # Add sensitivity as an objective to the optimization, equation (13)
         S = []
-
         for i in range(len(L)):
             # Replacing Equation (9, 10, 11)
             s = []
@@ -148,16 +151,19 @@ class OptimizedMultileave(AbstractInterleavedComparison):
                          )
             S.append(P[i] * gurobipy.quicksum(s))
 
-        m.setObjective(gurobipy.quicksum(S), gurobipy.GRB.MAXIMIZE)
+        m.setObjective(gurobipy.quicksum(S), gurobipy.GRB.MINIMIZE)
 
         # Optimize the system and if it is infeasible, relax the constraints
         m.optimize()
         if m.status == gurobipy.GRB.INFEASIBLE:
-            m.feasRelaxS(1, False, False, True)
+            m.feasRelaxS(1, False, True, True)
+            #m.feasRelaxS(1, False, True, False)
+            #m.feasRelaxS(1, False, False, True)
             m.optimize()
 
         # Sample a list l from L using the computed probabilities
-        problist = sorted([(P[i].x, L[i], C[i])
+        sumprob = sum([P[i].x for i in range(len(L)) if P[i].x > 0])
+        problist = sorted([(P[i].x / sumprob, L[i], C[i])
                            for i in range(len(L)) if P[i].x > 0])
         if self.verbose:
             m.printStats()
@@ -166,6 +172,7 @@ class OptimizedMultileave(AbstractInterleavedComparison):
 
         cumprob = 0.0
         randsample = random.random()
+        p = l = C = None
         for (p, l, C) in problist:
             cumprob += p
             if randsample <= cumprob:
@@ -190,7 +197,8 @@ if __name__ == '__main__':
     r2 = TestRanker(["b", "d", "c", "a"])
     r3 = TestRanker(["c", "d", "b", "a"])
 
-    rankers = [r1, r2, r3]
+#    rankers = [r1, r2, r3]
+    rankers = [r1, r2]
 
     for i in range(len(rankers)):
         print "r%d" % i, rankers[i].docids
@@ -198,10 +206,11 @@ if __name__ == '__main__':
     comparison = OptimizedMultileave()
     l, C = comparison.interleave(rankers, None, 4)
     print "interleaving", l
-    clicks = np.zeros(len(r1.docids))
-    for rdoc in ["c", "d"]:
-        rindex = l.tolist().index(rdoc)
-        clicks[rindex] = 1
+    clicks = np.zeros(len(l))
+    for rdoc in ["a", "c", "d"]:
+        if rdoc in l:
+            rindex = l.tolist().index(rdoc)
+            clicks[rindex] = 1
     print "clicks", clicks
     outcome = comparison.infer_outcome(l, C, clicks, None)
     print "outcome", outcome
