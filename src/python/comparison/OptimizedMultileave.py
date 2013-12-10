@@ -36,31 +36,32 @@ class OptimizedMultileave(AbstractInterleavedComparison):
     @requires: Gurobi from http://www.gurobi.com/
     """
 
-    def __init__(self, arg_str=None):
-        self.verbose = False
-        if not arg_str is None:
-            parser = argparse.ArgumentParser(description=self.__doc__,
-                                             prog=self.__class__.__name__)
-            parser.add_argument("-c", "--credit", choices=["credit"],
-                                default="credit")
-            args = vars(parser.parse_known_args(split_arg_str(arg_str))[0])
-            self.credit = getattr(self, args["credit"])
+    def __init__(self, arg_str=""):
+        parser = argparse.ArgumentParser(description=self.__doc__,
+                                         prog=self.__class__.__name__)
+        parser.add_argument("-c", "--credit", choices=["inverse_credit",
+                                                       "negative_credit"],
+                            default="inverse_credit")
+        parser.add_argument("--verbose", action="store_true", default=False)
+        args = vars(parser.parse_known_args(split_arg_str(arg_str))[0])
+        self.credit = getattr(self, args["credit"])
+        self.verbose = args["verbose"]
 
     def f(self, i):
         # Implemented as footnote 4 suggests
         return 1. / i
 
-    def credit(self, li, ranking):
+    def inverse_credit(self, li, ranking):
         rank = len(ranking) + 1
         if li in ranking:
             rank = ranking.index(li) + 1
         return 1.0 / rank
 
-#    def credit(self, li, ranking):
-#        rank = len(ranking) + 1
-#        if li in ranking:
-#            rank = ranking.index(li) + 1
-#        return -rank
+    def negative_credit(self, li, ranking):
+        rank = len(ranking) + 1
+        if li in ranking:
+            rank = ranking.index(li) + 1
+        return -rank
 
     def interleave(self, rankers, query, length):
         rankings = []
@@ -197,17 +198,17 @@ if __name__ == '__main__':
     r2 = TestRanker(["b", "d", "c", "a"])
     r3 = TestRanker(["c", "d", "b", "a"])
 
-#    rankers = [r1, r2, r3]
-    rankers = [r1, r2]
+    rankers = [r1, r2, r3]
+#    rankers = [r1, r2]
 
     for i in range(len(rankers)):
         print "r%d" % i, rankers[i].docids
 
-    comparison = OptimizedMultileave()
-    l, C = comparison.interleave(rankers, None, 4)
+    comparison = OptimizedMultileave("--verbose --credit inverse_credit")
+    l, C = comparison.interleave(rankers, None, 3)
     print "interleaving", l
     clicks = np.zeros(len(l))
-    for rdoc in ["a", "c", "d"]:
+    for rdoc in ["a", "b", "c", "d"]:
         if rdoc in l:
             rindex = l.tolist().index(rdoc)
             clicks[rindex] = 1
