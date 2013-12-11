@@ -88,11 +88,11 @@ class OptimizedMultileave(AbstractInterleavedComparison):
                         while d in prefix:
                             d = None
                             index += 1
-                            if index < len(ranking):
+                            if index < len(ranking) and index <= indexk + 1:
                                 d = ranking[index]
                             else:
                                 break
-                        if  d in addedthislevel:
+                        if d in addedthislevel:
                             continue
                         if d != None:
                             addedthislevel.append(d)
