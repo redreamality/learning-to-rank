@@ -43,9 +43,12 @@ class OptimizedMultileave(AbstractInterleavedComparison):
                                                        "negative_credit"],
                             default="inverse_credit")
         parser.add_argument("--verbose", action="store_true", default=False)
+        parser.add_argument("--bias", choices=["per_k_bias", "position_bias"],
+                            default="position_bias")
         args = vars(parser.parse_known_args(split_arg_str(arg_str))[0])
         self.credit = getattr(self, args["credit"])
         self.verbose = args["verbose"]
+        self.bias = args["bias"]
 
     def f(self, i):
         # Implemented as footnote 4 suggests
@@ -116,23 +119,36 @@ class OptimizedMultileave(AbstractInterleavedComparison):
         m = gurobipy.Model("system")
         m.params.outputFlag = 0
         P = []
-        V = []
         # Add a parameter Pi for each list that adheres to equation (6)
         for i in range(len(L)):
             P.append(m.addVar(lb=0.0, ub=1.0, name='p%d' % i))
-        for k in range(length):
-            V.append(m.addVar(name='var%d' % k))
         m.update()
-        # Constraint for equation (7)
         m.addConstr(gurobipy.quicksum(P) == 1, 'sum')
-        # Constraints for equation(8) for each k
-        for k in range(length):
+
+        if self.bias == "per_k_bias":
+            V = []
+            for k in range(length):
+                V.append(m.addVar(name='var%d' % k))
+            m.update()
+            # Constraint for equation (7)
+            # Constraints for equation(8) for each k
+            for k in range(length):
+                for x in range(len(rankings)):
+                    s = []
+                    for i in range(len(L)):
+                        s.append(P[i] * gurobipy.quicksum(
+                                            [C[i][j][x] for j in range(k)]))
+                    m.addConstr(gurobipy.quicksum(s) == V[k], "c%d" % k)
+        elif self.bias == "position_bias":
+            V = m.addVar(name='var')
+            m.update()
             for x in range(len(rankings)):
                 s = []
                 for i in range(len(L)):
                     s.append(P[i] * gurobipy.quicksum(
-                                            [C[i][j][x] for j in range(k)]))
-                m.addConstr(gurobipy.quicksum(s) == V[k], "c%d" % k)
+                                            [self.f(j + 1) * C[i][j][x]
+                                             for j in range(length)]))
+                m.addConstr(gurobipy.quicksum(s) == V, "c%d" % x)
 
         # Add sensitivity as an objective to the optimization, equation (13)
         S = []
@@ -150,7 +166,7 @@ class OptimizedMultileave(AbstractInterleavedComparison):
                           self.f(j + 1) * C[i][j][x]
                           for j in range(length)]) - mu) ** 2
                          )
-            S.append(P[i] * gurobipy.quicksum(s))
+            S.append(P[i] * sum(s))
 
         m.setObjective(gurobipy.quicksum(S), gurobipy.GRB.MINIMIZE)
 
@@ -198,20 +214,20 @@ if __name__ == '__main__':
     r2 = TestRanker(["b", "d", "c", "a"])
     r3 = TestRanker(["c", "d", "b", "a"])
 
-    rankers = [r1, r2, r3]
-#    rankers = [r1, r2]
+#    rankers = [r1, r2, r3]
+    rankers = [r1, r2]
 
     for i in range(len(rankers)):
         print "r%d" % i, rankers[i].docids
 
-    comparison = OptimizedMultileave("--verbose --credit inverse_credit")
-    l, C = comparison.interleave(rankers, None, 3)
+    comparison = OptimizedMultileave("--verbose --credit inverse_credit --bias per_k_bias")
+    l, C = comparison.interleave(rankers, None, 4)
     print "interleaving", l
-    clicks = np.zeros(len(l))
-    for rdoc in ["a", "b", "c", "d"]:
-        if rdoc in l:
-            rindex = l.tolist().index(rdoc)
-            clicks[rindex] = 1
-    print "clicks", clicks
-    outcome = comparison.infer_outcome(l, C, clicks, None)
-    print "outcome", outcome
+#    clicks = np.zeros(len(l))
+#    for rdoc in ["a", "b", "c", "d"]:
+#        if rdoc in l:
+#            rindex = l.tolist().index(rdoc)
+#            clicks[rindex] = 1
+#    print "clicks", clicks
+#    outcome = comparison.infer_outcome(l, C, clicks, None)
+#    print "outcome", outcome
