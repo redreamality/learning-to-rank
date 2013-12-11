@@ -20,7 +20,7 @@ class MultiLeaveSamplerSystem(BaselineSamplerSystem):
     def get_ranked_list(self, query):
         (l, context) = self.comparison.interleave(self.rankers,
                                                   query,
-                                                  5)
+                                                  self.nr_results)
         self.current_l = l
         self.current_context = context
         self.current_query = query
