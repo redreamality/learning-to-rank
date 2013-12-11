@@ -35,6 +35,7 @@ class BaselineSamplerSystem(AbstractLearningSystem):
             "colon seperated list of inital weight vectors, weight vectors are"
             " comma seperated", required=True)
         parser.add_argument("--nr_rankers", type=int)
+        parser.add_argument("--nr_results", type=int, default=10)
         parser.add_argument("-c", "--comparison", required=True)
         parser.add_argument("-f", "--comparison_args", nargs="*")
         parser.add_argument("-r", "--ranker", required=True)
@@ -97,6 +98,7 @@ class BaselineSamplerSystem(AbstractLearningSystem):
         sampler_class = get_class(args["sampler"])
         self.sampler = sampler_class(self.rankers, arg_str)
         
+        self.nr_results = args["nr_results"]
         self.iteration = 0
 
     def get_ranked_list(self, query):
