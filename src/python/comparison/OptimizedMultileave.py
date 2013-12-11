@@ -45,10 +45,12 @@ class OptimizedMultileave(AbstractInterleavedComparison):
         parser.add_argument("--verbose", action="store_true", default=False)
         parser.add_argument("--bias", choices=["per_k_bias", "position_bias"],
                             default="position_bias")
+        parser.add_argument("--prefix_bound", type=int, default=-1)
         args = vars(parser.parse_known_args(split_arg_str(arg_str))[0])
         self.credit = getattr(self, args["credit"])
         self.verbose = args["verbose"]
         self.bias = args["bias"]
+        self.prefix_bound = args["prefix_bound"]
 
     def f(self, i):
         # Implemented as footnote 4 suggests
@@ -73,6 +75,8 @@ class OptimizedMultileave(AbstractInterleavedComparison):
 #            rankings.append(r.docids[:length])
             rankings.append(r.docids)
         length = min(min([len(r) for r in rankings]), length)
+        if self.prefix_bound < 0:
+            self.prefix_bound = length
 
         currentlevel = [([], [0] * len(rankings), 1)]
         nextlevel = []
@@ -83,12 +87,12 @@ class OptimizedMultileave(AbstractInterleavedComparison):
                     index = indexes[i]
                     ranking = rankings[i]
                     d = None
-                    if index < len(ranking) and index <= indexk + 1:
+                    if index < len(ranking) and index <= indexk + self.prefix_bound:
                         d = ranking[index]
                         while d in prefix:
                             d = None
                             index += 1
-                            if index < len(ranking) and index <= indexk + 1:
+                            if index < len(ranking) and index <= indexk + self.prefix_bound:
                                 d = ranking[index]
                             else:
                                 break
@@ -98,7 +102,7 @@ class OptimizedMultileave(AbstractInterleavedComparison):
                             addedthislevel.append(d)
                             branchindexes = indexes[:]
                             branchindexes[i] = index + 1
-                            if min(branchindexes) >= indexk:
+                            if min(branchindexes) > indexk - self.prefix_bound:
                                 branchindexk = indexk + 1
                             else:
                                 branchindexk = indexk
