@@ -74,16 +74,16 @@ class OptimizedMultileave(AbstractInterleavedComparison):
             rankings.append(r.docids)
         length = min(min([len(r) for r in rankings]), length)
 
-        currentlevel = [([], [0] * len(rankings))]
+        currentlevel = [([], [0] * len(rankings), 1)]
         nextlevel = []
         for _ in range(length):
-            for prefix, indexes in currentlevel:
+            for prefix, indexes, indexk in currentlevel:
                 addedthislevel = []
                 for i in range(len(rankings)):
                     index = indexes[i]
                     ranking = rankings[i]
                     d = None
-                    if index < len(ranking):
+                    if index < len(ranking) and index <= indexk + 1:
                         d = ranking[index]
                         while d in prefix:
                             d = None
@@ -98,17 +98,21 @@ class OptimizedMultileave(AbstractInterleavedComparison):
                             addedthislevel.append(d)
                             branchindexes = indexes[:]
                             branchindexes[i] = index + 1
-                            branch = (prefix + [d], branchindexes)
+                            if min(branchindexes) >= indexk:
+                                branchindexk = indexk + 1
+                            else:
+                                branchindexk = indexk
+                            branch = (prefix + [d], branchindexes, branchindexk)
                             nextlevel.append(branch)
 
             currentlevel = nextlevel
             nextlevel = []
 
         # L contains allowed multileavings, according to equation (5)
-        L = [n for n, _ in currentlevel]
+        L = [n for n, _, _ in currentlevel]
         del currentlevel
         del nextlevel
-        
+
         print "len(L)", len(L)
 
         # Pre-compute credit for each list l in L
