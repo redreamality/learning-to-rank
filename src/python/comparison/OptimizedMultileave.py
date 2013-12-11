@@ -108,6 +108,8 @@ class OptimizedMultileave(AbstractInterleavedComparison):
         L = [n for n, _ in currentlevel]
         del currentlevel
         del nextlevel
+        
+        print "len(L)", len(L)
 
         # Pre-compute credit for each list l in L
         C = [[[self.credit(li, ranking)
