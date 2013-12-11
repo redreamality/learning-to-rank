@@ -18,7 +18,7 @@ from BaselineSamplerSystem import BaselineSamplerSystem
 
 class PairedMultiLeaveSamplerSystem(BaselineSamplerSystem):
     def get_ranked_list(self, query):
-        self.r1, self.r2 = self.sampler.get_arms()
+        self.r1, self.r2, _, _ = self.sampler.get_arms()
         (l, context) = self.comparison.interleave([self.r1, self.r2],
                                                   query,
                                                   self.nr_results)
