@@ -79,8 +79,7 @@ class OptimizedInterleave(AbstractInterleavedComparison):
         # Equation (15)
         return 1. / self.rank(li, rankB) - 1. / self.rank(li, rankA)
 
-    def prefix_constraint(self, rankings, length):
-        prefix_bound = length  if self.prefix_bound < 0 else self.prefix_bound
+    def prefix_constraint_bound(self, rankings, length, prefix_bound):
         currentlevel = [([], [0] * len(rankings), 1)]
         nextlevel = []
         for _ in range(length):
@@ -119,6 +118,16 @@ class OptimizedInterleave(AbstractInterleavedComparison):
         L = [n for n, _, _ in currentlevel]
         del currentlevel
         del nextlevel
+        return L
+
+    def prefix_constraint(self, rankings, length):
+        prefix_bound = length if self.prefix_bound < 0 else self.prefix_bound
+        L = self.prefix_constraint_bound(rankings, length, prefix_bound)
+        while len(L) == 0:
+            prefix_bound += 1
+            if prefix_bound > length:
+                break
+            L = self.prefix_constraint_bound(rankings, length, prefix_bound)
         return L
 
     def interleave(self, r1, r2, query, length, bias=0):
