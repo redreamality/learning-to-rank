@@ -40,18 +40,19 @@ class OptimizedInterleave(AbstractInterleavedComparison):
     @requires: Gurobi from http://www.gurobi.com/
     """
 
-    def __init__(self, arg_str=None):
-        self.verbose = False
-        self.credit = getattr(self, "linear_credit")
-        if not arg_str is None:
-            parser = argparse.ArgumentParser(description=self.__doc__,
-                                             prog=self.__class__.__name__)
-            parser.add_argument("-c", "--credit", choices=["linear_credit",
-                                                           "binary_credit",
-                                                           "inverse_credit"],
-                                default="linear_credit")
-            args = vars(parser.parse_known_args(split_arg_str(arg_str))[0])
-            self.credit = getattr(self, args["credit"])
+    def __init__(self, arg_str=""):
+        parser = argparse.ArgumentParser(description=self.__doc__,
+                                         prog=self.__class__.__name__)
+        parser.add_argument("-c", "--credit", choices=["linear_credit",
+                                                       "binary_credit",
+                                                       "inverse_credit"],
+                            default="linear_credit")
+        parser.add_argument("--prefix_bound", type=int, default=-1)
+        parser.add_argument("--verbose", action="store_true", default=False)
+        args = vars(parser.parse_known_args(split_arg_str(arg_str))[0])
+        self.credit = getattr(self, args["credit"])
+        self.verbose = args["verbose"]
+        self.prefix_bound = args["prefix_bound"]
 
     def f(self, i):
         # Implemented as footnote 4 suggests
@@ -78,60 +79,55 @@ class OptimizedInterleave(AbstractInterleavedComparison):
         # Equation (15)
         return 1. / self.rank(li, rankB) - 1. / self.rank(li, rankA)
 
-    def interleave(self, r1, r2, query, length):
-        r1.init_ranking(query)
-        r2.init_ranking(query)
-        rA = r1.docids[:length]
-        rB = r2.docids[:length]
-        length = min(len(rA), len(rB), length)
-
-        currentlevel = [SimpleBinaryTree(None, [], 0, 0)]
+    def prefix_constraint(self, rankings, length):
+        prefix_bound = length  if self.prefix_bound < 0 else self.prefix_bound
+        currentlevel = [([], [0] * len(rankings), 1)]
         nextlevel = []
-        for _k in range(length):
-            for node in currentlevel:
-                prefix = node.list
-                li = ri = node.i
-                lj = rj = node.j
-                ld = None
-                if li < len(rA):
-                    ld = rA[li]
-                    while ld in prefix:  # TODO: make this a fast lookup
-                        ld = None
-                        li += 1
-                        if li < len(rA):
-                            ld = rA[li]
-                        else:
-                            break
-                    if ld != None:
-                        left = SimpleBinaryTree(node,
-                                                prefix + [ld],
-                                                li + 1,
-                                                lj)
-                        nextlevel.append(left)
+        for _ in range(length):
+            for prefix, indexes, indexk in currentlevel:
+                addedthislevel = []
+                for i in range(len(rankings)):
+                    index = indexes[i]
+                    ranking = rankings[i]
+                    d = None
+                    if index < len(ranking) and index <= indexk + prefix_bound:
+                        d = ranking[index]
+                        while d in prefix:
+                            d = None
+                            index += 1
+                            if index < len(ranking) and index <= indexk + prefix_bound:
+                                d = ranking[index]
+                            else:
+                                break
+                        if d in addedthislevel:
+                            continue
+                        if d != None:
+                            addedthislevel.append(d)
+                            branchindexes = indexes[:]
+                            branchindexes[i] = index + 1
+                            if min(branchindexes) > indexk - prefix_bound:
+                                branchindexk = indexk + 1
+                            else:
+                                branchindexk = indexk
+                            branch = (prefix + [d], branchindexes, branchindexk)
+                            nextlevel.append(branch)
 
-                rd = None
-                if rj < len(rB):
-                    rd = rB[rj]
-                    while rd in prefix:  # TODO: make this a fast lookup
-                        rd = None
-                        rj += 1
-                        if rj < len(rB):
-                            rd = rB[rj]
-                        else:
-                            break
-                    if rd != None and rd != ld:
-                        right = SimpleBinaryTree(node,
-                                                 prefix + [rd],
-                                                 ri,
-                                                 rj + 1)
-                        nextlevel.append(right)
             currentlevel = nextlevel
             nextlevel = []
 
-        # L contains allowed interleavings, according to equation (5)
-        L = [n.list for n in currentlevel]
+        # L contains allowed multileavings, according to equation (5)
+        L = [n for n, _, _ in currentlevel]
         del currentlevel
         del nextlevel
+        return L
+
+    def interleave(self, r1, r2, query, length, bias=0):
+        r1.init_ranking(query)
+        r2.init_ranking(query)
+        rA = r1.docids
+        rB = r2.docids
+        length = min(len(rA), len(rB), length)
+        L = self.prefix_constraint([rA, rB], length)
 
         # Pre-compute credit for each list l in L
         rankA = {}
@@ -158,7 +154,7 @@ class OptimizedInterleave(AbstractInterleavedComparison):
                                                                      for i in
                                                                      range(k)])
                                            for n in
-                                           range(len(L))]) == 0.0,
+                                           range(len(L))]) == bias,
                         "c%d" % k)
 
         # Add sensitivity as an objective to the optimization, equation (13)
@@ -209,15 +205,3 @@ class OptimizedInterleave(AbstractInterleavedComparison):
         for clicked in where(c == 1)[0]:
             creditsum += a[clicked]
         return creditsum
-
-
-class SimpleBinaryTree:
-    """tree that keeps track of outcome, probability of arriving at this
-    outcome"""
-    parent, left, right, list, i, j = None, None, None, [], 0, 0
-
-    def __init__(self, parent, list, i, j):
-        self.parent = parent
-        self.list = list
-        self.i = i
-        self.j = j

@@ -18,11 +18,11 @@ import argparse
 import numpy as np
 import math
 from utils import split_arg_str
-from AbstractInterleavedComparison import AbstractInterleavedComparison
+from OptimizedInterleave import OptimizedInterleave
 import gurobipy
 
 
-class OptimizedMultileave(AbstractInterleavedComparison):
+class OptimizedMultileave(OptimizedInterleave):
     """
     An implementation of Optimized Multileaved inspired by:
 
@@ -44,13 +44,16 @@ class OptimizedMultileave(AbstractInterleavedComparison):
                             default="inverse_credit")
         parser.add_argument("--verbose", action="store_true", default=False)
         parser.add_argument("--bias", choices=["per_k_bias", "position_bias"],
-                            default="position_bias")
+                            default="per_k_bias")
         parser.add_argument("--prefix_bound", type=int, default=-1)
+        parser.add_argument("--sensitivity", choices=["Floor", "Shimon"],
+                            default="Floor")
         args = vars(parser.parse_known_args(split_arg_str(arg_str))[0])
         self.credit = getattr(self, args["credit"])
         self.verbose = args["verbose"]
         self.bias = args["bias"]
         self.prefix_bound = args["prefix_bound"]
+        self.sensitivity = args["sensitivity"]
 
     def f(self, i):
         # Implemented as footnote 4 suggests
@@ -72,52 +75,9 @@ class OptimizedMultileave(AbstractInterleavedComparison):
         rankings = []
         for r in rankers:
             r.init_ranking(query)
-#            rankings.append(r.docids[:length])
             rankings.append(r.docids)
         length = min(min([len(r) for r in rankings]), length)
-        if self.prefix_bound < 0:
-            self.prefix_bound = length
-
-        currentlevel = [([], [0] * len(rankings), 1)]
-        nextlevel = []
-        for _ in range(length):
-            for prefix, indexes, indexk in currentlevel:
-                addedthislevel = []
-                for i in range(len(rankings)):
-                    index = indexes[i]
-                    ranking = rankings[i]
-                    d = None
-                    if index < len(ranking) and index <= indexk + self.prefix_bound:
-                        d = ranking[index]
-                        while d in prefix:
-                            d = None
-                            index += 1
-                            if index < len(ranking) and index <= indexk + self.prefix_bound:
-                                d = ranking[index]
-                            else:
-                                break
-                        if d in addedthislevel:
-                            continue
-                        if d != None:
-                            addedthislevel.append(d)
-                            branchindexes = indexes[:]
-                            branchindexes[i] = index + 1
-                            if min(branchindexes) > indexk - self.prefix_bound:
-                                branchindexk = indexk + 1
-                            else:
-                                branchindexk = indexk
-                            branch = (prefix + [d], branchindexes, branchindexk)
-                            nextlevel.append(branch)
-
-            currentlevel = nextlevel
-            nextlevel = []
-
-        # L contains allowed multileavings, according to equation (5)
-        L = [n for n, _, _ in currentlevel]
-        del currentlevel
-        del nextlevel
-
-        print "len(L)", len(L)
+        L = self.prefix_constraint(rankings, length)
 
         # Pre-compute credit for each list l in L
         C = [[[self.credit(li, ranking)
@@ -133,8 +93,8 @@ class OptimizedMultileave(AbstractInterleavedComparison):
         for i in range(len(L)):
             P.append(m.addVar(lb=0.0, ub=1.0, name='p%d' % i))
         m.update()
-        m.addConstr(gurobipy.quicksum(P) == 1, 'sum')
-
+        sumconstr = m.addConstr(gurobipy.quicksum(P) == 1, 'sum')
+        biasconstrs = []
         if self.bias == "per_k_bias":
             V = []
             for k in range(length):
@@ -148,9 +108,10 @@ class OptimizedMultileave(AbstractInterleavedComparison):
                     for i in range(len(L)):
                         s.append(P[i] * gurobipy.quicksum(
                                             [C[i][j][x] for j in range(k)]))
-                    m.addConstr(gurobipy.quicksum(s) == V[k], "c%d" % k)
+                    biasconstrs.append(
+                        m.addConstr(gurobipy.quicksum(s) == V[k], "c%d" % k))
         elif self.bias == "position_bias":
-            V = m.addVar(name='var')
+            V = [m.addVar(name='var')]
             m.update()
             for x in range(len(rankings)):
                 s = []
@@ -158,24 +119,37 @@ class OptimizedMultileave(AbstractInterleavedComparison):
                     s.append(P[i] * gurobipy.quicksum(
                                             [self.f(j + 1) * C[i][j][x]
                                              for j in range(length)]))
-                m.addConstr(gurobipy.quicksum(s) == V, "c%d" % x)
+                biasconstrs.append(
+                        m.addConstr(gurobipy.quicksum(s) == V[0], "c%d" % x))
 
         # Add sensitivity as an objective to the optimization, equation (13)
         S = []
         for i in range(len(L)):
             # Replacing Equation (9, 10, 11)
             s = []
-            mu = 0.0
-            for x in range(len(rankings)):
-                for j in range(length):
-                    mu += self.f(j + 1) * C[i][j][x]
-            mu /= len(rankings)
 
-            for x in range(len(rankings)):
-                s.append((sum([
-                          self.f(j + 1) * C[i][j][x]
-                          for j in range(length)]) - mu) ** 2
-                         )
+            if self.sensitivity == "Floor":
+                mu = 0.0
+                for x in range(len(rankings)):
+                    for j in range(length):
+                        mu += self.f(j + 1) * C[i][j][x]
+                mu /= len(rankings)
+                for x in range(len(rankings)):
+                    s.append((sum([
+                              self.f(j + 1) * C[i][j][x]
+                              for j in range(length)]) - mu) ** 2
+                             )
+            elif self.sensitivity == "Shimon":
+                for x in range(len(rankings)):
+                    mu = 0.0
+                    for j in range(length):
+                        mu += self.f(j + 1) * C[i][j][x]
+                    mu /= length
+                    s.append((sum([
+                              self.f(j + 1) * C[i][j][x] - mu
+                              for j in range(length)])) ** 2
+                             )
+
             S.append(P[i] * sum(s))
 
         m.setObjective(gurobipy.quicksum(S), gurobipy.GRB.MINIMIZE)
@@ -184,8 +158,6 @@ class OptimizedMultileave(AbstractInterleavedComparison):
         m.optimize()
         if m.status == gurobipy.GRB.INFEASIBLE:
             m.feasRelaxS(1, False, True, True)
-            #m.feasRelaxS(1, False, True, False)
-            #m.feasRelaxS(1, False, False, True)
             m.optimize()
 
         # Sample a list l from L using the computed probabilities
@@ -197,14 +169,13 @@ class OptimizedMultileave(AbstractInterleavedComparison):
             for (p, l, C) in problist:
                 print l, p
 
-        cumprob = 0.0
         randsample = random.random()
         p = l = C = None
+        cumprob = 0.0
         for (p, l, C) in problist:
             cumprob += p
             if randsample <= cumprob:
-                break
-        return (np.asarray(l), C)
+                return (np.asarray(l), C)
 
     def infer_outcome(self, l, C, clicked, query):
         creditsum = np.zeros(len(C[0]))
@@ -223,16 +194,27 @@ if __name__ == '__main__':
     r1 = TestRanker(["a", "b", "c", "d"])
     r2 = TestRanker(["b", "d", "c", "a"])
     r3 = TestRanker(["c", "d", "b", "a"])
+    r4 = TestRanker(["c", "d", "x", "a"])
 
-#    rankers = [r1, r2, r3]
-    rankers = [r1, r2]
+    rankers = [r1, r2, r3, r4]
 
     for i in range(len(rankers)):
         print "r%d" % i, rankers[i].docids
 
-    comparison = OptimizedMultileave("--verbose --credit inverse_credit --bias per_k_bias")
+    comparison = OptimizedMultileave("--verbose")
     l, C = comparison.interleave(rankers, None, 4)
-    print "interleaving", l
+    print "l", l
+
+    comparison = OptimizedMultileave()
+    counter = {}
+    for i in range(1000):
+        l, C = comparison.interleave(rankers, None, 4)
+        key = tuple(l)
+        if not key in counter:
+            counter[key] = 0
+        counter[key] += 1
+    for l in sorted(counter.keys()):
+        print l, counter[l] / 1000.0
 #    clicks = np.zeros(len(l))
 #    for rdoc in ["a", "b", "c", "d"]:
 #        if rdoc in l:
