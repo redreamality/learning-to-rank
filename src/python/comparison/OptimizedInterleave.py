@@ -179,7 +179,7 @@ class OptimizedInterleave(AbstractInterleavedComparison):
         # Optimize the system and if it is infeasible, relax the constraints
         m.optimize()
         if m.status == gurobipy.GRB.INFEASIBLE:
-            m.feasRelaxS(1, False, False, True)
+            m.feasRelaxS(1, False, True, True)
             m.optimize()
 
         if self.verbose:
@@ -194,11 +194,11 @@ class OptimizedInterleave(AbstractInterleavedComparison):
                            for i in range(len(L)) if P[i].x > 0])
         cumprob = 0.0
         randsample = random.random()
-        for (p, l, a) in problist:
+        p = l = C = None
+        for (p, l, C) in problist:
             cumprob += p
             if randsample <= cumprob:
-                break
-        return (asarray(l), a)
+                return (asarray(l), C)
 
     def infer_outcome(self, l, a, c, query):
         creditsum = 0
