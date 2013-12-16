@@ -1,4 +1,4 @@
-num_runs: 25
+num_runs: 10
 processes: 0
 num_queries: 5000
 query_sampling_method: random
@@ -19,11 +19,8 @@ output_dir_overwrite: True
 evaluation:
     - evaluation.NdcgEval
 meta: --data HP2003,64,2
-    HP2004,64,2
     NP2003,64,2
-    NP2004,64,2
     TD2003,64,2
-    TD2004,64,2
    --data_dir /home/aschuth1/online-learning-data/
    --output_base /datastore/aschuth/online-learning-output/sigir2014/
    --experiment_name OM-r5-l5-strict
