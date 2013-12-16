@@ -102,19 +102,11 @@ class BaselineSamplerSystem(AbstractLearningSystem):
         self.iteration = 0
 
     def get_ranked_list(self, query):
-        self.r1, self.r2, i1, i2 = self.sampler.get_arms()
-#        i1s = [i1]
-#        i2s = [i2]
-#        while self.r1 == self.r2:
-#            self.iteration += 1
-#            self.sampler.update_scores(self.r1, self.r2)
-#            self.r1, self.r2, i1, i2 = self.sampler.get_arms()
-#            i1s.append(i1)
-#            i2s.append(i2)
+        self.r1, self.r2, _, _ = self.sampler.get_arms()
 
         (l, context) = self.comparison.interleave(self.r1, self.r2,
                                                   query,
-                                                  10)
+                                                  self.nr_results)
         self.current_l = l
         self.current_context = context
         self.current_query = query
