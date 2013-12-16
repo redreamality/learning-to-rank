@@ -6,7 +6,6 @@ user_model: environment.CascadeUserModel
 system: retrieval_system.PairedMultiLeaveSamplerSystem
 system_args: --init_weights selected
     --comparison comparison.OptimizedMultileave
-#    --comparison_args "--bias position_bias --credit inverse_credit"
     --comparison_args "--prefix_bound 1"
     --ranker ranker.DeterministicRankingFunction
     --ranker_arg 3
