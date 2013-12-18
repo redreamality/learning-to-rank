@@ -168,14 +168,32 @@ class OptimizedInterleave(AbstractInterleavedComparison):
     def sample_prefix_constraint(self, rankings, length):
         docs = list(set().union(*rankings))
         L = []
-        timeout = time.time() + 3
-        while len(L) < 1000 and time.time() < timeout:
+        start = time.time()
+        reject1 = reject2 = reject3 = 0
+        rejects = {}
+        accepts = {}
+        while len(L) < 1000 and time.time() < start + 3:
             l = self.sample(docs, length)
-            if l in L:
+            tl = tuple(l)
+            if tl in accepts:
+                reject1 += 1
+                continue
+            if tl in rejects:
+                reject2 += 1
                 continue
             if self.reject(l, rankings):
+                reject3 += 1
+                rejects[tl] = 1
                 continue
+            accepts[tl] = 1
             L.append(l)
+        if self.verbose:
+            print "perms", math.factorial(len(docs))
+            print "reject1", reject1
+            print "reject2", reject2
+            print "reject3", reject3
+            print "l", len(L)
+            print "time", time.time() - start
         return L
 
     def interleave(self, r1, r2, query, length, bias=0):
