@@ -77,7 +77,8 @@ class OptimizedMultileave(OptimizedInterleave):
             r.init_ranking(query)
             rankings.append(r.docids)
         length = min(min([len(r) for r in rankings]), length)
-        L = self.prefix_constraint(rankings, length)
+        #L1 = self.prefix_constraint(rankings, length)
+        L = self.sample_prefix_constraint(rankings, length)
 
         # Pre-compute credit for each list l in L
         C = [[[self.credit(li, ranking)
@@ -191,30 +192,31 @@ if __name__ == '__main__':
         def init_ranking(self, query):
             pass
 
-    r1 = TestRanker(["a", "b", "c", "d"])
-    r2 = TestRanker(["b", "d", "c", "a"])
-    r3 = TestRanker(["c", "d", "b", "a"])
-    r4 = TestRanker(["c", "d", "x", "a"])
+    r1 = TestRanker(["a", "b", "c", "d", "e"])
+    r2 = TestRanker(["b", "d", "c", "a", "x"])
+    r3 = TestRanker(["z", "y", "c", "d", "b", "a"])
+    r4 = TestRanker(["c", "d", "x", "a", "1"])
+    r5 = TestRanker(["f", "g", "c", "d", "x", "a"])
 
-    rankers = [r1, r2, r3, r4]
+    rankers = [r1, r2, r3, r4, r5]
 
     for i in range(len(rankers)):
         print "r%d" % i, rankers[i].docids
 
     comparison = OptimizedMultileave("--verbose")
-    l, C = comparison.interleave(rankers, None, 4)
+    l, C = comparison.interleave(rankers, None, 6)
     print "l", l
 
-    comparison = OptimizedMultileave()
-    counter = {}
-    for i in range(1000):
-        l, C = comparison.interleave(rankers, None, 4)
-        key = tuple(l)
-        if not key in counter:
-            counter[key] = 0
-        counter[key] += 1
-    for l in sorted(counter.keys()):
-        print l, counter[l] / 1000.0
+#    comparison = OptimizedMultileave()
+#    counter = {}
+#    for i in range(1000):
+#        l, C = comparison.interleave(rankers, None, 4)
+#        key = tuple(l)
+#        if not key in counter:
+#            counter[key] = 0
+#        counter[key] += 1
+#    for l in sorted(counter.keys()):
+#        print l, counter[l] / 1000.0
 #    clicks = np.zeros(len(l))
 #    for rdoc in ["a", "b", "c", "d"]:
 #        if rdoc in l:

@@ -19,6 +19,7 @@ from numpy import asarray, where
 import math
 from utils import split_arg_str
 from AbstractInterleavedComparison import AbstractInterleavedComparison
+import time
 
 try:
     import gurobipy
@@ -122,12 +123,59 @@ class OptimizedInterleave(AbstractInterleavedComparison):
 
     def prefix_constraint(self, rankings, length):
         prefix_bound = length if self.prefix_bound < 0 else self.prefix_bound
-        L = self.prefix_constraint_bound(rankings, length, prefix_bound)
-        while len(L) == 0:
-            prefix_bound += 1
-            if prefix_bound > length:
-                break
+        L = []
+        while len(L) == 0 and prefix_bound <= length:
             L = self.prefix_constraint_bound(rankings, length, prefix_bound)
+            prefix_bound += 1
+            return L
+
+    def perm_given_index(self, alist, apermindex):
+        """
+        See http://stackoverflow.com/questions/5602488/random-picks-from-permutation-generator
+        """
+        alist = alist[:]
+        for i in range(len(alist) - 1):
+            apermindex, j = divmod(apermindex, len(alist) - i)
+            alist[i], alist[i + j] = alist[i + j], alist[i]
+        return alist
+
+    def sample(self, docs, length):
+        r = random.randint(0, math.factorial(len(docs)))
+        l = self.perm_given_index(docs, r)
+        l = l[:length]
+        return l
+
+    def reject(self, l, rankings):
+        indexes = [0] * len(rankings)
+
+        def update(i, l, k):
+            if rankings[i][indexes[i]] == l[k]:
+                indexes[i] += 1
+                if k > 0 and len(rankings[i]) > indexes[i]:
+                    update(i, l, k - 1)
+                return True
+            return False
+
+        for k in range(len(l)):
+            found = False
+            for i in range(len(rankings)):
+                if update(i, l, k):
+                    found = True
+            if not found:
+                return True
+        return False
+
+    def sample_prefix_constraint(self, rankings, length):
+        docs = list(set().union(*rankings))
+        L = []
+        timeout = time.time() + 3
+        while len(L) < 1000 and time.time() < timeout:
+            l = self.sample(docs, length)
+            if l in L:
+                continue
+            if self.reject(l, rankings):
+                continue
+            L.append(l)
         return L
 
     def interleave(self, r1, r2, query, length, bias=0):
@@ -136,7 +184,8 @@ class OptimizedInterleave(AbstractInterleavedComparison):
         rA = r1.docids
         rB = r2.docids
         length = min(len(rA), len(rB), length)
-        L = self.prefix_constraint([rA, rB], length)
+        #L = self.prefix_constraint([rA, rB], length)
+        L = self.sample_prefix_constraint([rA, rB], length)
 
         # Pre-compute credit for each list l in L
         rankA = {}
