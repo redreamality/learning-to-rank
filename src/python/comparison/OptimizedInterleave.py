@@ -151,8 +151,15 @@ class OptimizedInterleave(AbstractInterleavedComparison):
         def update(i, l, k):
             if rankings[i][indexes[i]] == l[k]:
                 indexes[i] += 1
-                if k > 0 and len(rankings[i]) > indexes[i]:
-                    update(i, l, k - 1)
+                while k >= indexes[i] && len(rankings[i]) > indexes[i]:
+                    found = False
+                    for m in range(k):
+                        if rankings[i][indexes[i]] == l[m]:
+                            indexes[i] += 1
+                            found = True
+                            break
+                    if not found:
+                        break
                 return True
             return False
 
