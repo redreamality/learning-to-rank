@@ -20,6 +20,7 @@ import math
 from utils import split_arg_str
 from OptimizedInterleave import OptimizedInterleave
 import gurobipy
+import os
 
 
 class OptimizedMultileave(OptimizedInterleave):
@@ -37,6 +38,7 @@ class OptimizedMultileave(OptimizedInterleave):
     """
 
     def __init__(self, arg_str=""):
+        OptimizedInterleave.__init__(self, arg_str)
         parser = argparse.ArgumentParser(description=self.__doc__,
                                          prog=self.__class__.__name__)
         parser.add_argument("-c", "--credit", choices=["inverse_credit",
@@ -77,8 +79,8 @@ class OptimizedMultileave(OptimizedInterleave):
             r.init_ranking(query)
             rankings.append(r.docids)
         length = min(min([len(r) for r in rankings]), length)
-        #L1 = self.prefix_constraint(rankings, length)
-        L = self.sample_prefix_constraint(rankings, length)
+        L = self.allowed_leavings(rankings, length)
+        print len(L)
 
         # Pre-compute credit for each list l in L
         C = [[[self.credit(li, ranking)
@@ -192,19 +194,23 @@ if __name__ == '__main__':
         def init_ranking(self, query):
             pass
 
-    r1 = TestRanker(["a", "b", "c", "d", "e"])
-    r2 = TestRanker(["b", "d", "c", "a", "x"])
-    r3 = TestRanker(["z", "y", "c", "d", "b", "a"])
-    r4 = TestRanker(["c", "d", "x", "a", "1"])
-    r5 = TestRanker(["f", "g", "c", "d", "x", "a"])
+#    r1 = TestRanker(["a", "b", "c", "d"])
+#    r2 = TestRanker(["b", "d", "c", "a"])
+#    r3 = TestRanker(["z", "y", "c", "d", "b", "a"])
+#    r4 = TestRanker(["c", "d", "x", "a", "1"])
+#    r5 = TestRanker(["f", "g", "c", "d", "x", "a"])
+#
+#    rankers = [r1, r2, r3, r4, r5]
 
-    rankers = [r1, r2, r3, r4, r5]
-
+    nrrankers = 5
+    lenrankers = 10
+    rankers = [TestRanker(sorted(range(lenrankers+8), key=os.urandom)[1:lenrankers+1]) for nr in range(nrrankers)]
+    print random.shuffle(range(lenrankers))
     for i in range(len(rankers)):
         print "r%d" % i, rankers[i].docids
 
-    comparison = OptimizedMultileave("--verbose")
-    l, C = comparison.interleave(rankers, None, 6)
+    comparison = OptimizedMultileave("--allowed_leavings sample_prefix_constraint_constructive")
+    l, C = comparison.interleave(rankers, None, 10)
     print "l", l
 
 #    comparison = OptimizedMultileave()
