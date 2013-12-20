@@ -48,10 +48,16 @@ class OptimizedInterleave(AbstractInterleavedComparison):
                                                        "binary_credit",
                                                        "inverse_credit"],
                             default="linear_credit")
+        parser.add_argument("--allowed_leavings",
+                            choices=["prefix_constraint",
+                                     "sample_prefix_constraint",
+                                     "sample_prefix_constraint_constructive"],
+                            default="prefix_constraint")
         parser.add_argument("--prefix_bound", type=int, default=-1)
         parser.add_argument("--verbose", action="store_true", default=False)
         args = vars(parser.parse_known_args(split_arg_str(arg_str))[0])
         self.credit = getattr(self, args["credit"])
+        self.allowed_leavings = getattr(self, args["allowed_leavings"])
         self.verbose = args["verbose"]
         self.prefix_bound = args["prefix_bound"]
 
@@ -151,7 +157,7 @@ class OptimizedInterleave(AbstractInterleavedComparison):
         def update(i, l, k):
             if rankings[i][indexes[i]] == l[k]:
                 indexes[i] += 1
-                while k >= indexes[i] && len(rankings[i]) > indexes[i]:
+                while k >= indexes[i] and len(rankings[i]) > indexes[i]:
                     found = False
                     for m in range(k):
                         if rankings[i][indexes[i]] == l[m]:
@@ -203,14 +209,34 @@ class OptimizedInterleave(AbstractInterleavedComparison):
             print "time", time.time() - start
         return L
 
+    def sample_prefix_constraint_constructive(self, rankings, length):
+        L = []
+        start = time.time()
+        while len(L) < 5000 and time.time() < start + 5:
+            l = []
+            indexes = [0] * len(rankings)
+            while len(l) < length:
+                r = random.randint(0, len(rankings) - 1)
+                if indexes[r] >= length:
+                    continue
+                d = rankings[r][indexes[r]]
+                indexes[r] += 1
+                while d in l and indexes[r] < length:
+                    d = rankings[r][indexes[r]]
+                    indexes[r] += 1
+                if not d in l:
+                    l.append(d)
+            if not l in L:
+                L.append(l)
+        return L
+
     def interleave(self, r1, r2, query, length, bias=0):
         r1.init_ranking(query)
         r2.init_ranking(query)
         rA = r1.docids
         rB = r2.docids
         length = min(len(rA), len(rB), length)
-        #L = self.prefix_constraint([rA, rB], length)
-        L = self.sample_prefix_constraint([rA, rB], length)
+        L = self.allowed_leavings([rA, rB], length)
 
         # Pre-compute credit for each list l in L
         rankA = {}
