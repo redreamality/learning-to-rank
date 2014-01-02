@@ -26,7 +26,7 @@ from math import sqrt
 import glob
 import gzip
 import numpy as N
-
+import pickle
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -39,47 +39,84 @@ if __name__ == "__main__":
     parser.add_argument("--sweep", action="store_true", default=False)
     parser.add_argument("--sort", action="store_true", default=False)
     parser.add_argument("--nofail", action="store_true", default=False)
+    parser.add_argument("--raw", action="store_true", default=False)
+    parser.add_argument("--reload", action="store_true", default=False)
+    parser.add_argument("--metric", type=str, default="NdcgEval", nargs="+")
     parser.add_argument("--aggregate", default="mean", 
                         choices=["mean", "max", "min"])
     
     
     args = parser.parse_args()
     
-    for indir in args.root_dir:
-        if not os.path.exists(indir):
-            parser.error("root_dir %s does not exist" % indir)
-        indir = os.path.realpath(indir)
-        exp = indir.split("/")[-2]
-        filename = os.path.join(indir, "analytics", "summary.yml")
-        if not args.nofail and not os.path.exists(filename):
-            parser.error("there is no summary at %s for experiment %s" %
-                         (filename, exp))
-    
-    ndcgpoints = {}
-    exps = []
-    for indir in args.root_dir:
-        indir = os.path.realpath(indir)
-        exp = indir.split("/")[-2]
-        filename = os.path.join(indir, "analytics", "summary.yml")
-        if not os.path.exists(filename):
-            continue
-        fh = open(filename, "r")
-        try:
-            summary = yaml.load(fh, Loader=Loader)
-        except yaml.parser.ParserError:
-            if not args.nofail:
-                parser.error("There is an error in %s for experiment %s" %
-                     (filename, exp))
-        if summary:
-            exps.append(exp)
-            ndcgpoints[exp] = summary
-        elif not args.nofail:
-            parser.error("TNo summary in %s for experiment %s" %
-                     (filename, exp))
-        fh.close()
+    uniqvalues = args.root_dir
+    uniq = str(hash(tuple(uniqvalues)))
+    uniqfile = os.path.join(basedir, 'out', uniq + ".ndcgpoints.pickle")
+    if not os.path.exists(uniqfile) or args.reload:
+        print "Reloading"
+        for indir in args.root_dir:
+            if not os.path.exists(indir):
+                parser.error("root_dir %s does not exist" % indir)
+            indir = os.path.realpath(indir)
+            exp = indir.split("/")[-2]
+            filename = os.path.join(indir, "analytics", "summary.yml")
+            if not args.nofail and not os.path.exists(filename):
+                parser.error("there is no summary at %s for experiment %s" %
+                             (filename, exp))
         
-    users = ["per", "nav", "inf"]
-    #users = ["noi"]
+        ndcgpoints = {}
+        exps = []
+        for indir in args.root_dir:
+            indir = os.path.realpath(indir)
+            exp = indir.split("/")[-2]
+            if not args.raw:
+                filename = os.path.join(indir, "analytics", "summary.yml")
+                if not os.path.exists(filename):
+                    continue
+                fh = open(filename, "r")
+                try:
+                    summary = yaml.load(fh, Loader=Loader)
+                except yaml.parser.ParserError:
+                    if not args.nofail:
+                        parser.error("There is an error in %s for experiment %s" %
+                             (filename, exp))
+                if summary:
+                    exps.append(exp)
+                    ndcgpoints[exp] = summary
+                elif not args.nofail:
+                    parser.error("TNo summary in %s for experiment %s" %
+                             (filename, exp))
+                fh.close()
+
+            if args.raw:
+                exps.append(exp)
+                print "loading RAW"
+                ndcgpoints[exp] = {}
+                for um in sorted(glob.glob(os.path.join(indir, "output", "*"))):
+                    for data in sorted(glob.glob(os.path.join(um, "*"))):
+                        for fold in sorted(glob.glob(os.path.join(data, "*"))):
+                            for f in sorted(glob.glob(os.path.join(fold, "*.txt.gz"))):
+                                print "loading", f
+                                parts = os.path.normpath(os.path.abspath(f)).split(os.sep)
+                                umshort, datashort, foldshort = parts[-4:-1]
+                                if not umshort in ndcgpoints[exp]:
+                                    ndcgpoints[exp][umshort] = {}
+                                if not datashort in ndcgpoints[exp][umshort]:
+                                    ndcgpoints[exp][umshort][datashort] = []
+                                print f, umshort, datashort, foldshort
+                                if f.endswith(".gz"):
+                                    fh = gzip.open(f, "r")
+                                else:
+                                    fh = open(f, "r")
+                                yamldata = yaml.load(fh, Loader=Loader)
+                                fh.close()
+                                scores = yamldata["offline_test_evaluation.%s" % args.metric]
+                                ndcgpoints[exp][umshort][datashort].append(scores[-1])
+        pickle.dump(ndcgpoints, open(uniqfile, "w"))
+    else:
+        ndcgpoints = pickle.load(open(uniqfile, "r"))
+        exps = ndcgpoints.keys()
+     
+    users = sorted(ndcgpoints[exps[0]].keys())
     datas = sorted(ndcgpoints[exps[0]][users[0]].keys())
     
     if args.sweep:
@@ -126,8 +163,8 @@ if __name__ == "__main__":
     else:
         if args.sort:
             exps = sorted(exps)
+        baseline = None
     
-    #users = sorted(ndcgpoints[exps[0]].keys())
     
     if args.measure == "online":
         precision = "%.2f"
@@ -168,7 +205,8 @@ if __name__ == "__main__":
                     continue
                 if not ndcgpoints[exp][user][data]:
                     continue
-                m2 = get(ndcgpoints[exp][user][data][-1], args.measure, args.aggregate)
+                #m2 = get(ndcgpoints[exp][user][data][-1], args.measure, args.aggregate)
+                m2 = N.mean(ndcgpoints[exp][user][data])
                 l1.append(m2)
             for exp in exps:
                 if not user in ndcgpoints[exp]:
@@ -181,17 +219,21 @@ if __name__ == "__main__":
                     l2.append("- & ")
                     continue
     
-                m2 = get(ndcgpoints[exp][user][data][-1], args.measure, args.aggregate)
-                std2 = get(ndcgpoints[exp][user][data][-1], args.measure, "std")
+                #m2 = get(ndcgpoints[exp][user][data][-1], args.measure, args.aggregate)
+                m2 = N.mean(ndcgpoints[exp][user][data])
+                #std2 = get(ndcgpoints[exp][user][data][-1], args.measure, "std")
+                std2 = N.std(ndcgpoints[exp][user][data])
                 significance = ""
                 if args.baseline != None and baseline != exp:
                     if baseline in ndcgpoints and \
                             user in ndcgpoints[baseline] and \
                             data in ndcgpoints[baseline][user]:
-                        m1 = get(ndcgpoints[baseline][user][data][-1],
-                                 args.measure, args.aggregate)
-                        std1 = get(ndcgpoints[baseline][user][data][-1],
-                                   args.measure, "std")
+                        m1 = N.mean(ndcgpoints[baseline][user][data])
+                        #m1 = get(ndcgpoints[baseline][user][data][-1],
+                        #         args.measure, args.aggregate)
+                        std1 = N.std(ndcgpoints[baseline][user][data])
+                        #std1 = get(ndcgpoints[baseline][user][data][-1],
+                        #           args.measure, "std")
                         significance = get_significance(m1, m2, std1, std2, 125)
                 if m2 == max(l1):
                     l2.append("\\textbf{" + (precision % m2) + "} (%.2f) %s " %
