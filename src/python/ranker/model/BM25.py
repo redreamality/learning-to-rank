@@ -33,13 +33,14 @@ class BM25(AbstractRankingModel):
         for docfeatures in features:
             k1, k3, b = w
             s = 0.0
-            nr_terms = len(docfeatures)/4
+            nr_terms = len(docfeatures) / 4
             for i in range(nr_terms):
-                idf = docfeatures[i*4]
-                tf = docfeatures[i*4+1]
-                qtf = docfeatures[i*4+2]
-                dl = docfeatures[i*4+3]
-                if dl == 0: continue
+                idf = docfeatures[i * 4]
+                tf = docfeatures[i * 4 + 1]
+                qtf = docfeatures[i * 4 + 2]
+                dl = docfeatures[i * 4 + 3]
+                if dl == 0:
+                    continue
                 s += ((idf * tf * (k1 + 1)) / (tf + k1 * (1-b+b*dl))) * (((k3+1)*qtf)/(k3+qtf))
             scores.append(s)
         return scores

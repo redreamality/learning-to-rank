@@ -7,7 +7,7 @@ import numpy as np
 alphas = [0.01, 0.05, 0.1, 0.5, 1.0]
 deltas = [0.05, 0.1, 0.5, 1.0, 2.0]
 reps = 5
-nrqueries = 200
+nrqueries = 500
 
 #alphas = [0.75, 1.0, 1.25, 1.5]
 #deltas = [1.75, 2.0, 2.25]
@@ -15,7 +15,7 @@ nrqueries = 200
 #nrqueries = 500
 
 
-factor_k1 = 25
+factor_k1 = 13.3
 factor_k3 = .1
 
 user_model = environment.CascadeUserModel('--p_click 0:0.0,1:1 --p_stop 0:0.0,1:0.0')
@@ -29,7 +29,7 @@ def run(alpha, delta):
     results = []
     for _ in range(reps):
         #learner = retrieval_system.ListwiseLearningSystem(64, '-w random -c comparison.ProbabilisticInterleave -r ranker.ProbabilisticRankingFunction -s 3 ranker.model.BM25 -d %.2f -a %.2f' % (delta, alpha))
-        learner = retrieval_system.ListwiseLearningSystemWithCandidateSelection(64, '--num_repetitions 10 --num_candidates 6 --history_length 10 --select_candidate select_candidate_repeated -w random -c comparison.ProbabilisticInterleave --ranker ranker.ProbabilisticRankingFunction --ranker_args 3 ranker.model.BM25 -d %s -a %s' % (delta, alpha))
+        learner = retrieval_system.ListwiseLearningSystemWithCandidateSelection(64, '--num_repetitions 10 --num_candidates 6 --history_length 10 --select_candidate select_candidate_repeated -w random -c comparison.ProbabilisticInterleave --ranker ranker.ProbabilisticRankingFunction --ranker_args 3 ranker.model.BM25 -d %s -a %s --anneal 50' % (delta, alpha))
         for _ in range(nrqueries):
             q = training_queries[random.choice(training_queries.keys())]
             l = learner.get_ranked_list(q)
@@ -41,7 +41,7 @@ def run(alpha, delta):
 
 
 from multiprocessing import Pool
-pool = Pool(processes=20)
+pool = Pool(processes=len(alphas) * len(deltas))
 
 results = {}
 for alpha in alphas:

@@ -13,4 +13,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Lerot.  If not, see <http://www.gnu.org/licenses/>.
 
-mapping = {}
+mapping = {
+            "bm25learn-cps-randomini-ratio13.3": ("no-anneal", [1,0]),
+            "bm25learn-cps-anneal100-randomini-ratio13.3": ("anneal-100", [1,1]),
+            "bm25learn-cps-anneal200-randomini-ratio13.3": ("anneal-200", [4,2,1,2]),
+          }
