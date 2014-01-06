@@ -44,17 +44,13 @@ class OptimizedMultileave(OptimizedInterleave):
         parser.add_argument("-c", "--credit", choices=["inverse_credit",
                                                        "negative_credit"],
                             default="inverse_credit")
-        parser.add_argument("--verbose", action="store_true", default=False)
         parser.add_argument("--bias", choices=["per_k_bias", "position_bias"],
                             default="per_k_bias")
-        parser.add_argument("--prefix_bound", type=int, default=-1)
         parser.add_argument("--sensitivity", choices=["Floor", "Shimon"],
                             default="Floor")
         args = vars(parser.parse_known_args(split_arg_str(arg_str))[0])
         self.credit = getattr(self, args["credit"])
-        self.verbose = args["verbose"]
         self.bias = args["bias"]
-        self.prefix_bound = args["prefix_bound"]
         self.sensitivity = args["sensitivity"]
 
     def f(self, i):
