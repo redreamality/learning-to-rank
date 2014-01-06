@@ -53,6 +53,7 @@ class OptimizedInterleave(AbstractInterleavedComparison):
                                      "sample_prefix_constraint",
                                      "sample_prefix_constraint_constructive"],
                             default="prefix_constraint")
+        parser.add_argument("--sample_size", type=int, default=-1)
         parser.add_argument("--prefix_bound", type=int, default=-1)
         parser.add_argument("--verbose", action="store_true", default=False)
         args = vars(parser.parse_known_args(split_arg_str(arg_str))[0])
@@ -60,6 +61,7 @@ class OptimizedInterleave(AbstractInterleavedComparison):
         self.allowed_leavings = getattr(self, args["allowed_leavings"])
         self.verbose = args["verbose"]
         self.prefix_bound = args["prefix_bound"]
+        self.sample_size = args["sample_size"]
 
     def f(self, i):
         # Implemented as footnote 4 suggests
@@ -212,7 +214,8 @@ class OptimizedInterleave(AbstractInterleavedComparison):
     def sample_prefix_constraint_constructive(self, rankings, length):
         L = []
         start = time.time()
-        while len(L) < 5000 and time.time() < start + 5:
+        while len(L) < self.sample_size and \
+                             time.time() < start + (self.sample_size / 1000):
             l = []
             indexes = [0] * len(rankings)
             while len(l) < length:
