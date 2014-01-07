@@ -76,7 +76,7 @@ class SamplingExperiment(AbstractLearningExperiment):
         size2 = 0
         score1 = 0.0
         for (i, j), val in np.ndenumerate(self.groundtruth):
-            size1
+            size1 += 1
             if i == j:
                 continue
             if largerthan05(val) != largerthan05(solution[i, j]):
