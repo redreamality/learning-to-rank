@@ -11,7 +11,8 @@ system: retrieval_system.MultiLeaveSamplerSystem
 #system: retrieval_system.BaselineSamplerSystem
 system_args: --init_weights selected
     --comparison comparison.OptimizedMultileave 
-    --comparison_args random
+    --comparison_args "--allowed_leavings sample_prefix_constraint_constructive"
+    --comparison_args "--sample_size 5"
     --delta 0.1 
     --alpha 0.01 
     --ranker ranker.DeterministicRankingFunction

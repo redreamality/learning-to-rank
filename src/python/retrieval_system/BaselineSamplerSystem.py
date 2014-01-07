@@ -37,7 +37,8 @@ class BaselineSamplerSystem(AbstractLearningSystem):
         parser.add_argument("--nr_rankers", type=int)
         parser.add_argument("--nr_results", type=int, default=10)
         parser.add_argument("-c", "--comparison", required=True)
-        parser.add_argument("-f", "--comparison_args", nargs="*")
+        parser.add_argument("-f", "--comparison_args", nargs="*",
+                            action="append")
         parser.add_argument("-r", "--ranker", required=True)
         parser.add_argument("-s", "--ranker_args", nargs="*")
         parser.add_argument("-t", "--ranker_tie", default="random")
@@ -86,8 +87,10 @@ class BaselineSamplerSystem(AbstractLearningSystem):
         
         self.comparison_class = get_class(args["comparison"])
         if "comparison_args" in args and args["comparison_args"] != None:
-            self.comparison_args = " ".join(args["comparison_args"])
-            self.comparison_args = self.comparison_args.strip("\"")
+            self.comparison_args = " ".join([item for sub in
+                                             args["comparison_args"]
+                                             for item in sub])
+            self.comparison_args = self.comparison_args.replace("\"", "")
         else:
             self.comparison_args = None
         self.comparison = self.comparison_class(self.comparison_args)
