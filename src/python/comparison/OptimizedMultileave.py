@@ -76,7 +76,7 @@ class OptimizedMultileave(OptimizedInterleave):
             rankings.append(r.docids)
         length = min(min([len(r) for r in rankings]), length)
         L = self.allowed_leavings(rankings, length)
-        print len(L)
+        #print len(L)
 
         # Pre-compute credit for each list l in L
         C = [[[self.credit(li, ranking)
@@ -92,7 +92,7 @@ class OptimizedMultileave(OptimizedInterleave):
         for i in range(len(L)):
             P.append(m.addVar(lb=0.0, ub=1.0, name='p%d' % i))
         m.update()
-        sumconstr = m.addConstr(gurobipy.quicksum(P) == 1, 'sum')
+        m.addConstr(gurobipy.quicksum(P) == 1, 'sum')
         biasconstrs = []
         if self.bias == "per_k_bias":
             V = []
@@ -205,7 +205,7 @@ if __name__ == '__main__':
     for i in range(len(rankers)):
         print "r%d" % i, rankers[i].docids
 
-    comparison = OptimizedMultileave("--allowed_leavings sample_prefix_constraint_constructive")
+    comparison = OptimizedMultileave("--allowed_leavings sample_prefix_constraint_constructive --sample_size 5")
     l, C = comparison.interleave(rankers, None, 10)
     print "l", l
 

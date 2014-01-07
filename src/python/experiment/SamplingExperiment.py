@@ -1,4 +1,4 @@
-# This file is part of Lerot.
+    # This file is part of Lerot.
 #
 # Lerot is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
@@ -34,13 +34,13 @@ class SamplingExperiment(AbstractLearningExperiment):
                                             log_fh, args)
 
         evaluation_class = get_class("evaluation.NdcgEval")
-        evaluation = evaluation_class()
+        self.evaluation = evaluation_class()
 
         rankers = self.system.rankers
         n = len(rankers)
         ndcgs = []
         for r in range(n):
-            ndcgs.append(evaluation.evaluate_all(rankers[r], test_queries,
+            ndcgs.append(self.evaluation.evaluate_all(rankers[r], test_queries,
                                                  cutoff=self.system.nr_results)
                          )
 
@@ -60,26 +60,53 @@ class SamplingExperiment(AbstractLearningExperiment):
         self.query_keys = sorted(self.training_queries.keys())
         self.query_length = len(self.query_keys)
 
-    def evaluate(self, solution):
+    def evaluate(self, solution, result_list, query):
         def largerthan05(v):
             return (v - .5) > sys.float_info.epsilon
 
-        score = 0.0
+        def sgn(v):
+            if v < (0 - sys.float_info.epsilon):
+                return -1
+            elif v > (0 + sys.float_info.epsilon):
+                return 1
+            else:
+                return 0
+
+        size1 = 0
+        size2 = 0
+        score1 = 0.0
         for (i, j), val in np.ndenumerate(self.groundtruth):
+            size1
+            if i == j:
+                continue
             if largerthan05(val) != largerthan05(solution[i, j]):
-                score += 1
+                score1 += 1
+            size2 += 1
         #print solution
         #print self.groundtruth
 
-        score1 = score / (i * j)
+        score1 = score1 / size2
         score2 = float(np.sum(np.absolute(np.subtract(self.groundtruth,
-                                                    solution))) / (i * j))
+                                                    solution))) / size1)
+
+        score3 = 0.0
+        for (i, j), val in np.ndenumerate(self.groundtruth):
+            if i == j:
+                continue
+            if sgn(val - 0.5) != sgn(solution[i, j] - 0.5):
+                score3 += 1
+        score3 = score3 / size2
+
+        score4 = self.evaluation.evaluate_ranking(result_list, query)
+
         #logging.info("Score: %.3f %.3f" % (score1, score2))
-        return score1, score2
+        return {"binary_diff": score1,
+                "diff": score2,
+                "binary_diff_2": score3,
+                "online_ndcg": score4}
 
     def run(self):
-        summary = {"binary_diff": [],
-                   "diff": []}
+        summary = {}
         # process num_queries queries
         for query_count in range(self.num_queries):
             qid = self._sample_qid(self.query_keys, query_count,
@@ -91,8 +118,10 @@ class SamplingExperiment(AbstractLearningExperiment):
             clicks = self.um.get_clicks(result_list, query.get_labels())
             # send feedback to system
             solution = self.system.update_solution(clicks)
-            s1, s2 = self.evaluate(solution)
-            print "query", query_count, s1, s2
-            summary["binary_diff"].append(s1)
-            summary["diff"].append(s2)
+            scores = self.evaluate(solution, result_list, query)
+            #print "query", query_count, scores
+            for k in scores:
+                if not k in summary:
+                    summary[k] = []
+                summary[k].append(scores[k])
         return summary
