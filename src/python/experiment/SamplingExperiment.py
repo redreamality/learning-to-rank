@@ -97,13 +97,30 @@ class SamplingExperiment(AbstractLearningExperiment):
                 score3 += 1
         score3 = score3 / size2
 
-        score4 = self.evaluation.evaluate_ranking(result_list, query)
+        score4 = 0.0
+        for (i, j), val in np.ndenumerate(self.groundtruth):
+            if i == j:
+                continue
+            if sgn(val - 0.5) != sgn(solution[i, j] - 0.5):
+                score4 += abs(val - solution[i, j])
+        score4 = score4 / size2
+
+        score5 = self.evaluation.evaluate_ranking(result_list, query)
+
+        score6 = 0.0
+        for (i, j), val in np.ndenumerate(self.groundtruth):
+            if i == j:
+                continue
+            score6 += abs(0.5 - solution[i, j])
+        score6 = score6 / size2
 
         #logging.info("Score: %.3f %.3f" % (score1, score2))
         return {"binary_diff": score1,
                 "diff": score2,
                 "binary_diff_2": score3,
-                "online_ndcg": score4}
+                "binary_scaled": score4,
+                "online_ndcg": score5,
+                "bias": score6}
 
     def run(self):
         summary = {}
