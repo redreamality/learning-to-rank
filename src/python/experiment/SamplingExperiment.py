@@ -46,6 +46,7 @@ class SamplingExperiment(AbstractLearningExperiment):
 
         wins = np.zeros([n, n])
         plays = np.zeros([n, n])
+        self.diff = np.zeros([n, n])
 
         for r1 in range(n):
             for r2 in range(n):
@@ -53,6 +54,7 @@ class SamplingExperiment(AbstractLearningExperiment):
                     wins[r1, r2] += 1
                 else:
                     wins[r2, r1] += 1
+                self.diff[r1, r2] = 0.5 * (ndcgs[r1] - ndcgs[r2]) + 0.5
                 plays[r1, r2] += 1
                 plays[r2, r1] += 1
         self.groundtruth = wins / plays
@@ -60,7 +62,7 @@ class SamplingExperiment(AbstractLearningExperiment):
         self.query_keys = sorted(self.training_queries.keys())
         self.query_length = len(self.query_keys)
 
-    def evaluate(self, solution, result_list, query):
+    def evaluate(self, solution, result_list, query, per_q):
         def largerthan05(v):
             return (v - .5) > sys.float_info.epsilon
 
@@ -102,7 +104,7 @@ class SamplingExperiment(AbstractLearningExperiment):
             if i == j:
                 continue
             if sgn(val - 0.5) != sgn(solution[i, j] - 0.5):
-                score4 += abs(val - solution[i, j])
+                score4 += abs(self.diff[i, j] - solution[i, j])
         score4 = score4 / size2
 
         score5 = self.evaluation.evaluate_ranking(result_list, query)
@@ -114,13 +116,30 @@ class SamplingExperiment(AbstractLearningExperiment):
             score6 += abs(0.5 - solution[i, j])
         score6 = score6 / size2
 
+        score7 = 0.0
+        for (i, j), val in np.ndenumerate(self.groundtruth):
+            if i == j:
+                continue
+            score7 += abs(0.5 - per_q[i, j])
+        score7 = score7 / size2
+
+        score8 = 0.0
+        for (i, j), val in np.ndenumerate(self.groundtruth):
+            if i == j:
+                continue
+            if sgn(val - 0.5) != sgn(per_q[i, j] - 0.5):
+                score8 += abs(self.diff[i, j])
+        score8 = score8 / size2
+
         #logging.info("Score: %.3f %.3f" % (score1, score2))
         return {"binary_diff": score1,
                 "diff": score2,
                 "binary_diff_2": score3,
                 "binary_scaled": score4,
+                "binary_ndcg": score8,
                 "online_ndcg": score5,
-                "bias": score6}
+                "bias": score6,
+                "per_q_bias": score7}
 
     def run(self):
         summary = {}
@@ -134,8 +153,8 @@ class SamplingExperiment(AbstractLearningExperiment):
             # generate click feedback
             clicks = self.um.get_clicks(result_list, query.get_labels())
             # send feedback to system
-            solution = self.system.update_solution(clicks)
-            scores = self.evaluate(solution, result_list, query)
+            solution, per_q = self.system.update_solution(clicks)
+            scores = self.evaluate(solution, result_list, query, per_q)
             #print "query", query_count, scores
             for k in scores:
                 if not k in summary:
