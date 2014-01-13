@@ -151,7 +151,7 @@ class MetaExperiment:
                     args = self.experiment_args.copy()
                     if len(dparts) > 3:
                         selected_weights = ",".join(dparts[3:])
-                        args["system_args"] += "\n    --selected_weights " + \
+                        args["system_args"] += " --selected_weights " + \
                             selected_weights
                     args["data_dir"] = self.meta_args["data_dir"]
                     args["fold_dir"] = fold
