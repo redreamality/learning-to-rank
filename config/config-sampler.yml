@@ -21,6 +21,7 @@ system_args: --init_weights selected
     --sampler sampler.BaselineSampler
     --sampler_decay 1
     --nr_rankers 5
+    --selected_weights 4,24,39,41,50
     
 experimenter: experiment.SamplingExperiment
     
