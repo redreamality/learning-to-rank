@@ -34,6 +34,7 @@ class BaselineSamplerSystem(AbstractLearningSystem):
         parser.add_argument("-w", "--init_weights", help="Initialization "
             "colon seperated list of inital weight vectors, weight vectors are"
             " comma seperated", required=True)
+        parser.add_argument("--selected_weights", type=str)
         parser.add_argument("--nr_rankers", type=int)
         parser.add_argument("--nr_results", type=int, default=10)
         parser.add_argument("-c", "--comparison", required=True)
@@ -55,7 +56,11 @@ class BaselineSamplerSystem(AbstractLearningSystem):
                     v[i] = gauss(0, 1)
                 weights.append(list(v))
         if args["init_weights"].startswith("selected"):
-            selection = [4, 24, 39, 41, 50]
+            if "selected_weights" in args and args["selected_weights"]:
+                selection = [int(x) for x
+                             in args["selected_weights"].split(",")]
+            else:
+                selection = [4, 24, 39, 41, 50]
             for i in range(args["nr_rankers"]):
                 v = zeros(self.feature_count)
                 v[selection[i]] = 1.0
