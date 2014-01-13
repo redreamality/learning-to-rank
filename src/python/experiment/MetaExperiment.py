@@ -139,8 +139,13 @@ class MetaExperiment:
 #        for run_id in range(self.experiment_args["num_runs"]):
         for um in self.meta_args["um"]:
             for dstr in self.meta_args["data"]:
-                data, d, r = dstr.split(',')
+                dparts = dstr.split(',')
+                data, d, r = dparts[:3]
                 d, r = int(d), int(r)
+                if len(dparts) > 3:
+                    selected_weights = ",".join(dparts[3:])
+                    args["system_args"] += "\n    --selected_weights " + \
+                        selected_weights
                 user_model_args = usermodels[um][r]
                 folds = glob.glob(os.path.join(
                             os.path.abspath(self.meta_args["data_dir"]),
