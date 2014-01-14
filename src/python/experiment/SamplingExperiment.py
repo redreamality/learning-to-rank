@@ -132,14 +132,14 @@ class SamplingExperiment(AbstractLearningExperiment):
         score8 = score8 / size2
 
         #logging.info("Score: %.3f %.3f" % (score1, score2))
-        return {"binary_diff": score1,
-                "diff": score2,
-                "binary_diff_2": score3,
-                "binary_scaled": score4,
-                "binary_ndcg": score8,
-                "online_ndcg": score5,
-                "bias": score6,
-                "per_q_bias": score7}
+        return {"binary_diff": float(score1),
+                "diff": float(score2),
+                "binary_diff_2": float(score3),
+                "binary_scaled": float(score4),
+                "binary_ndcg": float(score8),
+                "online_ndcg": float(score5),
+                "bias": float(score6),
+                "per_q_bias": float(score7)}
 
     def run(self):
         summary = {}
