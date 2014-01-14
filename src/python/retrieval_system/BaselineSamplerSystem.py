@@ -110,7 +110,7 @@ class BaselineSamplerSystem(AbstractLearningSystem):
         self.iteration = 0
 
     def get_ranked_list(self, query):
-        self.r1, self.r2, _, _ = self.sampler.get_arms()
+        self.r1, self.r2, self.i1, self.i2 = self.sampler.get_arms()
 
         (l, context) = self.comparison.interleave(self.r1, self.r2,
                                                   query,
@@ -125,13 +125,16 @@ class BaselineSamplerSystem(AbstractLearningSystem):
                                                 self.current_context,
                                                 clicks,
                                                 self.current_query)
+        per_q = zeros([len(self.rankers), len(self.rankers)])
         if outcome <= 0:
             self.sampler.update_scores(self.r1, self.r2, score=1, play=1)
+            per_q[self.i1, self.i2] += 1
         else:
             self.sampler.update_scores(self.r2, self.r1, score=1, play=1)
+            per_q[self.i2, self.i1] += 1
 
         self.iteration += 1
-        return self.get_solution()
+        return self.get_solution(), per_q
 
     def get_solution(self):
         #logging.info("Iteration %d" % self.iteration)
