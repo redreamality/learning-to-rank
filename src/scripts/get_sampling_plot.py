@@ -31,6 +31,7 @@ import pickle
 import sys
 import os
 import numpy as np
+import codecs
 
 
 if __name__ == "__main__":
@@ -38,12 +39,17 @@ if __name__ == "__main__":
     parser.add_argument("root_dir", help="directory that holds an "
                         " anaylics directory.", nargs="+")
     parser.add_argument("--um", default="per", nargs="+")
+    parser.add_argument("--data", default="HP2003", nargs="+")
     parser.add_argument("-m", "--metric", type=str, default="binary_diff", nargs="+")
     parser.add_argument("--reload", action="store_true", default=False)
+    parser.add_argument("--cum", action="store_true", default=False)
+    parser.add_argument("--ylim", type=float, default=-1)
+    parser.add_argument("--format", type=str, default="pdf")
     args = parser.parse_args()
-    args.metric = [args.metric]
-    args.um = [args.um]
-    uniqvalues = args.root_dir
+    #args.metric = [args.metric]
+    args.metric = args.metric
+    args.um = args.um
+    uniqvalues = args.root_dir + args.metric + args.um + args.data
     uniq = str(hash(tuple(uniqvalues)))
     uniqfile = os.path.join(basedir, 'out', uniq + ".ndcgpoints.pickle")
     if not os.path.exists(uniqfile) or args.reload:
@@ -69,21 +75,30 @@ if __name__ == "__main__":
                             print f, umshort, datashort
                             if not umshort in args.um:
                                 continue
+                            if not datashort in args.data:
+                                continue
                             if not umshort in ndcgpoints[exp]:
                                 ndcgpoints[exp][umshort] = {}
                             if not datashort in ndcgpoints[exp][umshort]:
                                 ndcgpoints[exp][umshort][datashort] = {}
                             if f.endswith(".gz"):
-                                fh = gzip.open(f, "r")
+                                #fh = gzip.open(f, "r")
+                                fh = codecs.getreader('utf-8')(gzip.open(f), errors='replace') 
                             else:
                                 fh = open(f, "r")
-                            yamldata = yaml.load(fh, Loader=Loader)
+                            try:
+                                yamldata = yaml.load(fh, Loader=Loader)
+                            except:
+                                fh.close()
+                                continue
                             fh.close()
-    
                             for metric in args.metric:
                                 if not metric in ndcgpoints[exp][umshort][datashort]:
                                     ndcgpoints[exp][umshort][datashort][metric] = []
-                                scores = yamldata["%s" % (metric)]
+                                try:
+                                    scores = yamldata[metric]
+                                except:
+                                    continue
                                 ndcgpoints[exp][umshort][datashort][metric].append(scores)
 
         pickle.dump(ndcgpoints, open(uniqfile, "w"))
@@ -124,23 +139,36 @@ if __name__ == "__main__":
                         else:
                             for i, x in enumerate(rawline):
                                 aggregation[i] += x
-                    cum = [0.0]
+                    line = [0.0]
                     for i in range(len(aggregation)):
                         aggregation[i] /= count
-                        if np.isnan(aggregation[i]):
-                            cum.append(cum[-1])
+                        if args.cum:
+                            if np.isnan(aggregation[i]):
+                                line.append(line[-1])
+                            else:
+                                line.append(line[-1] + aggregation[i])
                         else:
-                            cum.append(cum[-1] + aggregation[i])
+                            if np.isnan(aggregation[i]):
+                                line.append(0.0)
+                            else:
+                                line.append(aggregation[i])
 
-                    l = P.plot(cum, color, label="%s-%s" % (label, metric))
+
+                    l = P.plot(line, color, label="%s-%s" % (label, metric))
                     l[0].set_dashes(lines[lindex])
-            l = P.legend(loc=4)
+            if args.cum:
+                l = P.legend(loc=4)
+            else:
+                l = P.legend(loc=1)
+            if args.ylim > 0:
+                P.ylim(0., args.ylim)
             outfile = os.path.join(basedir, "out",
-                                   "%s-%s-%s.pdf" % (uniq,
+                                   "%s-%s-%s.%s" % (uniq,
                                                      user,
-                                                     data))
+                                                     data, 
+                                                     args.format))
             P.savefig(outfile,
-                      format='pdf')
+                      format=args.format)
             P.clf()
             P.ioff()
 
