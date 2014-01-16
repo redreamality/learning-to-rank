@@ -213,9 +213,8 @@ class OptimizedInterleave(AbstractInterleavedComparison):
 
     def sample_prefix_constraint_constructive(self, rankings, length):
         L = []
-        #start = time.time()
-        while len(L) < self.sample_size:# and \
-                             #time.time() < start + (self.sample_size / 1000):
+        start = time.time()
+        while len(L) < self.sample_size and time.time() < start + 10:
             l = []
             indexes = [0] * len(rankings)
             while len(l) < length:
