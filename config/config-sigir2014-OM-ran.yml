@@ -3,10 +3,11 @@ processes: 0
 num_queries: 5000
 query_sampling_method: random
 user_model: environment.CascadeUserModel
-system: retrieval_system.PairedMultiLeaveSamplerSystem
+system: retrieval_system.MultiLeaveSamplerSystem
 system_args: --init_weights selected
     --comparison comparison.OptimizedMultileave
-    --comparison_args "--allowed_leavings prefix_constraint"
+    --comparison_args "--allowed_leavings sample_prefix_constraint_constructive"
+    --comparison_args "--sample_size 100"
     --ranker ranker.DeterministicRankingFunction
     --ranker_arg 3
     --ranker_tie first
@@ -29,13 +30,15 @@ meta: --data HP2003,64,2,4,24,39,41,50
     MQ2008,46,3,4,9,24,39,40
    --data_dir /home/aschuth1/online-learning-data/
    --output_base /datastore/aschuth/online-learning-output/sigir2014/
-   --experiment_name fullmeasure-POM-r5-l10
+   --experiment_name random-fullmeasure-OM-r5-l10-sample100
    --platform conf
-   --um per nav inf
+   --um ran
    --uma per,2,0:0.0,1:1,0:0.0,1:0.0
          nav,2,0:0.05,1:0.95,0:0.2,1:0.9
          inf,2,0:0.4,1:0.9,0:0.1,1:0.5
+         ran,2,0:0.5,1:0.5,0:0.0,1:0.0
          per,3,0:0.0,1:0.5,2:1,0:0.0,1:0.0,2:0.0
          nav,3,0:0.05,1:0.5,2:0.95,0:0.2,1:0.5,2:0.9
          inf,3,0:0.4,1:0.7,2:0.9,0:0.1,1:0.3,2:0.5
+         ran,3,0:0.5,1:0.5,2:0.5,0:0.0,1:0.0,2:0.0
    --analysis analysis.SummarizeAnalysis
