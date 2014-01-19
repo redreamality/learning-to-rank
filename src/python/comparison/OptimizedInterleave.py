@@ -288,8 +288,10 @@ class OptimizedInterleave(AbstractInterleavedComparison):
         m.setObjective(gurobipy.quicksum(S), gurobipy.GRB.MAXIMIZE)
 
         # Optimize the system and if it is infeasible, relax the constraints
+        self.relaxed = False
         m.optimize()
         if m.status == gurobipy.GRB.INFEASIBLE:
+            self.relaxed = True
             m.feasRelaxS(1, False, True, True)
             m.optimize()
 

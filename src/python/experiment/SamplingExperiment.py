@@ -131,6 +131,13 @@ class SamplingExperiment(AbstractLearningExperiment):
                 score8 += abs(self.diff[i, j])
         score8 = score8 / size2
 
+        relaxed = 0
+        try:
+            if self.system.relaxed:
+                relaxed = 1
+        except:
+            pass
+
         #logging.info("Score: %.3f %.3f" % (score1, score2))
         return {"binary_diff": float(score1),
                 "diff": float(score2),
@@ -139,7 +146,8 @@ class SamplingExperiment(AbstractLearningExperiment):
                 "binary_ndcg": float(score8),
                 "online_ndcg": float(score5),
                 "bias": float(score6),
-                "per_q_bias": float(score7)}
+                "per_q_bias": float(score7),
+                "relaxed": int(relaxed)}
 
     def run(self):
         summary = {}
