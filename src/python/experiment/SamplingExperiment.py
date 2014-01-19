@@ -133,7 +133,7 @@ class SamplingExperiment(AbstractLearningExperiment):
 
         relaxed = 0
         try:
-            if self.system.relaxed:
+            if self.system.comparison.relaxed:
                 relaxed = 1
         except:
             pass
