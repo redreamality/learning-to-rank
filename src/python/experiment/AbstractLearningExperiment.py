@@ -41,12 +41,17 @@ class AbstractLearningExperiment:
         for evaluation in args["evaluation"]:
             self.evaluation_class = get_class(evaluation)
             self.evaluations[evaluation] = self.evaluation_class()
+        self.queryid = None
 
     def _sample_qid(self, query_keys, query_count, query_length):
             if self.query_sampling_method == "random":
                 return query_keys[random.randint(0, query_length - 1)]
             elif self.query_sampling_method == "fixed":
                 return query_keys[query_count % query_length]
+            elif self.query_sampling_method == "one":
+                if self.queryid == None:
+                    self.queryid = random.randrange(query_length)
+                return query_keys[self.queryid]
 
     def run(self):
         raise NotImplementedError("Derived class needs to implement run.")
