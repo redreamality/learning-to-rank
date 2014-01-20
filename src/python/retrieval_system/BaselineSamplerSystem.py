@@ -125,6 +125,9 @@ class BaselineSamplerSystem(AbstractLearningSystem):
                                                 self.current_context,
                                                 clicks,
                                                 self.current_query)
+        if isinstance(outcome, tuple):
+            outcome = outcome[0]
+
         per_q = zeros([len(self.rankers), len(self.rankers)])
         if outcome <= 0:
             self.sampler.update_scores(self.r1, self.r2, score=1, play=1)
