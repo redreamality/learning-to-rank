@@ -35,11 +35,12 @@ class TeamDraft(AbstractInterleavedComparison):
         # start with empty document list and assignments
         l, a = [], []
         # get ranked list for each ranker
-        l1, l2 = [], []
+        l1 = r1.docids[:length]
+        l2 = r2.docids[:length]
         i1, i2 = 0, 0
-        for i in range(length):
-            l1.append(r1.next())
-            l2.append(r2.next())
+#        for i in range(length):
+#            l1.append(r1.next())
+#            l2.append(r2.next())
 
         # determine overlap in top results
         for i in range(length):
