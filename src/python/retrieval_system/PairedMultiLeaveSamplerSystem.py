@@ -35,10 +35,10 @@ class PairedMultiLeaveSamplerSystem(BaselineSamplerSystem):
                                                 self.current_query)
         per_q = zeros([len(self.rankers), len(self.rankers)])
 
-        if outcome[0] > outcome[1]:
+        if outcome[0] >= outcome[1]:
             self.sampler.update_scores(self.r1, self.r2)
             per_q[self.i1, self.i2] += 1
-        else:
+        if outcome[0] <= outcome[1]:
             self.sampler.update_scores(self.r2, self.r1)
             per_q[self.i2, self.i1] += 1
         self.iteration += 1

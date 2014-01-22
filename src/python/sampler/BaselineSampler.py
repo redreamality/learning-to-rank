@@ -15,8 +15,8 @@ class BaselineSampler(AbstractSampler):
         self.iArms = range(self.nArms)   # The indices of the arms
         self.dictArms = dict(zip(self.lArms, self.iArms))  # A dictionary
                                                 #taking arms to their indices.
-        self.RealWins = zeros([self.nArms, self.nArms])
-        self.plays = zeros([self.nArms, self.nArms])
+        self.RealWins = ones([self.nArms, self.nArms])
+        self.plays = ones([self.nArms, self.nArms]) * 2
         logging.info("Number of arms = %d" % self.nArms)
         logging.info("Set of arms: %s" % arms)
 
@@ -28,6 +28,8 @@ class BaselineSampler(AbstractSampler):
 
         for i in self.iArms:
             for j in self.iArms:
+                if i == j: 
+                    continue
                 if minplays is None or self.plays[i, j] <= minplays:
                     minplays = self.plays[i, j]
                     mina1 = i
