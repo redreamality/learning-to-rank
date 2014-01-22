@@ -132,7 +132,7 @@ class BaselineSamplerSystem(AbstractLearningSystem):
         if outcome <= 0:
             self.sampler.update_scores(self.r1, self.r2, score=1, play=1)
             per_q[self.i1, self.i2] += 1
-        else:
+        if outcome >= 0:
             self.sampler.update_scores(self.r2, self.r1, score=1, play=1)
             per_q[self.i2, self.i1] += 1
 
