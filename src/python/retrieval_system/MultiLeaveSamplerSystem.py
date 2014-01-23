@@ -40,10 +40,10 @@ class MultiLeaveSamplerSystem(BaselineSamplerSystem):
             r1 = self.rankers[i1]
             for i2 in range(len(self.rankers)):
                 r2 = self.rankers[i2]
-                if outcome[i1] > outcome[i2]:
+                if outcome[i1] >= outcome[i2]:
                     self.sampler.update_scores(r1, r2)
                     per_q[i1, i2] += 1
-                else:
+                if outcome[i1] <= outcome[i2]:
                     self.sampler.update_scores(r2, r1)
                     per_q[i2, i1] += 1
         self.iteration += 1
