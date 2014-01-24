@@ -170,4 +170,9 @@ class SamplingExperiment(AbstractLearningExperiment):
                 summary[k].append(scores[k])
         summary["final_solution"] = [[float(y) for y in list(x)]
                                      for x in list(solution)]
+        summary["groundtruth"] = [[float(y) for y in list(x)]
+                                     for x in list(self.groundtruth)]
+
+        summary["groundtruthndcg"] = [[float(y) for y in list(x)]
+                                     for x in list(self.diff)]
         return summary
