@@ -168,4 +168,6 @@ class SamplingExperiment(AbstractLearningExperiment):
                 if not k in summary:
                     summary[k] = []
                 summary[k].append(scores[k])
+        summary["final_solution"] = [[float(y) for y in list(x)]
+                                     for x in list(solution)]
         return summary
