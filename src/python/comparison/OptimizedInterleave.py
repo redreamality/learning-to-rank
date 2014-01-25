@@ -46,7 +46,8 @@ class OptimizedInterleave(AbstractInterleavedComparison):
                                          prog=self.__class__.__name__)
         parser.add_argument("-c", "--credit", choices=["linear_credit",
                                                        "binary_credit",
-                                                       "inverse_credit"],
+                                                       "inverse_credit",
+                                                       "negative_credit"],
                             default="linear_credit")
         parser.add_argument("--allowed_leavings",
                             choices=["prefix_constraint",
