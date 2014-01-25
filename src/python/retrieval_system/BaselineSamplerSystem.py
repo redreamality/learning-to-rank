@@ -16,7 +16,7 @@
 from numpy import *
 import argparse
 import logging
-from random import gauss
+from random import gauss, sample
 import yaml
 import glob
 import os
@@ -61,6 +61,7 @@ class BaselineSamplerSystem(AbstractLearningSystem):
                              in args["selected_weights"].split(",")]
             else:
                 selection = [4, 24, 39, 41, 50]
+            selection = sample(selection, args["nr_rankers"])
             for i in range(args["nr_rankers"]):
                 v = zeros(self.feature_count)
                 v[selection[i]] = 1.0
@@ -134,7 +135,7 @@ class BaselineSamplerSystem(AbstractLearningSystem):
             per_q[self.i1, self.i2] += 1
         if outcome >= 0:
             self.sampler.update_scores(self.r2, self.r1, score=1, play=1)
-            per_q[self.i2, self.i1] += 1
+            per_q[self.i2, self.i1] += 1    
 
         self.iteration += 1
         return self.get_solution(), per_q
