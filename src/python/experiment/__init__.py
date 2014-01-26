@@ -20,3 +20,5 @@ from MetaExperiment import MetaExperiment
 from SyntheticComparisonExperiment import SyntheticComparisonExperiment
 from VASyntheticComparisonExperiment import VASyntheticComparisonExperiment
 from SamplingExperiment import SamplingExperiment
+from SamplingExperimentTask2 import SamplingExperimentTask2
+
