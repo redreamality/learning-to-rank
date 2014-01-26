@@ -37,19 +37,24 @@ class SamplingExperiment(AbstractLearningExperiment):
         self.evaluation = evaluation_class()
 
         rankers = self.system.rankers
-        n = len(rankers)
+        self.n = len(rankers)
         ndcgs = []
-        for r in range(n):
+        for r in range(self.n):
             ndcgs.append(self.evaluation.evaluate_all(rankers[r], test_queries,
                                                  cutoff=self.system.nr_results)
                          )
 
-        wins = np.zeros([n, n])
-        plays = np.zeros([n, n])
-        self.diff = np.zeros([n, n])
+        wins = np.zeros([self.n, self.n])
+        plays = np.zeros([self.n, self.n])
+        self.diff = np.zeros([self.n, self.n])
 
-        for r1 in range(n):
-            for r2 in range(n):
+        bestndcg = 0.0
+        self.bestranker = None
+        for r1 in range(self.n):
+            if ndcgs[r1] > bestndcg:
+                bestndcg = ndcgs[r1]
+                self.bestranker = r1
+            for r2 in range(self.n):
                 if ndcgs[r1] > ndcgs[r2]:
                     wins[r1, r2] += 1
                 else:
@@ -131,6 +136,15 @@ class SamplingExperiment(AbstractLearningExperiment):
                 score8 += abs(self.diff[i, j])
         score8 = score8 / size2
 
+        wins = [0] * self.n
+        for (i, j), val in np.ndenumerate(solution):
+            if val > 0.5:
+                wins[i] += 1
+        winner = sorted([(v, i) for v, i in enumerate(wins)])[-1][1]
+        score9 = 0.0
+        if winner != self.bestranker:
+            score9 = 1.0
+
         relaxed = 0
         try:
             if self.system.comparison.relaxed:
@@ -147,6 +161,7 @@ class SamplingExperiment(AbstractLearningExperiment):
                 "online_ndcg": float(score5),
                 "bias": float(score6),
                 "per_q_bias": float(score7),
+                "best": float(score9),
                 "relaxed": int(relaxed)}
 
     def run(self):
