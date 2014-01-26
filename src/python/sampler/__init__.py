@@ -1,3 +1,4 @@
 #from RelativeThompsonSampler import RelativeThompsonSampler
 from BeatTheMeanSampler import BeatTheMeanSampler
 from BaselineSampler import BaselineSampler
+from BaselineSamplerTask2 import BaselineSamplerTask2
