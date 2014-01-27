@@ -149,8 +149,6 @@ class SamplingExperiment(AbstractLearningExperiment):
         for (i, j), val in np.ndenumerate(solution):
             if val > 0.5:
                 wins[i] += val
-            elif val < 0.5:
-                wins[j] += val
         winner = sorted([(v, i) for v, i in enumerate(wins)])[-1][1]
         score10 = 0.0
         if winner != self.bestranker:
