@@ -145,6 +145,18 @@ class SamplingExperiment(AbstractLearningExperiment):
         if winner != self.bestranker:
             score9 = 1.0
 
+        wins = [0] * self.n
+        for (i, j), val in np.ndenumerate(solution):
+            if val > 0.5:
+                wins[i] += val
+            elif val < 0.5:
+                wins[j] += val
+        winner = sorted([(v, i) for v, i in enumerate(wins)])[-1][1]
+        score10 = 0.0
+        if winner != self.bestranker:
+            score10 = 1.0
+
+
         relaxed = 0
         try:
             if self.system.comparison.relaxed:
@@ -162,6 +174,7 @@ class SamplingExperiment(AbstractLearningExperiment):
                 "bias": float(score6),
                 "per_q_bias": float(score7),
                 "best": float(score9),
+                "best_scaled": float(score10),
                 "relaxed": int(relaxed)}
 
     def run(self):
