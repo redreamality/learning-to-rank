@@ -135,4 +135,4 @@ A. Schuth, K. Hofmann, S. Whiteson, M. de Rijke (2013): *Lerot: an Online Learni
 
 Acknowledgements
 --------------
-The development of Lerot is partially supported by the EU FP project LiMoSINe (http://www.limosine-project.eu).
+The development of Lerot is partially supported by the EU FP7 project LiMoSINe (http://www.limosine-project.eu).
