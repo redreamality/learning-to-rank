@@ -132,3 +132,7 @@ Lerot has been used in numerous publication, including these:
 
 A paper describing Lerot is published in the living labs workshop at CIKM’13: 
 A. Schuth, K. Hofmann, S. Whiteson, M. de Rijke (2013): *Lerot: an Online Learning to Rank Framework*. In: Living Labs for Information Retrieval Evaluation workshop at CIKM’13., 2013.
+
+Acknowledgements
+--------------
+The development of Lerot is partially supported by the EU FP project LiMoSINe (http://www.limosine-project.eu).
