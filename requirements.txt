@@ -1,0 +1,5 @@
+argparse>=1.2.1
+PyYAML>=3.10
+numpy>=1.7.1
+celery>=2.4.6
+scipy>=0.12.0
