@@ -20,7 +20,7 @@ Installation
 ------------
 Install the prerequisites plus Lerot as follows::
 
-    $ pip install PyYAML numpy scipy celery
+    $ pip install -r requirements.txt
     $ git clone https://bitbucket.org/ilps/lerot.git
     $ cd lerot
     $ python setup.py install
