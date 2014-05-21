@@ -120,3 +120,19 @@ If you use Lerot to produce results for your scientific publication, please refe
         year = {2013},
         booktitle = {Living Labs for Information Retrieval Evaluation workshop at CIKM’13.}
         }
+
+Publications
+-----------
+Lerot has been used in numerous publication, including these:
+
+1) K. Hofmann, A. Schuth, S. A. Whiteson, M. de Rijke (2013): *Reusing Historical Interaction Data for Faster Online Learning to Rank for IR*. In: Proceeding of the sixth ACM international conference on Web Search and Data Mining, 2013.
+2) A. Chuklin, A. Schuth, K. Hofmann, P. Serdyukov, M. de Rijke (2013): *Evaluating Aggregated Search Using Interleaving*. In: Proceedings of the International Conference on Information and Knowledge Management, 2013.
+3) A. Schuth, F. Sietsma, S. Whiteson, M. de Rijke (2014): *Optimizing Base Rankers Using Clicks: A Case Study using BM25*. In: 36th European Conference on Information Retrieval (ECIR’14), 2014.
+4) K. Hofmann, A. Schuth, A. Bellogin, M. de Rijke (2014): User Behavior and Bias in Click-Based Recommender Evaluation*. In: 36th European Conference on Information Retrieval (ECIR’14), 2014.
+
+A paper describing Lerot is published in the living labs workshop at CIKM’13: 
+A. Schuth, K. Hofmann, S. Whiteson, M. de Rijke (2013): *Lerot: an Online Learning to Rank Framework*. In: Living Labs for Information Retrieval Evaluation workshop at CIKM’13., 2013.
+
+Acknowledgements
+--------------
+The development of Lerot is partially supported by the EU FP7 project LiMoSINe (http://www.limosine-project.eu).
