@@ -32,7 +32,8 @@ import pylab as P
 import pickle
 import sys
 import os
-
+from matplotlib import rc
+rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -40,6 +41,7 @@ if __name__ == "__main__":
                         " anaylics directory.", nargs="+")
     parser.add_argument("--um", default="inf", nargs="+")
     parser.add_argument("--nofail", action="store_true", default=False)
+    parser.add_argument("--plotallusers", action="store_true", default=False)
     parser.add_argument("--aggregate", default="mean", nargs="+",
                         choices=["mean", "max", "min"])
     parser.add_argument("--raw", action="store_true", default=False)
@@ -49,6 +51,13 @@ if __name__ == "__main__":
     parser.add_argument("--traintest", type=str, default="test", choices=["train", "test"])
     args = parser.parse_args()
     
+    if not type(args.aggregate) is list:
+        args.aggregate = [args.aggregate]
+    if not type(args.metric) is list:
+        args.metric = [args.metric]
+    if not type(args.um) is list:
+        args.um = [args.um]
+
     uniqvalues = args.root_dir + args.aggregate + args.um + args.metric + [args.raw, args.traintest]
     uniq = str(hash(tuple(uniqvalues)))
     uniqfile = os.path.join(basedir, 'out', uniq + ".ndcgpoints.pickle")
@@ -88,10 +97,12 @@ if __name__ == "__main__":
    
             exps.append(exp)
             if args.raw:
+                print "loading RAW"
                 for um in glob.glob(os.path.join(indir, "output", "*")):
                     for data in glob.glob(os.path.join(um, "*")):
                         for fold in glob.glob(os.path.join(data, "*")):
                             for f in glob.glob(os.path.join(fold, "*.txt.gz")):
+                                print "loading", f
                                 parts = os.path.normpath(os.path.abspath(f)).split(os.sep)
                                 umshort, datashort, foldshort = parts[-4:-1]
                                 if not umshort in args.um:
@@ -140,15 +151,65 @@ if __name__ == "__main__":
     datas = sorted(list(set(datas)))
 
     rawlines = [1,0]
-    lines = [[1,0],[1,1],[4,2,1,2],[4,2,1,2,1,2]]
-    colors = ['b','g','r','c','m','y','k']
+    lines = [[1,1],[1,0],[1,1],[4,2,1,2],[4,2,1,2,1,2]]
+    defaultlines = [[1,0],[1,1],[1,1],[4,2,1,2],[4,2,1,2,1,2]]
+    defaultlabels = ["tuned for .gov", "tuned for OHSUMED"]
+    #colors = ['b','g','r','c','m','y','k']
+    colors = ['red','orange','green','blue','m','y','k']
+    usermap = {
+        "per":"perfect",
+        "nav":"navigational",
+        "inf":"informational",
+        "ran":"almost random",
+        }
 
+    defaults = {
+        "HP2003":(0.674, 0.662),
+        "HP2004":(0.629, 0.589),
+        "NP2003":(0.693, 0.703),
+        "NP2004":(0.599, 0.591),
+        "TD2003":(0.404, 0.398),
+        "TD2004":(0.469, 0.461),
+    }
+    #defaults = {
+    #    "HP2003":[0.674],
+    #    "HP2004":[0.629],
+    #    "NP2003":[0.693],
+    #    "NP2004":[0.599],
+    #    "TD2003":[0.404],
+    #    "TD2004":[0.469],
+    #}
+    fig = P.figure(figsize=(5.0, 4.0))
+    P.clf()
+    P.ioff()
+    cindex = 0
+    lindex = 0
+    legenddone = False
+    datas = datas[:-1]
     for data in datas:
+        if args.plotallusers:
+            cindex = 0
+            lindex = 0
+            P.title(data)
+            defaultindex = 0
+            for default in defaults[data]:
+                seq = defaultlines[defaultindex]
+                l = P.axhline(y=default, color="gray", label=defaultlabels[defaultindex])
+                l.set_dashes(seq)
+                defaultindex += 1
+
         for user in args.um:
-            if not args.plotperexp:
+            if not args.plotperexp and not args.plotallusers:
                 P.clf()
                 P.ioff()
-            cindex = 0
+            if args.plotallusers:
+                color = colors[cindex % len(colors)]
+                cindex += 1
+                lindex += 1
+            else:
+                cindex = 0
+
+
             for exp in exps:
                 try:
                     label, seq = mapping[exp]
@@ -157,10 +218,13 @@ if __name__ == "__main__":
                 if args.plotperexp:
                     P.clf()
                     P.ioff()
-                color = colors[cindex % len(colors)]
-                cindex += 1
-                lindex = 0
+                if not args.plotallusers:
+                    color = colors[cindex % len(colors)]
+                    cindex += 1
+                    lindex = 0
                 if args.raw:
+                    if not 'raw' in  ndcgpoints[exp]:
+                        continue
                     if not user in ndcgpoints[exp]['raw']:
                         continue
                     if not data in ndcgpoints[exp]['raw'][user]:
@@ -181,8 +245,8 @@ if __name__ == "__main__":
                                     else:
                                         for i, x in enumerate(w):
                                             aggregation[metric][i] += x
-                                l = P.plot(w, color, linewidth=.3)
-                                l[0].set_dashes(rawlines)
+                                #l = P.plot(w, color, linewidth=.3)
+                                #l[0].set_dashes(rawlines)
                         if args.plotperexp:
                             l = P.legend(loc=4)
                             #P.ylim(0., 1.0)
@@ -197,13 +261,15 @@ if __name__ == "__main__":
                     if not user in ndcgpoints[exp]:
                         if 'raw' in ndcgpoints[exp]:
                             for metric in args.metric:
-                                w = aggregation[metric][:200]
+                                w = aggregation[metric]
                                 seq = lines[lindex % len(lines)]
                                 #l = P.plot(w, color, label="-".join([label, agg, metric]))
-                                l = P.plot(w, color, label=metric)
+                                if args.plotallusers:
+                                    l = P.plot(w, color, label=usermap[user])
+                                else:
+                                    l = P.plot(w, color, label=label)
                                 l[0].set_dashes(seq)
                                 P.legend()
-                                lindex += 1
                             continue
                         else:
                             continue
@@ -220,10 +286,30 @@ if __name__ == "__main__":
                     l[0].set_dashes(seq)
                     lindex += 1
                 if args.plotperexp:
-                    #l = P.legend(loc=4)
+                    l = P.legend(loc=4)
                     #P.ylim(0., 1.0)
-                    P.savefig(os.path.join(basedir, "out", "%s-offline-%s-%s-%s-%s-%s.pdf" % (uniq, args.metric, '-'.join(args.aggregate), user, data, label)), format='pdf')
+                    P.savefig(os.path.join(basedir, "out", "%s-offline-%s-%s-%s-%s-%s.pdf" % (uniq, args.metric, '-'.join(args.aggregate), user, data, label)), format='pdf', bbox_inches='tight')
 
-            if not args.plotperexp:
+            if not args.plotperexp and not args.plotallusers:
                 l = P.legend(loc=4)
-                P.savefig(os.path.join(basedir, "out", "%s-offline-%s-%s-%s-%s.pdf" % (uniq, args.metric, '-'.join(args.aggregate), user, data)), format='pdf')
+                P.savefig(os.path.join(basedir, "out", "%s-offline-%s-%s-%s-%s.pdf" % (uniq, args.metric, '-'.join(args.aggregate), user, data)), format='pdf', bbox_inches='tight')
+                P.clf()
+                P.ioff()
+        if args.plotallusers:
+            #P.ylim(0.25, 0.70)
+            P.ylabel("nDCG")
+            P.xlabel("queries")
+            if not legenddone:
+                legenddone = True
+                l = P.legend(loc=4)
+            else:
+                P.legend().set_visible(False)
+            x1,x2,y1,y2 = P.axis()
+            if not "TD" in data:
+                P.ylim(y1+.15, y2)
+            else:
+                P.ylim(y1+.06, y2)
+            #P.savefig(os.path.join(basedir, "out", "%s-offline-%s-%s-%s.pdf" % (uniq, args.metric, '-'.join(args.aggregate), data)), format='pdf', bbox_inches='tight')
+            P.savefig(os.path.join(basedir, "out", "%s-offline-%s-%s-%s.eps" % (uniq, args.metric, '-'.join(args.aggregate), data)), format='eps', bbox_inches='tight')
+            P.clf()
+            P.ioff()
