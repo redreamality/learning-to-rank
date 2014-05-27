@@ -14,6 +14,7 @@
 # along with Lerot.  If not, see <http://www.gnu.org/licenses/>.
 
 from ListwiseLearningSystem import ListwiseLearningSystem
+from PrudentListwiseLearningSystem import PrudentListwiseLearningSystem
 from ListwiseLearningSystemWithCandidateSelection import (
     ListwiseLearningSystemWithCandidateSelection)
 from PairwiseLearningSystem import PairwiseLearningSystem
