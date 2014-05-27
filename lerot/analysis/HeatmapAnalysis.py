@@ -17,9 +17,9 @@ import os
 import gzip
 import yaml
 try:
-    from yaml import CLoader as Loader, CDumper as Dumper
+    from yaml import CLoader as Loader
 except ImportError:
-    from yaml import Loader, Dumper
+    from yaml import Loader
 import numpy as np
 from AbstractAnalysis import AbstractAnalysis
 

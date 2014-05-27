@@ -20,12 +20,11 @@ e.g., sampling queries, observing user clicks, external evaluation of result
 lists
 """
 
-import logging
 from numpy.linalg import norm
 from numpy import zeros, sign
 
 from .AbstractLearningExperiment import AbstractLearningExperiment
-from ..utils import get_cosine_similarity, get_class
+from ..utils import get_class
 
 
 class PrudentLearningExperiment(AbstractLearningExperiment):
@@ -51,7 +50,7 @@ class PrudentLearningExperiment(AbstractLearningExperiment):
         
         # process num_queries queries
         for query_count in range(self.num_queries):
-            previous_solution_w = self.system.get_solution().w
+            #previous_solution_w = self.system.get_solution().w
             qid = self._sample_qid(query_keys, query_count, query_length)
             query = self.training_queries[qid]
             num_comparisons = 101
