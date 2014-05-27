@@ -7,7 +7,7 @@ import glob
 import os
 
 from AbstractLearningSystem import AbstractLearningSystem
-from utils import get_class
+from ..utils import get_class
 
 
 class SamplerSystem(AbstractLearningSystem):
