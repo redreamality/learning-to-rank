@@ -2,8 +2,8 @@ import argparse
 import collections
 import itertools
 
-from .OptimizedInterleave import OptimizedInterleave
-from ..utils import get_class, split_arg_str
+from lerot.comparison.OptimizedInterleave import OptimizedInterleave
+from lerot.utils import get_class, split_arg_str
 
 
 def enumerate_allowed_dispositions(pos_limits, size_limits):
@@ -147,8 +147,8 @@ class OptimizedInterleaveVa(OptimizedInterleave):
 
 
 import unittest
-from ranker import SyntheticDeterministicRankingFunction
-from document import Document
+from lerot.ranker import SyntheticDeterministicRankingFunction
+from lerot.document import Document
 
 class TestEvaluation(unittest.TestCase):
 
