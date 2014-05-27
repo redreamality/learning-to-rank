@@ -15,6 +15,7 @@
 
 from GenericExperiment import GenericExperiment
 from LearningExperiment import LearningExperiment
+from PrudentLearningExperiment import PrudentLearningExperiment
 from MetaExperiment import MetaExperiment
 from HistoricalComparisonExperiment import HistoricalComparisonExperiment
 from SyntheticComparisonExperiment import SyntheticComparisonExperiment
