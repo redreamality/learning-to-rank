@@ -22,8 +22,6 @@ import time
 from .AbstractInterleavedComparison import AbstractInterleavedComparison
 from ..utils import split_arg_str
 
-import gurobipy
-
 
 # Maximum number of documents (in A and B) that we can feed to OI* alggorithms
 MAX_NUMBER_OF_DOCS = 20
@@ -244,6 +242,8 @@ class OptimizedInterleave(AbstractInterleavedComparison):
         return self.interleave_n(r1, r2, query, length, 1, bias=0)[0]
 
     def interleave_n(self, r1, r2, query, length, num_repeat, bias=0):
+        import gurobipy
+
         r1.init_ranking(query)
         r2.init_ranking(query)
         rA, rB = (r.getDocs() for r in [r1, r2])

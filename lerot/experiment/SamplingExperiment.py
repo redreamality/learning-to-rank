@@ -1,7 +1,6 @@
 import logging
-from numpy.linalg import norm
-from utils import get_cosine_similarity, get_class
-from AbstractLearningExperiment import AbstractLearningExperiment
+from ..utils import get_cosine_similarity, get_class
+from .AbstractLearningExperiment import AbstractLearningExperiment
 import re
 
 
