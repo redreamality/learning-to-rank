@@ -19,8 +19,8 @@ try:
     from include import *
 except:
     pass
-from experiment import GenericExperiment
+from experiment import GenericLearningExperiment
 
 if __name__ == "__main__":
-    experiment = GenericExperiment()
+    experiment = GenericLearningExperiment()
     experiment.run()

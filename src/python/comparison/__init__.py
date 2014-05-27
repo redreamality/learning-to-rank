@@ -14,16 +14,15 @@
 # along with Lerot.  If not, see <http://www.gnu.org/licenses/>.
 
 from BalancedInterleave import BalancedInterleave
-from StochasticBalancedInterleave import StochasticBalancedInterleave
-from TeamDraft import TeamDraft
 from DocumentConstraints import DocumentConstraints
-from ProbabilisticInterleave import ProbabilisticInterleave
-
 from HistBalancedInterleave import HistBalancedInterleave
-from HistTeamDraft import  HistTeamDraft
 from HistDocumentConstraints import HistDocumentConstraints
 from HistProbabilisticInterleave import HistProbabilisticInterleave
-from ProbabilisticInterleaveWithHistory import \
-    ProbabilisticInterleaveWithHistory
+from HistTeamDraft import  HistTeamDraft
 from OptimizedInterleave import OptimizedInterleave
-from TdiVa1 import TdiVa1
+from OptimizedInterleaveVa import OptimizedInterleaveVa
+from ProbabilisticInterleave import ProbabilisticInterleave
+from ProbabilisticInterleaveWithHistory import ProbabilisticInterleaveWithHistory
+from StochasticBalancedInterleave import StochasticBalancedInterleave
+from TeamDraft import TeamDraft
+from VaTdi import VaTdi, CannotInterleave

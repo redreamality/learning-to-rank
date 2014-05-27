@@ -49,7 +49,7 @@ class CascadeUserModel(AbstractUserModel):
             (key, value) = re.split("\s*:\s*", entry)
             self.p_stop[int(key)] = float(value)
 
-    def get_clicks(self, result_list, labels):
+    def get_clicks(self, result_list, labels, **kwargs):
         """simulate clicks on list l"""
         c = zeros(len(result_list), dtype='int')
         for pos, d in enumerate(result_list):

@@ -24,9 +24,36 @@ import gzip
 import glob
 import time
 import logging
-from celery import Celery
+
+from collections import namedtuple
+# Fallback settings in case celery is not installed.
+celery = namedtuple('Dummy', ['task'])(task=lambda x: x)
+
+try:
+    from celery import Celery
+    # TODO: move this to config
+    celery = Celery('tasks',
+                #broker='amqp://USER:PW@HOST/QUEUE',
+                backend='amqp')
+                #include=['environment',
+                #         'retrieval_system',
+                #         'comparison',
+                #         'evaluation',
+                #         'query',
+                #         'ranker',
+                #         'sampler',
+                #         'analysis'])
+    celery.conf.CELERYD_PREFETCH_MULTIPLIER = 1
+    celery.conf.CELERYD_HIJACK_ROOT_LOGGER = False
+    celery.conf.BROKER_POOL_LIMIT = 2
+    celery.conf.CELERY_ACKS_LATE = True
+    celery.conf.CELERYD_POOL_RESTARTS = True
+except:
+    import sys
+    print >>sys.stderr, 'Celery support is disabled'
+
 from utils import get_class
-from experiment import GenericExperiment
+from experiment import GenericLearningExperiment
 
 
 class MetaExperiment:
@@ -204,7 +231,7 @@ class MetaExperiment:
         yaml.dump(r, log_fh, default_flow_style=False, Dumper=Dumper)
         log_fh.close()
         return log_file
-    
+
     def run_conf(self):
         if self.meta_args["rerun"]:
             self.update_analytics()
@@ -253,7 +280,7 @@ class MetaExperiment:
                       default_flow_style=False,
                       Dumper=Dumper)
             config_bk_file.close()
-            e = GenericExperiment("-f " + config_bk)
+            e = GenericLearningExperiment("-f " + config_bk)
             r = e.run_experiment()
             log_file = self.store(conf, r)
             self.update_analytics_file(log_file)
@@ -306,25 +333,6 @@ class MetaExperiment:
         logging.info("Done")
 
 
-# TODO: move this to config
-celery = Celery('tasks',
-            #broker='amqp://USER:PW@HOST/QUEUE',
-            backend='amqp')
-            #include=['environment',
-            #         'retrieval_system',
-            #         'comparison',
-            #         'evaluation',
-            #         'query',
-            #         'ranker',
-            #         'sampler',
-            #         'analysis'])
-celery.conf.CELERYD_PREFETCH_MULTIPLIER = 1
-celery.conf.CELERYD_HIJACK_ROOT_LOGGER = False
-celery.conf.BROKER_POOL_LIMIT = 2
-celery.conf.CELERY_ACKS_LATE = True
-celery.conf.CELERYD_POOL_RESTARTS = True
-
-
 @celery.task
 def run_task(conf):
     if not os.path.exists(conf["output_dir"]):
@@ -365,5 +373,5 @@ def run_task(conf):
               Dumper=Dumper)
     config_bk_file.close()
 
-    e = GenericExperiment("-f " + config_bk)
+    e = GenericLearningExperiment("-f " + config_bk)
     return e.run_experiment()

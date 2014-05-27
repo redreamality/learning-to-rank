@@ -13,5 +13,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Lerot.  If not, see <http://www.gnu.org/licenses/>.
 
-cd ../python
-nice celery worker -A experiment.MetaExperiment:celery -Q $1 -E -c $2  -b amqp://USER:PW@HOST/QUEUE --autoreload
+from StatelessRankingFunction import StatelessRankingFunction
+
+class ModelRankingFunction(StatelessRankingFunction):
+    def __init__(self):
+        self.pages = {}
+
+    def add_doc_for_query(self, query, doc):
+        self.pages.setdefault(query, [])
+        self.pages[query].append(doc)
+
+    def init_ranking(self, query):
+        self.docs = self.pages[query]
+
+    def update_weights(self, new_weights):
+        # Not required here.
+        pass
