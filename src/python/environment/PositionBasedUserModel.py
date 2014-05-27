@@ -28,7 +28,7 @@ class PositionBasedUserModel(AbstractUserModel):
     def p(self, i):
         return self.p_param ** i
 
-    def get_clicks(self, result_list, labels):
+    def get_clicks(self, result_list, labels, **kwargs):
         """simulate clicks on list l"""
         c = zeros(len(result_list), dtype='int')
         for pos, d in enumerate(result_list):
@@ -38,5 +38,5 @@ class PositionBasedUserModel(AbstractUserModel):
                 c[pos] = 1
         return c
 
-    def get_examination_prob(self, result_list):
+    def get_examination_prob(self, result_list, **kwargs):
         return [self.p(i) for i in range(len(result_list))]

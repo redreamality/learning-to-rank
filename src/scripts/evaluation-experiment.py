@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # This file is part of Lerot.
 #
 # Lerot is free software: you can redistribute it and/or modify
@@ -13,9 +15,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Lerot.  If not, see <http://www.gnu.org/licenses/>.
 
-from DeterministicRankingFunction import DeterministicRankingFunction
-from ModelRankingFunction import ModelRankingFunction
-from ProbabilisticRankingFunction import ProbabilisticRankingFunction
-from StatelessRankingFunction import StatelessRankingFunction
-from SyntheticDeterministicRankingFunction import SyntheticDeterministicRankingFunction
-from SyntheticProbabilisticRankingFunction import SyntheticProbabilisticRankingFunction
+try:
+    from include import *
+except:
+    pass
+from experiment import VerticalEvaluationExperiment
+
+if __name__ == "__main__":
+    experiment = VerticalEvaluationExperiment()
+    experiment.run()

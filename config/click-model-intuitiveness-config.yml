@@ -1,0 +1,8 @@
+run_dir: data/pages
+qrel_file: data/qrels
+Iprob_file: data/Iprob
+vert_map_file: data/vert_vertid.map
+num_runs: 50
+output_dir: outdir
+user_model: environment.RandomClickModel
+user_model_args: 0.5

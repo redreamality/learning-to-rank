@@ -13,15 +13,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Lerot.  If not, see <http://www.gnu.org/licenses/>.
 
-# KH, 2012/08/14
+import numpy as np
+from numpy import zeros
 
-"""
-Abstract base class for interleaved comparison methods with historical data
-"""
+from AbstractUserModel import AbstractUserModel
 
+class RandomClickModel(AbstractUserModel):
+    """Defines a positions based user model."""
 
-class AbstractHistInterleavedComparison:
+    def __init__(self, p=0.5):
+        self.p = p
 
-    def infer_outcome(self, l, a, c, target_r1, target_r2, query):
-        raise NotImplementedError("The derived class needs to implement "
-            "infer_outcome.")
+    def get_clicks(self, result_list, labels, **kwargs):
+        """simulate clicks on list l"""
+        c = zeros(len(result_list), dtype='int')
+        for pos, d in enumerate(result_list):
+            if np.random.binomial(1, self.p):
+                c[pos] = 1
+        return c
+
