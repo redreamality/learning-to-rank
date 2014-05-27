@@ -14,10 +14,15 @@
 # along with Lerot.  If not, see <http://www.gnu.org/licenses/>.
 
 from setuptools import setup
+import os.path
+
+# Get __version__ from the source directory
+dist_dir = os.path.dirname(os.path.abspath(__file__))
+execfile(os.path.join(dist_dir, 'lerot/_version.py'))
 
 setup(
     name = "Lerot",
-    version = "1.0",
+    version = __version__,
     author = "Katja Hofmann, Anne Schuth",
     author_email = "katja.hofmann@microsoft.com, anne.schuth@uva.nl",
     description = ("This project is designed to run experiments on online\
@@ -25,13 +30,15 @@ setup(
     keywords = "online learning to rank for information retrieval",
     url = "https://bitbucket.org/ilps/lerot",
     download_url = "https://bitbucket.org/ilps/lerot/downloads",
-    package_dir = {'': 'src/python'},
-    packages=['analysis', 'comparison', 'environment', 'evaluation',
-              'experiment', 'query', 'ranker', 'ranker.model',
-              'retrieval_system', 'utils'],
+    packages=(['lerot']
+              + [('lerot.%s' % sub)
+                 for sub in ('analysis', 'comparison', 'document',
+                             'environment', 'evaluation', 'experiment',
+                             'query', 'ranker', 'ranker.model',
+                             'retrieval_system', 'utils')]),
     long_description=open('README.rst', 'r').read(),
     license = "GNU Lesser General Public License",
-    scripts=['src/scripts/learning-experiment.py',
-             'src/scripts/meta-experiment.py',
-             'src/scripts/summarize-learning-experiment.py']
+    scripts=['scripts/learning-experiment.py',
+             'scripts/meta-experiment.py',
+             'scripts/summarize-learning-experiment.py']
 )
