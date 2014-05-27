@@ -21,8 +21,10 @@ Utility functions
 from importlib import import_module
 from numpy import dot, sqrt
 from numpy.linalg import norm
-from numpy import array, zeros, ones
-from random import gauss, sample
+from numpy import ones
+import numpy as np
+from scipy.linalg import norm
+from random import sample
 
 
 def string_to_boolean(string):
@@ -113,18 +115,13 @@ def get_binomial_ci(p_hat, n):
     return (lower, upper)
 
 
-def normalize_to_unit_sphere(v):
-    return v / norm(v)
-
-
 def sample_unit_sphere(n):
     """See http://mathoverflow.net/questions/24688/efficiently-sampling-
     points-uniformly-from-the-surface-of-an-n-sphere"""
-    v = zeros(n)
-    for i in range(0, n):
-        v[i] = gauss(0, 1)
-    return normalize_to_unit_sphere(v)
+    v = np.random.randn(n)
+    v /= norm(v)
+    return v
 
 
 def sample_fixed(self, n):
-    return normalize_to_unit_sphere(ones(n))
+    return np.ones(n) / sqrt(n)
