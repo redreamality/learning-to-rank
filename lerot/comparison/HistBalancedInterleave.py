@@ -17,8 +17,8 @@
 
 from numpy import asarray
 
-from AbstractHistInterleavedComparison import AbstractHistInterleavedComparison
-from BalancedInterleave import BalancedInterleave
+from .AbstractHistInterleavedComparison import AbstractHistInterleavedComparison
+from .BalancedInterleave import BalancedInterleave
 
 
 class HistBalancedInterleave(AbstractHistInterleavedComparison):

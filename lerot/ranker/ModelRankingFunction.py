@@ -13,14 +13,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Lerot.  If not, see <http://www.gnu.org/licenses/>.
 
-from ListwiseLearningSystem import ListwiseLearningSystem
-from PrudentListwiseLearningSystem import PrudentListwiseLearningSystem
-from ListwiseLearningSystemWithCandidateSelection import (
-    ListwiseLearningSystemWithCandidateSelection)
-from PairwiseLearningSystem import PairwiseLearningSystem
-from SamplerSystem import SamplerSystem
+from StatelessRankingFunction import StatelessRankingFunction
 
+class ModelRankingFunction(StatelessRankingFunction):
+    def __init__(self):
+        self.pages = {}
 
-__all__ = ['ListwiseLearningSystem', 'PrudentListwiseLearningSystem',
-           'ListwiseLearningSystemWithCandidateSelection',
-           'PairwiseLearningSystem']
+    def add_doc_for_query(self, query, doc):
+        self.pages.setdefault(query, [])
+        self.pages[query].append(doc)
+
+    def init_ranking(self, query):
+        self.docs = self.pages[query]
+
+    def update_weights(self, new_weights):
+        # Not required here.
+        pass

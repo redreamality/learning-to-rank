@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # This file is part of Lerot.
 #
 # Lerot is free software: you can redistribute it and/or modify
@@ -13,14 +15,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Lerot.  If not, see <http://www.gnu.org/licenses/>.
 
-from ListwiseLearningSystem import ListwiseLearningSystem
-from PrudentListwiseLearningSystem import PrudentListwiseLearningSystem
-from ListwiseLearningSystemWithCandidateSelection import (
-    ListwiseLearningSystemWithCandidateSelection)
-from PairwiseLearningSystem import PairwiseLearningSystem
-from SamplerSystem import SamplerSystem
+try:
+    from include import *
+except:
+    pass
+from experiment import VerticalEvaluationExperiment
 
-
-__all__ = ['ListwiseLearningSystem', 'PrudentListwiseLearningSystem',
-           'ListwiseLearningSystemWithCandidateSelection',
-           'PairwiseLearningSystem']
+if __name__ == "__main__":
+    experiment = VerticalEvaluationExperiment()
+    experiment.run()

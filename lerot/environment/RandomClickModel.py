@@ -13,14 +13,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Lerot.  If not, see <http://www.gnu.org/licenses/>.
 
-from ListwiseLearningSystem import ListwiseLearningSystem
-from PrudentListwiseLearningSystem import PrudentListwiseLearningSystem
-from ListwiseLearningSystemWithCandidateSelection import (
-    ListwiseLearningSystemWithCandidateSelection)
-from PairwiseLearningSystem import PairwiseLearningSystem
-from SamplerSystem import SamplerSystem
+import numpy as np
+from numpy import zeros
 
+from AbstractUserModel import AbstractUserModel
 
-__all__ = ['ListwiseLearningSystem', 'PrudentListwiseLearningSystem',
-           'ListwiseLearningSystemWithCandidateSelection',
-           'PairwiseLearningSystem']
+class RandomClickModel(AbstractUserModel):
+    """Defines a positions based user model."""
+
+    def __init__(self, p=0.5):
+        self.p = p
+
+    def get_clicks(self, result_list, labels, **kwargs):
+        """simulate clicks on list l"""
+        c = zeros(len(result_list), dtype='int')
+        for pos, d in enumerate(result_list):
+            if np.random.binomial(1, self.p):
+                c[pos] = 1
+        return c
+

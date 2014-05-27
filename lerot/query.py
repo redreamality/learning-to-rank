@@ -24,7 +24,7 @@ import gzip
 import numpy as np
 import os.path
 
-from ..document import Document
+from .document import Document
 
 __all__ = ['Query', 'Queries', 'QueryStream', 'load_queries', 'write_queries']
 

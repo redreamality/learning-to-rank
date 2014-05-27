@@ -17,8 +17,8 @@
 
 from numpy import asarray, where
 
-from AbstractHistInterleavedComparison import AbstractHistInterleavedComparison
-from DocumentConstraints import DocumentConstraints
+from .AbstractHistInterleavedComparison import AbstractHistInterleavedComparison
+from .DocumentConstraints import DocumentConstraints
 
 
 class HistDocumentConstraints(AbstractHistInterleavedComparison):
