@@ -17,3 +17,6 @@ from CascadeUserModel import CascadeUserModel
 from FederatedClickModel import FederatedClickModel
 from PositionBasedUserModel import PositionBasedUserModel
 from RandomClickModel import RandomClickModel
+
+__all__ = ['CascadeUserModel', 'FederatedClickModel', 'PositionBasedUserModel',
+           'RandomClickModel']
