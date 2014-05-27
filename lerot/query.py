@@ -26,6 +26,9 @@ import os.path
 
 from lerot.document import Document
 
+__all__ = ['Query', 'Queries', 'QueryStream', 'load_queries', 'write_queries']
+
+
 
 class SimpleBufferedLineReader:
     """Read lines from a file, but keep a short buffer to allow rewinds"""

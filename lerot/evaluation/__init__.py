@@ -22,3 +22,14 @@ from VSEval import VSEval
 from VDEval import VDEval
 from ISEval import ISEval
 from RPEval import RPEval
+
+__all__ = [
+    'AsRbpEval'
+    'DcgEval',
+    'NdcgEval',
+    'LetorNdcgEval'
+    'VSEval',
+    'VDEval',
+    'ISEval',
+    'RPEval',
+]

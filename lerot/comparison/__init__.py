@@ -19,10 +19,26 @@ from HistBalancedInterleave import HistBalancedInterleave
 from HistDocumentConstraints import HistDocumentConstraints
 from HistProbabilisticInterleave import HistProbabilisticInterleave
 from HistTeamDraft import  HistTeamDraft
-#from OptimizedInterleave import OptimizedInterleave
-#from OptimizedInterleaveVa import OptimizedInterleaveVa
+from OptimizedInterleave import OptimizedInterleave
+from OptimizedInterleaveVa import OptimizedInterleaveVa
 from ProbabilisticInterleave import ProbabilisticInterleave
 from ProbabilisticInterleaveWithHistory import ProbabilisticInterleaveWithHistory
 from StochasticBalancedInterleave import StochasticBalancedInterleave
 from TeamDraft import TeamDraft
 from VaTdi import VaTdi, CannotInterleave
+
+__all__ = [
+    'BalancedInterleave',
+    'DocumentConstraints',
+    'HistBalancedInterleave',
+    'HistDocumentConstraints',
+    'HistProbabilisticInterleave',
+    'HistTeamDraft',
+    'OptimizedInterleave',
+    'OptimizedInterleaveVa',
+    'ProbabilisticInterleave',
+    'ProbabilisticInterleaveWithHistory',
+    'StochasticBalancedInterleave',
+    'TeamDraft',
+    'VaTdi',
+]
