@@ -1,0 +1,49 @@
+num_runs: 630
+num_repeat_interleaving: 1
+
+verbose: false
+experimenter: experiment.VASyntheticComparisonExperiment
+
+rankings: "model"
+result_length: 10
+run_dir: data/pages
+ideal_page_as_rbp: data/VS0_RP1_IS0
+qrel_file: data/qrels
+Iprob_file: data/Iprob
+vert_map_file: data/vert_vertid.map
+
+run_start_id: 0
+processes: 32
+output_prefix: model-RQ1-block-positions
+
+# RANDOM
+user_model: environment.FederatedClickModel
+user_model_args: "0.2 0.1"
+
+offline_metrics: ""
+compute_online_metrics: false
+compute_interleaved_metrics: true
+
+system_comparison: "none"
+# model to determine pareto-dominance
+pareto_um_class: environment.FederatedClickModel
+pareto_um_args: "0.2 0.1"
+
+# method names have to be unique
+evaluation_methods:
+
+- TDI
+- VA-TDI
+- OI
+- VA-OI
+
+
+evaluation_methods_args:
+
+- "--class_name comparison.TeamDraft"
+
+- "--class_name comparison.VaTdi --aggregate expectation --compare_td 1"
+
+- "--class_name comparison.OptimizedInterleave --ranker det --ranker_args None --aggregate expectation --compare_td 1 -c linear_credit"
+
+- "--class_name comparison.OptimizedInterleaveVa --ranker det --ranker_args None --aggregate expectation --compare_td 1 -c linear_credit"

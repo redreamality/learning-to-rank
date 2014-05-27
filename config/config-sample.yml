@@ -1,0 +1,33 @@
+test_queries: /scratch/mzoghi/online-learning-data/NP2004/Fold1/test.txt
+training_queries: /scratch/mzoghi/online-learning-data/NP2004/Fold1/train.txt
+feature_count: 64 # 64 for .Gov, 46 for MQ*, 136 for MSLR
+num_runs: 1
+num_queries: 1000
+processes: 1
+query_sampling_method: random
+user_model: environment.CascadeUserModel
+# for p-click and p-stop provide mappings from relevance grades to probabilities
+user_model_args: --p_click 0:0.0,1:0.5,2:1 --p_stop 0:0.0,1:0.0,2:0.0
+system: retrieval_system.SamplerSystem
+system_args: --init_weights /scratch/mzoghi/online-learning-rankers/features64/
+    --nr_rankers 5
+    --ranker ranker.ProbabilisticRankingFunction
+    --ranker_arg 3
+    --ranker_tie random
+    --comparison comparison.ProbabilisticInterleave 
+    --comparison_args random
+    --sampler sampler.BaselineSampler
+    --RUCB_alpha_parameter 1.51
+    --sampler_horizon 10000
+    --mergeRUCB_delta 0.5
+    --continue_sampling_experiment No
+    --old_output_dir /scratch/mzoghi/online-learning-output/mergeRUCB
+    --old_output_prefix oldFold1
+
+output_dir: /scratch/mzoghi/online-learning-output/NM
+output_dir_overwrite: True
+output_prefix: Fold1
+
+evaluation: evaluation.NdcgEval
+experimenter: experiment.SamplingExperiment
+

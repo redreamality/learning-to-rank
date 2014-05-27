@@ -14,10 +14,17 @@
 # along with Lerot.  If not, see <http://www.gnu.org/licenses/>.
 
 from DeterministicRankingFunction import DeterministicRankingFunction
+from ModelRankingFunction import ModelRankingFunction
 from ProbabilisticRankingFunction import ProbabilisticRankingFunction
+from StatelessRankingFunction import StatelessRankingFunction
 from SyntheticDeterministicRankingFunction import SyntheticDeterministicRankingFunction
 from SyntheticProbabilisticRankingFunction import SyntheticProbabilisticRankingFunction
 
-__all__ = ['DeterministicRankingFunction', 'ProbabilisticRankingFunction',
-           'SyntheticDeterministicRankingFunction',
-           'SyntheticProbabilisticRankingFunction']
+__all__ = [
+    'DeterministicRankingFunction',
+    'ModelRankingFunction',
+    'ProbabilisticRankingFunction',
+    'StatelessRankingFunction',
+    'SyntheticDeterministicRankingFunction',
+    'SyntheticProbabilisticRankingFunction'
+]

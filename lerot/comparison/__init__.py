@@ -14,22 +14,31 @@
 # along with Lerot.  If not, see <http://www.gnu.org/licenses/>.
 
 from BalancedInterleave import BalancedInterleave
-from StochasticBalancedInterleave import StochasticBalancedInterleave
-from TeamDraft import TeamDraft
 from DocumentConstraints import DocumentConstraints
-from ProbabilisticInterleave import ProbabilisticInterleave
-
 from HistBalancedInterleave import HistBalancedInterleave
-from HistTeamDraft import  HistTeamDraft
 from HistDocumentConstraints import HistDocumentConstraints
 from HistProbabilisticInterleave import HistProbabilisticInterleave
-from ProbabilisticInterleaveWithHistory import \
-    ProbabilisticInterleaveWithHistory
+from HistTeamDraft import  HistTeamDraft
 from OptimizedInterleave import OptimizedInterleave
-from TdiVa1 import TdiVa1
+from OptimizedInterleaveVa import OptimizedInterleaveVa
+from ProbabilisticInterleave import ProbabilisticInterleave
+from ProbabilisticInterleaveWithHistory import ProbabilisticInterleaveWithHistory
+from StochasticBalancedInterleave import StochasticBalancedInterleave
+from TeamDraft import TeamDraft
+from VaTdi import VaTdi, CannotInterleave
 
-__all__ = ['BalancedInterleave', 'StochasticBalancedInterleave', 'TeamDraft',
-           'DocumentConstraints', 'ProbabilisticInterleave',
-           'HistBalancedInterleave', 'HistTeamDraft', 'HistDocumentConstraints',
-           'HistProbabilisticInterleave', 'ProbabilisticInterleaveWithHistory',
-           'OptimizedInterleave', 'TdiVa1']
+__all__ = [
+    'BalancedInterleave',
+    'DocumentConstraints',
+    'HistBalancedInterleave',
+    'HistDocumentConstraints',
+    'HistProbabilisticInterleave',
+    'HistTeamDraft',
+    'OptimizedInterleave',
+    'OptimizedInterleaveVa',
+    'ProbabilisticInterleave',
+    'ProbabilisticInterleaveWithHistory',
+    'StochasticBalancedInterleave',
+    'TeamDraft',
+    'VaTdi',
+]

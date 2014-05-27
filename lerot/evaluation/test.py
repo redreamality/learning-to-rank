@@ -19,11 +19,9 @@ import os
 import cStringIO
 import numpy as np
 
-sys.path.insert(0, os.path.abspath('..'))
-
-import query as qu
-from LetorNdcgEval import LetorNdcgEval
-from NdcgEval import NdcgEval
+from lerot.query import Queries
+from lerot.evaluation.LetorNdcgEval import LetorNdcgEval
+from lerot.evaluation.NdcgEval import NdcgEval
 
 
 class TestEvaluation(unittest.TestCase):
@@ -38,7 +36,7 @@ class TestEvaluation(unittest.TestCase):
         """
 
         self.query_fh = cStringIO.StringIO(test_query)
-        self.queries = qu.Queries(self.query_fh, self.test_num_features)
+        self.queries = Queries(self.query_fh, self.test_num_features)
         self.query = self.queries['1']
 
         zero_weight_str = "0 0 0 0 0 0"

@@ -19,7 +19,8 @@ __all__ = ['Document']
 
 class Document(object):
 
-    def __init__(self, docid, doctype=None):
+    def __init__(self, docid, doctype='Web'):
+        assert type(doctype) == str
         self.docid = docid
         self.doctype = doctype
 
@@ -46,13 +47,14 @@ class Document(object):
         return self.docid
 
     def __repr__(self):
-        return "Document(id=%d, type=%s)" % (self.docid, self.doctype)
+        return 'Document(id=%d, type=%s)' % (self.docid, self.doctype)
 
     def __str__(self):
         return self.__repr__()
 
     def set_type(self, doctype):
         self.doctype = doctype
+        return self
 
     def get_type(self):
         return self.doctype
