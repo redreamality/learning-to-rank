@@ -17,7 +17,7 @@
 
 from random import randint
 
-from AbstractHistInterleavedComparison import AbstractHistInterleavedComparison
+from .AbstractHistInterleavedComparison import AbstractHistInterleavedComparison
 
 
 class HistTeamDraft(AbstractHistInterleavedComparison):

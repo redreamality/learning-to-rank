@@ -15,20 +15,17 @@
 
 from StatelessRankingFunction import StatelessRankingFunction
 
-class SyntheticDeterministicRankingFunction(StatelessRankingFunction):
-    """ Synthetic deterministic ranker. """
-    def __init__(self, synthetic_docs):
-        self.docs = synthetic_docs
+class ModelRankingFunction(StatelessRankingFunction):
+    def __init__(self):
+        self.pages = {}
+
+    def add_doc_for_query(self, query, doc):
+        self.pages.setdefault(query, [])
+        self.pages[query].append(doc)
 
     def init_ranking(self, query):
-        # Nothing needs to be done in this case.
-        pass
-
-    def get_document_probability(self, doc):
-        """ Get probability of producing doc as the next document drawn. """
-        pos = self.docs.index(doc)
-        return 1.0 if pos == 0 else 0.0
+        self.docs = self.pages[query]
 
     def update_weights(self, new_weights):
-        # Not required under synthetic data.
+        # Not required here.
         pass

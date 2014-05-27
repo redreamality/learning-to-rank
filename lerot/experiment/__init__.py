@@ -13,7 +13,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Lerot.  If not, see <http://www.gnu.org/licenses/>.
 
-from GenericExperiment import GenericExperiment
+from GenericLearningExperiment import GenericLearningExperiment
+from VerticalEvaluationExperiment import VerticalEvaluationExperiment
 from LearningExperiment import LearningExperiment
 from PrudentLearningExperiment import PrudentLearningExperiment
 from MetaExperiment import MetaExperiment

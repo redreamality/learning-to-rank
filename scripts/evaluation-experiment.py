@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # This file is part of Lerot.
 #
 # Lerot is free software: you can redistribute it and/or modify
@@ -13,22 +15,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Lerot.  If not, see <http://www.gnu.org/licenses/>.
 
-from StatelessRankingFunction import StatelessRankingFunction
+try:
+    from include import *
+except:
+    pass
+from experiment import VerticalEvaluationExperiment
 
-class SyntheticDeterministicRankingFunction(StatelessRankingFunction):
-    """ Synthetic deterministic ranker. """
-    def __init__(self, synthetic_docs):
-        self.docs = synthetic_docs
-
-    def init_ranking(self, query):
-        # Nothing needs to be done in this case.
-        pass
-
-    def get_document_probability(self, doc):
-        """ Get probability of producing doc as the next document drawn. """
-        pos = self.docs.index(doc)
-        return 1.0 if pos == 0 else 0.0
-
-    def update_weights(self, new_weights):
-        # Not required under synthetic data.
-        pass
+if __name__ == "__main__":
+    experiment = VerticalEvaluationExperiment()
+    experiment.run()
