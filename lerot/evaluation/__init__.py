@@ -15,3 +15,5 @@
 
 from NdcgEval import NdcgEval
 from LetorNdcgEval import LetorNdcgEval
+
+__all__ = ['NdcgEval', 'LetorNdcgEval']

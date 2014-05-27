@@ -19,7 +19,6 @@ import argparse
 import logging
 import numpy as np
 import random
-import copy
 
 from .ListwiseLearningSystem import ListwiseLearningSystem
 from ..utils import string_to_boolean, split_arg_str

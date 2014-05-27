@@ -20,8 +20,6 @@ Utility functions
 
 from importlib import import_module
 from numpy import dot, sqrt
-from numpy.linalg import norm
-from numpy import ones
 import numpy as np
 from scipy.linalg import norm
 from random import sample

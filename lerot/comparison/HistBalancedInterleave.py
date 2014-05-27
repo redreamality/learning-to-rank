@@ -15,7 +15,7 @@
 
 # KH, 2012/08/21
 
-from numpy import asarray, where
+from numpy import asarray
 
 from AbstractHistInterleavedComparison import AbstractHistInterleavedComparison
 from BalancedInterleave import BalancedInterleave
