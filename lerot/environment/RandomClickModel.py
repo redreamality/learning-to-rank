@@ -13,22 +13,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Lerot.  If not, see <http://www.gnu.org/licenses/>.
 
-from StatelessRankingFunction import StatelessRankingFunction
+import numpy as np
+from numpy import zeros
 
-class SyntheticDeterministicRankingFunction(StatelessRankingFunction):
-    """ Synthetic deterministic ranker. """
-    def __init__(self, synthetic_docs):
-        self.docs = synthetic_docs
+from AbstractUserModel import AbstractUserModel
 
-    def init_ranking(self, query):
-        # Nothing needs to be done in this case.
-        pass
+class RandomClickModel(AbstractUserModel):
+    """Defines a positions based user model."""
 
-    def get_document_probability(self, doc):
-        """ Get probability of producing doc as the next document drawn. """
-        pos = self.docs.index(doc)
-        return 1.0 if pos == 0 else 0.0
+    def __init__(self, p=0.5):
+        self.p = p
 
-    def update_weights(self, new_weights):
-        # Not required under synthetic data.
-        pass
+    def get_clicks(self, result_list, labels, **kwargs):
+        """simulate clicks on list l"""
+        c = zeros(len(result_list), dtype='int')
+        for pos, d in enumerate(result_list):
+            if np.random.binomial(1, self.p):
+                c[pos] = 1
+        return c
+

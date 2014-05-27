@@ -17,7 +17,7 @@
 
 from numpy import log2
 
-from AbstractEval import AbstractEval
+from .AbstractEval import AbstractEval
 
 
 class LetorNdcgEval(AbstractEval):

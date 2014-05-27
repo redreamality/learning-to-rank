@@ -48,18 +48,22 @@ class AbstractRankingFunction:
         return self.w + delta * u, u
 
     def init_ranking(self, query):
+        self.dirty = False
         raise NotImplementedError("Derived class needs to implement "
             "init_ranking.")
 
     def next(self):
+        self.dirty = True
         raise NotImplementedError("Derived class needs to implement "
             "next.")
 
     def next_det(self):
+        self.dirty = True
         raise NotImplementedError("Derived class needs to implement "
             "next_det.")
 
     def next_random(self):
+        self.dirty = True
         raise NotImplementedError("Derived class needs to implement "
             "next_random.")
 
@@ -69,9 +73,21 @@ class AbstractRankingFunction:
 
 
     def getDocs(self, numdocs=None):
-        if numdocs != None:
-            return self.docids[:numdocs]
-        return self.docids
+        if not hasattr(self, "dirty"):
+            raise NotImplementedError("Derived class should (re)set self.dirty")
+        if self.dirty:
+            raise Exception("Always call init_ranking() before getDocs()!")
+        docs = []
+        i = 0
+        while True:
+            if numdocs != None and i >= numdocs:
+                break
+            try:
+                docs.append(self.next())
+            except Exception as e:
+                break
+            i += 1
+        return docs
 
     def rm_document(self, docid):
         raise NotImplementedError("Derived class needs to implement "

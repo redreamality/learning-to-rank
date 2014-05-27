@@ -18,7 +18,7 @@
 from numpy import asarray
 from random import randint
 
-from AbstractInterleavedComparison import AbstractInterleavedComparison
+from .AbstractInterleavedComparison import AbstractInterleavedComparison
 
 
 class TeamDraft(AbstractInterleavedComparison):
@@ -27,19 +27,18 @@ class TeamDraft(AbstractInterleavedComparison):
     def __init__(self, arg_str=None):
         pass
 
-    def interleave(self, r1, r2, query, length):
+    def interleave(self, r1, r2, query, length1=None):
         """updated to match the original method"""
         r1.init_ranking(query)
         r2.init_ranking(query)
-        length = min(r1.document_count(), r2.document_count(), length)
+        length = min(r1.document_count(), r2.document_count())
+        if length1 is not None:
+            length = min(length, length1)
         # start with empty document list and assignments
         l, a = [], []
         # get ranked list for each ranker
-        l1, l2 = [], []
+        l1, l2 = r1.getDocs(length), r2.getDocs(length)
         i1, i2 = 0, 0
-        for i in range(length):
-            l1.append(r1.next())
-            l2.append(r2.next())
 
         # determine overlap in top results
         for i in range(length):

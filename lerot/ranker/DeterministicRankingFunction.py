@@ -19,7 +19,7 @@ from .AbstractRankingFunction import AbstractRankingFunction
 from ..utils import rank
 
 
-class DeterministicRankingFunction (AbstractRankingFunction):
+class DeterministicRankingFunction(AbstractRankingFunction):
 
     def init_ranking(self, query):
         self.qid = query.get_qid()
