@@ -32,10 +32,9 @@ setup(
     download_url = "https://bitbucket.org/ilps/lerot/downloads",
     packages=(['lerot']
               + [('lerot.%s' % sub)
-                 for sub in ('analysis', 'comparison', 'document',
-                             'environment', 'evaluation', 'experiment',
-                             'query', 'ranker', 'ranker.model',
-                             'retrieval_system', 'utils')]),
+                 for sub in ('analysis', 'comparison', 'environment',
+                             'evaluation', 'experiment', 'ranker',
+                             'ranker.model', 'retrieval_system')]),
     long_description=open('README.rst', 'r').read(),
     license = "GNU Lesser General Public License",
     scripts=['scripts/learning-experiment.py',
