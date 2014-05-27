@@ -20,3 +20,8 @@ from MetaExperiment import MetaExperiment
 from HistoricalComparisonExperiment import HistoricalComparisonExperiment
 from SyntheticComparisonExperiment import SyntheticComparisonExperiment
 from VASyntheticComparisonExperiment import VASyntheticComparisonExperiment
+
+
+__all__ = ['GenericExperiment', 'LearningExperiment', 'MetaExperiment',
+           'PrudentLearningExperiment', 'HistoricalComparisonExperiment',
+           'SyntheticComparisonExperiment', 'VASyntheticComparisonExperiment']

@@ -15,3 +15,6 @@
 
 from HeatmapAnalysis import HeatmapAnalysis
 from SummarizeAnalysis import SummarizeAnalysis
+
+
+__all__ = ['HeatmapAnalysis', 'SummarizeAnalysis']
