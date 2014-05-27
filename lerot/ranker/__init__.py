@@ -17,3 +17,7 @@ from DeterministicRankingFunction import DeterministicRankingFunction
 from ProbabilisticRankingFunction import ProbabilisticRankingFunction
 from SyntheticDeterministicRankingFunction import SyntheticDeterministicRankingFunction
 from SyntheticProbabilisticRankingFunction import SyntheticProbabilisticRankingFunction
+
+__all__ = ['DeterministicRankingFunction', 'ProbabilisticRankingFunction',
+           'SyntheticDeterministicRankingFunction',
+           'SyntheticProbabilisticRankingFunction']

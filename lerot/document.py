@@ -14,6 +14,9 @@
 # along with Lerot.  If not, see <http://www.gnu.org/licenses/>.
 
 
+__all__ = ['Document']
+
+
 class Document(object):
 
     def __init__(self, docid, doctype=None):

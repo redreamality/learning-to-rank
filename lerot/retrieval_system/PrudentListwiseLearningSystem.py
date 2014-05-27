@@ -19,12 +19,10 @@ Retrieval system implementation for use in learning experiments.
 """
 
 import argparse
-from numpy import ones, array
-from numpy.linalg import norm
-import copy
+from numpy import array
 
 from .AbstractLearningSystem import AbstractLearningSystem
-from ..utils import get_class, split_arg_str, string_to_boolean
+from ..utils import get_class, split_arg_str
 
 
 class PrudentListwiseLearningSystem(AbstractLearningSystem):
