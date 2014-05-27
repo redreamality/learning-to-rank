@@ -25,7 +25,6 @@ import copy
 
 from .AbstractLearningSystem import AbstractLearningSystem
 from ..utils import get_class, split_arg_str, string_to_boolean
-from ..utils import normalize_to_unit_sphere
 
 
 class PrudentListwiseLearningSystem(AbstractLearningSystem):
