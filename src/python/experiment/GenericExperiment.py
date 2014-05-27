@@ -183,7 +183,11 @@ class GenericExperiment:
 
     def _run(self, run_id):
         logging.info("run %d starts" % run_id)
-        r = self.run_experiment()
+        aux_log_file = os.path.join(self.output_dir, "_%s-%d.txt.gz" %
+                                (self.output_prefix, run_id))
+        aux_log_fh = gzip.open(aux_log_file, "wb")
+        r = self.run_experiment(aux_log_fh)
+        aux_log_fh.close()
         log_file = os.path.join(self.output_dir, "%s-%d.txt.gz" %
                                 (self.output_prefix, run_id))
         log_fh = gzip.open(log_file, "wb")
@@ -193,11 +197,11 @@ class GenericExperiment:
 
         return r
 
-    def run_experiment(self):
+    def run_experiment(self, aux_log_fh):
         experiment = self.experimenter(
                                     self.training_queries,
                                     self.test_queries,
                                     self.feature_count,
-                                    None,
+                                    aux_log_fh,
                                     self.experiment_args)
         return experiment.run()
