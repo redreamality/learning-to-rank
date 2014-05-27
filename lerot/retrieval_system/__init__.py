@@ -23,4 +23,4 @@ from SamplerSystem import SamplerSystem
 
 __all__ = ['ListwiseLearningSystem', 'PrudentListwiseLearningSystem',
            'ListwiseLearningSystemWithCandidateSelection',
-           'PairwiseLearningSystem']
+           'PairwiseLearningSystem', 'SamplerSystem']
