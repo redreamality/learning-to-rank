@@ -62,11 +62,11 @@ Running experiments
 
 3) run the experiment using python::
         
-        $ python src/scripts/learning-experiment.py -f config/experiment.yml
+        $ learning-experiment.py -f config/experiment.yml
 
 4) summarize experiment outcomes::
    
-        $ python src/scripts/summarize-learning-experiment.py --fold_dirs outdir
+        $ summarize-learning-experiment.py --fold_dirs outdir
    
    Arbitrarily many folds can be listed per experiment. Results are aggregated  over runs and folds. The output format is a simple text file that can be  further processed using e.g., gnuplot. The columns are: mean_offline_perf stddev_offline_perf mean_online_perf stddev_online_perf
 
