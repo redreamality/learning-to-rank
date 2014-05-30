@@ -31,8 +31,8 @@ Running experiments
 
         $ mkdir data
         $ wget http://research.microsoft.com/en-us/um/beijing/projects/letor/LETOR4.0/Data/MQ2007.rar -O data/MQ2007.rar
-        $ unrar x data/MQ2007.rar data/
-        
+        $ (cd data && unrar x data/MQ2007.rar)
+
 2) prepare a configuration file in yml format, e.g., starting from the template below, store as ``config/experiment.yml`` (or simply use ``config/config.yml`` instead ) ::
 
         training_queries: data/MQ2007/Fold1/train.txt
