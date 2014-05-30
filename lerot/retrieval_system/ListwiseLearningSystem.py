@@ -108,19 +108,13 @@ class ListwiseLearningSystem(AbstractLearningSystem):
         self.current_query = query
         return l
 
-    def _update_weights(self):
-        self.ranker.update_weights(self.current_u, self.alpha)
-
-    def _update_solution(self, outcome, _):
-        if outcome > 0:
-            return self._update_weights()
-
     def update_solution(self, clicks):
         outcome = self.comparison.infer_outcome(self.current_l,
                                                 self.current_context,
                                                 clicks,
                                                 self.current_query)
-        self._update_solution(outcome, clicks)
+        if outcome > 0:
+            self.ranker.update_weights(self.current_u, self.alpha)
         return self.get_solution()
 
     def get_solution(self):
