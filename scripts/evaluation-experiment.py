@@ -19,7 +19,7 @@ try:
     from include import *
 except:
     pass
-from experiment import VerticalEvaluationExperiment
+from lerot.experiment.VerticalEvaluationExperiment import VerticalEvaluationExperiment
 
 if __name__ == "__main__":
     experiment = VerticalEvaluationExperiment()
