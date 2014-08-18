@@ -21,10 +21,12 @@ from PrudentLearningExperiment import PrudentLearningExperiment
 from SamplingExperiment import SamplingExperiment
 from MetaExperiment import MetaExperiment
 from HistoricalComparisonExperiment import HistoricalComparisonExperiment
+from SingleQueryComparisonExperiment import SingleQueryComparisonExperiment
 from SyntheticComparisonExperiment import SyntheticComparisonExperiment
 from VASyntheticComparisonExperiment import VASyntheticComparisonExperiment
 
 
 __all__ = ['GenericExperiment', 'LearningExperiment', 'MetaExperiment',
            'PrudentLearningExperiment', 'HistoricalComparisonExperiment',
+           'SingleQueryComparisonExperiment',
            'SyntheticComparisonExperiment', 'VASyntheticComparisonExperiment']

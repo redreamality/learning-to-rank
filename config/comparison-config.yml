@@ -1,0 +1,27 @@
+query_dir: data/MQ2008-split
+feature_count: 46
+num_runs: 20
+num_queries: 500
+result_length: 10
+user_model: environment.CascadeUserModel
+# for p-click and p-stop provide mappings from relevance grades to
+# probabilities (here: perfect click model)
+user_model_args:
+    --p_click 0:0.0,1:0.5,2:1.0
+    --p_stop 0:0.0,1:0.0,2:0.0
+# method names can be arbitrary strings and have to be unique
+live_evaluation_methods:
+- AB
+- TD
+# provide arguments per method in matching order
+live_evaluation_methods_args:
+- # for: AB
+    --class_name comparison.ABComparison
+    --ranker ranker.DeterministicRankingFunction --ranker_args None
+- # for: TD
+    --class_name comparison.TeamDraft
+    --ranker ranker.DeterministicRankingFunction --ranker_args None
+output_dir: C:\gitprojects\lerot\data\test-out\comparison-ab
+output_prefix: MQ2008
+# set to False to avoid accidentally overwriting previous experiments
+output_dir_overwrite: True

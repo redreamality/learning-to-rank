@@ -39,7 +39,10 @@ class AbstractRankingModel(object):
             return v
         else:
             try:
-                weights = array([float(num) for num in method.split(",")])
+                if type(method) is str:
+                    weights = array([float(num) for num in method.split(",")])
+                else:
+                    weights = method
                 if len(weights) != self.feature_count:
                     raise Exception("List of initial weights does not have the"
                         " expected length (%d, expected $d)." %

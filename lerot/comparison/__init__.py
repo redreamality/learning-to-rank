@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Lerot.  If not, see <http://www.gnu.org/licenses/>.
 
+from ABComparison import ABComparison
 from BalancedInterleave import BalancedInterleave
 from DocumentConstraints import DocumentConstraints
 from HistBalancedInterleave import HistBalancedInterleave

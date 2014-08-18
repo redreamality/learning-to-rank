@@ -69,3 +69,10 @@ class DeterministicRankingFunction(AbstractRankingFunction):
         pos = self.docids.index(docid)
         # delete doc and renormalize
         self.docids.pop(pos)
+
+    def getDocs(self, numdocs=None):
+        """ Copied from StatelessRankingFunction. """
+        if numdocs is None:
+            return self.docids
+        else:
+            return self.docids[:numdocs]

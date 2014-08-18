@@ -20,7 +20,7 @@ try:
 except ImportError:
     from yaml import Loader
 basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
-sys.path.insert(0, os.path.join(basedir,'src', 'python'))
+sys.path.insert(0, os.path.join(basedir,'lerot'))
 from math import sqrt
 from mapping import mapping
 
