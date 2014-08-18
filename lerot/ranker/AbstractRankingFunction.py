@@ -28,7 +28,6 @@ class AbstractRankingFunction:
 
         self.feature_count = feature_count
         ranking_model_str = "ranker.model.Linear"
-        print "ranker args:", ranker_arg_str
         for arg in ranker_arg_str:
             if type(arg) is str and arg.startswith("ranker.model"):
                 ranking_model_str = arg

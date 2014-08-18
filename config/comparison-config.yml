@@ -1,7 +1,7 @@
 query_dir: data/MQ2008-split
 feature_count: 46
-num_runs: 20
-num_queries: 500
+num_runs: 50
+num_queries: 100
 result_length: 10
 user_model: environment.CascadeUserModel
 # for p-click and p-stop provide mappings from relevance grades to
