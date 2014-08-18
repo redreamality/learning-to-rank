@@ -12,14 +12,10 @@ user_model_args:
 # method names can be arbitrary strings and have to be unique
 live_evaluation_methods:
 - AB
-- TD
 # provide arguments per method in matching order
 live_evaluation_methods_args:
 - # for: AB
     --class_name comparison.ABComparison
-    --ranker ranker.DeterministicRankingFunction --ranker_args None
-- # for: TD
-    --class_name comparison.TeamDraft
     --ranker ranker.DeterministicRankingFunction --ranker_args None
 output_dir: C:\gitprojects\lerot\data\test-out\comparison-ab
 output_prefix: MQ2008
