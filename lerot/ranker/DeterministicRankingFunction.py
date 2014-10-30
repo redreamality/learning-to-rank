@@ -22,6 +22,8 @@ from ..utils import rank
 class DeterministicRankingFunction(AbstractRankingFunction):
 
     def init_ranking(self, query):
+        self.dirty = False
+
         self.qid = query.get_qid()
         scores = self.ranking_model.score(query.get_feature_vectors(),
                                           self.w.transpose())
