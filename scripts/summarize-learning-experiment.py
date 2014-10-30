@@ -57,6 +57,8 @@ for fold in args.fold_dirs:
     for filename in sorted(os.listdir(fold)):
         if not filename.endswith(args.file_ext):
             continue
+        if filename.startswith("_"):
+            continue
         filename = os.path.join(fold, filename)
         if os.path.getsize(filename) == 0:
            continue
