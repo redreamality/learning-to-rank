@@ -117,7 +117,7 @@ class LivingLabsRealUser(AbstractUserModel):
             if strptime(feedback['modified_time'], "%a, %d %b %Y %H:%M:%S -0000") > strptime(upload_time, "%a, %d %b %Y %H:%M:%S -0000"):
                 print feedback['modified_time'], '>', upload_time
                 return self.__translate_docids__(query, qid, feedback, ranker_list)
-        print feedback['modified_time'], '<', upload_time
+        #print feedback['modified_time'], '<', upload_time
             
                         
                     

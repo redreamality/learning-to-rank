@@ -29,24 +29,25 @@ while True:
     uploads = {}
     runid += 1
     counter = 0
+    print 'iteration: ', runid
     for qid in training_queries.keys()[:]:
         counter += 1
-        print qid, counter, 'of', qlen
+        #print qid, counter, 'of', qlen
         #['__feature_vectors__', '__docids__', '__labels__', '__qid__', '__comments__']
         q = training_queries[qid]
         l = learner.get_ranked_list(q)
         payload, the_time = user_model.upload_run(q, l, runid)
         uploads[qid] = {'ranked_lerot_list':l, 'payload':payload, 'upload_time':the_time}
-        time.sleep(0.1)
+        time.sleep(0.01)
 
     shuffledQids = training_queries.keys()[:]
     random.shuffle(shuffledQids)
     while True:
         counter = 0
-        time.sleep(0.1)
+        time.sleep(0.01)
         for qid in shuffledQids:
             counter += 1
-            print qid, counter, 'of', qlen
+            #print qid, counter, 'of', qlen
             q = training_queries[qid]
             c = user_model.get_clicks(uploads[qid]['ranked_lerot_list'], q.get_labels(), 
                                       query=q, ranker_list=uploads[qid]['payload'], upload_time=uploads[qid]['upload_time'])
@@ -59,3 +60,5 @@ while True:
     print eval
     with open('evaluation', 'a') as f:
         f.write(str(eval)+'\n')
+    if runid == 1000:
+        break
