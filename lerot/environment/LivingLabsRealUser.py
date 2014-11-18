@@ -29,7 +29,7 @@ import json
 import time
 import random
 import sys
-from time import gmtime, strftime, strptime
+from time import gmtime, strftime, strptime, localtime
 
 
 
@@ -81,15 +81,16 @@ class LivingLabsRealUser(AbstractUserModel):
         if ranker_list==None:# and str(type(input_list[0])) == "<class 'lerot.document.Document'>":
             for doc in input_list:
                 return_list.append({'docid' : self.__doc_ids__[qid][doc.get_id()]})
-                '''Else list is not from lerot, in which case translate to lerot ranked list (with click numbers) which was previously uploaded'''
-        else:
+        else:#Else list is not from lerot, in which case translate to lerot ranked list (with click numbers) which was previously uploaded'''
             for doc1 in ranker_list:
-                for doc2 in input_list:
-                    if doc1['docid'] == doc2:#doc2['docid']:
-                        return_list.append(input_list[doc2])
-        if len(return_list) < 10:
-            print return_list
-            sys.exit()
+                for doc2 in input_list['doclist']:
+                    if doc1['docid'] == doc2['docid']:
+                        if doc2['clicked'] == True:
+                            return_list.append(1)
+                        if doc2['clicked'] == False:
+                            return_list.append(0)
+            print ranker_list
+            print input_list
         return return_list
 
     
@@ -101,23 +102,22 @@ class LivingLabsRealUser(AbstractUserModel):
         if r.status_code != requests.codes.ok:
             print r.text
             r.raise_for_status()
-        return payload#, the_time    
+        the_time = strftime("%a, %d %b %Y %H:%M:%S -0000", localtime())
+        
+        return payload, the_time    
 
     
     def get_clicks(self, result_list, labels, **kwargs):
-        print 'Entered get_clicks'
         query = kwargs['query']
-        #upload_time = kwargs['upload_time']
+        upload_time = kwargs['upload_time']
         ranker_list = kwargs['ranker_list']['doclist']
         qid = query.__qid__
         feedbacks = self.__get_feedback__(qid)
-        clicks = dict([(doc['docid'], 0) for doc in feedbacks['feedback'][0]['doclist']])
         for feedback in feedbacks['feedback']:
-            for doc in feedback["doclist"]:
-                if doc["clicked"] and doc["docid"] in clicks:
-                    clicks[doc["docid"]] += 1
-        return self.__translate_docids__(query, qid, clicks, ranker_list)
-                    
+            if strptime(feedback['modified_time'], "%a, %d %b %Y %H:%M:%S -0000") > strptime(upload_time, "%a, %d %b %Y %H:%M:%S -0000"):
+                print feedback['modified_time'], '>', upload_time
+                return self.__translate_docids__(query, qid, feedback, ranker_list)
+        print feedback['modified_time'], '<', upload_time
             
                         
                     

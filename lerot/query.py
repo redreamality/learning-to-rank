@@ -25,7 +25,6 @@ import gzip
 import numpy as np
 import os.path
 import requests
-from collections import defaultdict
 from .document import Document
 
 __all__ = ['Query', 'Queries', 'QueryStream', 'load_queries', 'write_queries']
