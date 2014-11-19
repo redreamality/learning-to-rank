@@ -92,13 +92,15 @@ class ListwiseLearningSystem(AbstractLearningSystem):
     def _get_candidate(self):
         return self._get_new_candidate()
 
-    def get_ranked_list(self, query):
+    def get_ranked_list(self, query, getNewCandidate=True):
         self.query_count += 1
         if self.anneal > 0 and self.query_count % self.anneal == 0:
             self.delta /= 2
             self.alpha /= 2
 
-        self.candidate_ranker, self.current_u = self._get_candidate()
+        if getNewCandidate == True:
+            self.candidate_ranker, self.current_u = self._get_candidate()
+    
         (l, context) = self.comparison.interleave(self.ranker,
                                                   self.candidate_ranker,
                                                   query,
