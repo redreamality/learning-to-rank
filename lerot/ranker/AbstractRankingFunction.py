@@ -23,8 +23,8 @@ class AbstractRankingFunction:
                  ranker_arg_str,
                  ties,
                  feature_count,
-                 init=None,
-                 sample=None):
+                 init="random",
+                 sample="sample_unit_sphere"):
 
         self.feature_count = feature_count
         ranking_model_str = "ranker.model.Linear"
