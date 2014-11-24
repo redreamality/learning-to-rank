@@ -55,9 +55,15 @@ class PairwiseLearningSystem(AbstractLearningSystem):
             self.ranker_args = " ".join(args["ranker_args"])
             self.ranker_args = self.ranker_args.strip("\"")
         else:
-            self.ranker_args = None
+            self.ranker_args = []
+            
+        self.init_weights = args["init_weights"]
         self.ranker_tie = args["ranker_tie"]
-        self.ranker = self.ranker_class(self.ranker_args, w, self.ranker_tie)
+        self.ranker = self.ranker_class(self.ranker_args,
+                                        self.ranker_tie,
+                                        self.feature_count,
+                                        init=self.init_weights)
+
         self.epsilon = args["epsilon"]
         self.eta = args["eta"]
         self.lamb = args["lamb"]
