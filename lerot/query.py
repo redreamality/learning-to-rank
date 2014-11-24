@@ -12,7 +12,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Lerot.  If not, see <http://www.gnu.org/licenses/>.
-from _cffi_backend import string
+
 
 """
 Interface to query data with functionality for reading queries from svmlight
@@ -348,6 +348,7 @@ class LivingLabsQueries(Queries):
     def __get_queries__(self):
         """Retrieve Dictionary of all Queries."""
         r = requests.get("/".join([self.__HOST__, self.__QUERYENDPOINT__, self.__KEY__]), headers=self.__HEADERS__)
+        print 'Got Queries'
         if r.status_code != requests.codes.ok:
             print r.text
             r.raise_for_status()
