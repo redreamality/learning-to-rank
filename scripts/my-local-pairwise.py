@@ -9,18 +9,18 @@ except:
 
 
 
-directory = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'\\output_data'
+directory = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'/output_data'
 if not os.path.exists(directory):
     os.makedirs(directory)
-directory = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'\\output_data\\pairwise_local_evaluation_data'
+directory = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'/output_data/pairwise_local_evaluation_data'
 if not os.path.exists(directory):
     os.makedirs(directory)
 
 for fold in range(5):
     fold = fold+1
     for repetition in range(25):
-        training_queries = lerot.query.load_queries(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'\\data\\MQ2007\\Fold'+str(fold)+'\\train.txt', 46)
-        test_queries = lerot.query.load_queries(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'\\data\\MQ2007\\Fold'+str(fold)+'\\test.txt', 46)
+        training_queries = lerot.query.load_queries(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'/data/MQ2007/Fold'+str(fold)+'/train.txt', 46)
+        test_queries = lerot.query.load_queries(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'/data/MQ2007/Fold'+str(fold)+'/test.txt', 46)
           
         evaluation = lerot.evaluation.NdcgEval()
         learner = lerot.retrieval_system.PairwiseLearningSystem(46, "--init_weights random --epsilon 0.0 --eta 0.001 --ranker ranker.DeterministicRankingFunction --ranker_tie first")        
@@ -55,7 +55,7 @@ for fold in range(5):
             s = learner.update_solution(c)#update learner using clicks
 
             eval = evaluation.evaluate_all(learner.ranker, test_queries)
-            out_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'\\output_data\\pairwise_local_evaluation_data\\fold'+str(fold)+'_'+(str(repetition))
+            out_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'/output_data/pairwise_local_evaluation_data/fold'+str(fold)+'_'+(str(repetition))
             evalString += str(eval)
             evalString += '\n'
             print eval
@@ -63,7 +63,7 @@ for fold in range(5):
                 with open(out_path, 'a') as f:
                     f.write(str(evalString))
                     evalString = ''
-                with open(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'\\output_data\\pairwise_local_evaluation_data\\'+'learnerPickle.c', 'wb') as fp:
+                with open(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'/output_data/pairwise_local_evaluation_data/'+'learnerPickle.c', 'wb') as fp:
                     pickle.dump(learner, fp)
             if runid == 1000:
                 break
