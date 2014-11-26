@@ -20,9 +20,12 @@ Installation
 ------------
 Install the prerequisites plus Lerot as follows::
 
-    $ pip install -r requirements.txt
     $ git clone https://bitbucket.org/ilps/lerot.git
     $ cd lerot
+    $ pip install -r requirements.txt
+    
+In case you want to install Lerot system wide, you can do this::
+  
     $ python setup.py install
 
 Running experiments
