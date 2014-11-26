@@ -131,7 +131,7 @@ Lerot has been used in numerous publication, including these:
 4) K. Hofmann, A. Schuth, A. Bellogin, M. de Rijke (2014): *Eﬀects of Position Bias on Click-Based Recommender Evaluation*. In: ECIR’14, 2014.
 5) A. Chuklin, K. Zhou, A. Schuth, F. Sietsma, M. de Rijke (2014): *Evaluating Intuitiveness of Vertical-Aware Click Models*. In: Proceedings of SIGIR, 2014.
 6) A. Schuth, F. Sietsma, S. Whiteson, D. Lefortier M. de Rijke (2014): *Multileaved Comparisons for Fast Online Evaluation*. In: CIKM'14, 2014.
-7) A. Chuklin, A. Schuth, K. Zhou, M. de Rijke (2015): A* comparative analysis of interleaving methods for aggregated search*. In: ACM Transactions on Information Systems, 2015.
+7) A. Chuklin, A. Schuth, K. Zhou, M. de Rijke (2015): *A comparative analysis of interleaving methods for aggregated search*. In: ACM Transactions on Information Systems, 2015.
 
 A paper describing Lerot is published in the living labs workshop at CIKM’13: 
 A. Schuth, K. Hofmann, S. Whiteson, M. de Rijke (2013): *Lerot: an Online Learning to Rank Framework*. In: Living Labs for Information Retrieval Evaluation workshop at CIKM’13., 2013.
@@ -139,6 +139,7 @@ A. Schuth, K. Hofmann, S. Whiteson, M. de Rijke (2013): *Lerot: an Online Learni
 Contributers
 ------------
 The following people have contributed to Lerot:
+
 - Katja Hofmann
 - Anne Schuth
 - Lars Buitinck
