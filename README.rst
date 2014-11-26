@@ -122,17 +122,32 @@ If you use Lerot to produce results for your scientific publication, please refe
         }
 
 Publications
------------
+------------
 Lerot has been used in numerous publication, including these:
 
-1) K. Hofmann, A. Schuth, S. A. Whiteson, M. de Rijke (2013): *Reusing Historical Interaction Data for Faster Online Learning to Rank for IR*. In: Proceeding of the sixth ACM international conference on Web Search and Data Mining, 2013.
-2) A. Chuklin, A. Schuth, K. Hofmann, P. Serdyukov, M. de Rijke (2013): *Evaluating Aggregated Search Using Interleaving*. In: Proceedings of the International Conference on Information and Knowledge Management, 2013.
-3) A. Schuth, F. Sietsma, S. Whiteson, M. de Rijke (2014): *Optimizing Base Rankers Using Clicks: A Case Study using BM25*. In: 36th European Conference on Information Retrieval (ECIR’14), 2014.
-4) K. Hofmann, A. Schuth, A. Bellogin, M. de Rijke (2014): User Behavior and Bias in Click-Based Recommender Evaluation*. In: 36th European Conference on Information Retrieval (ECIR’14), 2014.
+1) K. Hofmann, A. Schuth, S. A. Whiteson, M. de Rijke (2013): *Reusing Historical Interaction Data for Faster Online Learning to Rank for IR*. In: WSDM'13, 2013.
+2) A. Chuklin, A. Schuth, K. Hofmann, P. Serdyukov, M. de Rijke (2013): *Evaluating Aggregated Search Using Interleaving*. In: CIKM'14, 2013.
+3) A. Schuth, F. Sietsma, S. Whiteson, M. de Rijke (2014): *Optimizing Base Rankers Using Clicks: A Case Study using BM25*. In: ECIR’14, 2014.
+4) K. Hofmann, A. Schuth, A. Bellogin, M. de Rijke (2014): *Eﬀects of Position Bias on Click-Based Recommender Evaluation*. In: ECIR’14, 2014.
+5) A. Chuklin, K. Zhou, A. Schuth, F. Sietsma, M. de Rijke (2014): *Evaluating Intuitiveness of Vertical-Aware Click Models*. In: Proceedings of SIGIR, 2014.
+6) A. Schuth, F. Sietsma, S. Whiteson, D. Lefortier M. de Rijke (2014): *Multileaved Comparisons for Fast Online Evaluation*. In: CIKM'14, 2014.
+7) A. Chuklin, A. Schuth, K. Zhou, M. de Rijke (2015): A* comparative analysis of interleaving methods for aggregated search*. In: ACM Transactions on Information Systems, 2015.
 
 A paper describing Lerot is published in the living labs workshop at CIKM’13: 
 A. Schuth, K. Hofmann, S. Whiteson, M. de Rijke (2013): *Lerot: an Online Learning to Rank Framework*. In: Living Labs for Information Retrieval Evaluation workshop at CIKM’13., 2013.
 
+Contributers
+------------
+The following people have contributed to Lerot:
+- Katja Hofmann
+- Anne Schuth
+- Lars Buitinck
+- Aleksandr Chuklin
+- Floor Sietsma
+- Masrour Zoghi
+- Nikos Voskarides
+- Artem Grotov
+
 Acknowledgements
---------------
+----------------
 The development of Lerot is partially supported by the EU FP7 project LiMoSINe (http://www.limosine-project.eu).
