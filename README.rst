@@ -133,6 +133,8 @@ Lerot has been used in numerous publication, including these:
 6) A. Schuth, F. Sietsma, S. Whiteson, D. Lefortier M. de Rijke (2014): *Multileaved Comparisons for Fast Online Evaluation*. In: CIKM'14, 2014.
 7) A. Chuklin, A. Schuth, K. Zhou, M. de Rijke (2015): *A comparative analysis of interleaving methods for aggregated search*. In: ACM Transactions on Information Systems, 2015.
 
+If your paper is missing from this list, please let us know.
+
 A paper describing Lerot is published in the living labs workshop at CIKM’13: 
 A. Schuth, K. Hofmann, S. Whiteson, M. de Rijke (2013): *Lerot: an Online Learning to Rank Framework*. In: Living Labs for Information Retrieval Evaluation workshop at CIKM’13., 2013.
 
@@ -148,6 +150,8 @@ The following people have contributed to Lerot:
 - Masrour Zoghi
 - Nikos Voskarides
 - Artem Grotov
+
+If your name is missing from this list, please let us know.
 
 Acknowledgements
 ----------------
