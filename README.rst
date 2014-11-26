@@ -141,7 +141,7 @@ If your paper is missing from this list, please let us know.
 A paper describing Lerot is published in the living labs workshop at CIKM’13: 
 A. Schuth, K. Hofmann, S. Whiteson, M. de Rijke (2013): *Lerot: an Online Learning to Rank Framework*. In: Living Labs for Information Retrieval Evaluation workshop at CIKM’13., 2013.
 
-Contributers
+Contributors
 ------------
 The following people have contributed to Lerot:
 
