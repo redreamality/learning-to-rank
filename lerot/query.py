@@ -26,7 +26,7 @@ import numpy as np
 import os.path
 import requests
 from .document import Document
-
+import time
 __all__ = ['Query', 'Queries', 'QueryStream', 'load_queries', 'write_queries']
 
 
@@ -315,30 +315,36 @@ class LivingLabsQueries(Queries):
     __HEADERS__ = {'content-type': 'application/json'}
     __doc_ids__ = {}#used for living-labs
     __doc_counter__ = 0
-    
+    __LL_queries__ = {}
 
     
     def __init__(self, KEY):
         self.__KEY__ = KEY
         self.__queries__ = {}
-        queries = self.__get_queries__()
+        self.__LL_queries__  = self.__get_queries__()
         self.__doc_ids__ = {}
-        self.__num_features__ = self.__get_num_features__(queries)
-        for query in queries['queries']:
+        time.sleep(2)
+        self.__num_features__ = self.__get_num_features__(self.__LL_queries__ )
+        qlen = len(self.__LL_queries__ ['queries'])
+        print qlen, 'Num of queries'
+        counter = 0
+        for query in self.__LL_queries__ ['queries']:
+            counter += 1
             qid = query['qid']
-            print qid
+            print qid,  counter, 'of', qlen
             doclist = self.__get_doclist__(qid)
             instances = self.__get_features__(qid, doclist, self.__num_features__)
             self.__queries__[qid] = Query(qid, instances, [0]*len(instances), "")#instances = self.get_features(qid, HOST, KEY) # Should by numpy array
             self.__set_doc_ids__(qid, doclist)
-            print 'Retrieved Query ', qid
-
+            
 
 
     def __set_doc_ids__(self, qid, doclist):
-        """Updates dictionary of document ids for a given query. 
-        Uses document ID as set on lerot and maps to document ID on living-labs
-        dictionary[queryID][LerotDocID] = living-labs ID"""
+        """
+        Updates global dictionary of document ids for a given query. 
+        Uses document ID as used in lerot and maps this to document ID on living-labs
+        dictionary[queryID][LerotDocID] = living-labs ID
+        """
         self.__doc_ids__[qid] = {}
         for doc in range(len(doclist['doclist'])): 
             self.__doc_ids__[qid][doc] = doclist['doclist'][doc]['docid']
@@ -346,9 +352,10 @@ class LivingLabsQueries(Queries):
 
 
     def __get_queries__(self):
-        """Retrieve Dictionary of all Queries."""
+        """Returns a Dictionary of all Queries."""
+        time.sleep(1)
+        print "/".join([self.__HOST__, self.__QUERYENDPOINT__, self.__KEY__])
         r = requests.get("/".join([self.__HOST__, self.__QUERYENDPOINT__, self.__KEY__]), headers=self.__HEADERS__)
-        print 'Got Queries'
         if r.status_code != requests.codes.ok:
             print r.text
             r.raise_for_status()
@@ -356,12 +363,12 @@ class LivingLabsQueries(Queries):
     
     
     def __get_features__(self, qid, doclist, num_features):
-        """Retrieve the features of a given document.
-        Returns: numpy array of numpy arrays (of features for each document)"""
+        """
+        Returns numpy array of numpy arrays (of features for each document)
+        """
         feature_list = []
         for doc in range(len(doclist['doclist'])):
-            # Some documents have empty feature lists, check to avoid crash
-            if 'relevance_signals' in doclist['doclist'][doc] and len(doclist['doclist'][doc]['relevance_signals'])>0:
+            if 'relevance_signals' in doclist['doclist'][doc] and len(doclist['doclist'][doc]['relevance_signals'])>0:# Some documents had empty feature lists, check to avoid crash
                 doc_feature_list = np.zeros(num_features)
                 for feature in xrange(len(doclist['doclist'][doc]['relevance_signals'])-1):
                     doc_feature_list[feature] = doclist['doclist'][doc]['relevance_signals'][feature][1]
@@ -371,11 +378,13 @@ class LivingLabsQueries(Queries):
     
     
     def __get_num_features__(self, queries):
-        """Retrieve the number of features for a document.
-        Returns: integer"""
+        """
+        Returns (integer): the number of features in the documents. Only checks one document.
+        """
         feature_num = 0
         for query in queries['queries']:
             qid = query['qid']
+            time.sleep(2)
             doclist = self.__get_doclist__(qid)
             for doc in range(len(doclist['doclist'])):
                 if 'relevance_signals' in doclist['doclist'][doc]:
@@ -385,8 +394,13 @@ class LivingLabsQueries(Queries):
 
 
     def __get_doclist__(self, qid):
-        """Retrieve the document list for a given query."""
+        """
+        Return the document list for a given query.
+        """
+        time.sleep(2)
+        print "/".join([self.__HOST__, self.__DOCLISTENDPOINT__, self.__KEY__, qid]), self.__HEADERS__
         r = requests.get("/".join([self.__HOST__, self.__DOCLISTENDPOINT__, self.__KEY__, qid]), headers=self.__HEADERS__)
+        print 'Worked'
         if r.status_code != requests.codes.ok:
                 print r.text
                 r.raise_for_status()

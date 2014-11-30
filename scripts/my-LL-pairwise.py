@@ -12,7 +12,7 @@ except:
 directory = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'/output_data'
 if not os.path.exists(directory):
     os.makedirs(directory)
-directory = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'/output_data/listwise_LL_evaluation_data'
+directory = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'/output_data/pairwise_LL_evaluation_data'
 if not os.path.exists(directory):
     os.makedirs(directory)
 
@@ -32,7 +32,7 @@ for fold in range(5):
         
 
         evaluation = lerot.evaluation.LivingLabsEval
-        learner = lerot.retrieval_system.ListwiseLearningSystem(training_queries.__num_features__, '-w random -c comparison.TeamDraft -r ranker.DeterministicRankingFunction -s 3 -d 0.1 -a 0.01')
+        learner = lerot.retrieval_system.PairwiseLearningSystem(46, "--init_weights random --epsilon 0.0 --eta 0.001 --ranker ranker.DeterministicRankingFunction --ranker_tie first")        
         user_model = lerot.environment.LivingLabsRealUser(KEY, training_queries.__doc_ids__)#CascadeUserModel('--p_click 0:0.0,1:.5,2:1.0 --p_stop 0:0.0,1:0.0,2:0.0')
         runid = 0
         while True:
@@ -55,7 +55,6 @@ for fold in range(5):
                 uploads[qid] = {'current_l':l,
                                 'payload':payload,
                                 'upload_time':the_time,
-                                'current_context': learner.current_context,
                                 'current_query': q
                                 }
 
@@ -73,22 +72,21 @@ for fold in range(5):
                 if isinstance(c, np.ndarray):
                     print c
                     break   
-            s = learner.update_solution(c)
+            
             learner.get_ranked_list(q, firstTime)
             learner.current_l = uploads[qid]['current_l']
-            learner.current_context = uploads[qid]['current_context']
-            
+            s = learner.update_solution(c)
             
             evaluation.update_score(user_model.get_win(query, feedback, lerot_ranked_list))
             eval = evaluation.get_performance()
-            out_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'/output_data/listwise_LL_evaluation_data/fold'+str(fold)+'_'+(str(repetition))
+            out_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'/output_data/pairwise_LL_evaluation_data/fold'+str(fold)+'_'+(str(repetition))
             evalString += str(eval)
             evalString += '\n'
             if runid >= 100 and runid % 100 == 0:
                 with open(out_path, 'a') as f:
                     f.write(str(evalString))
                     evalString = ''
-                with open(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'/output_data/listwise_LL_evaluation_data/'+'learnerPickle.c', 'wb') as fp:
+                with open(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'/output_data/pairwise_LL_evaluation_data/'+'learnerPickle.c', 'wb') as fp:
                     pickle.dump(learner, fp)
             if runid == 1000:
                 break

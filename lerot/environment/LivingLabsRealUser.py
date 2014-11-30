@@ -15,21 +15,13 @@
 
 # KH 07/10/2012
 
-import argparse
-import re
-import sys
-from random import random
-from numpy import zeros
 
 from .AbstractUserModel import AbstractUserModel
-from ..utils import split_arg_str
 
 import requests
 import json
-import time
-import random
-import sys
-from time import gmtime, strftime, strptime, localtime
+
+from time import strftime, strptime, localtime
 
 
 
@@ -58,47 +50,95 @@ class LivingLabsRealUser(AbstractUserModel):
     
     
     
-    def __get_feedback__(self, qid):
-        r = requests.get("/".join([self.__HOST__, self.__FEEDBACKENDPOINT__, self.KEY, qid]), headers=self.__HEADERS__)
+    def __get_feedback__(self, query):
+        """
+        Returns the feedback for a given query
+        """
+        r = requests.get("/".join([self.__HOST__, self.__FEEDBACKENDPOINT__, self.KEY, query.get_id()]), headers=self.__HEADERS__)
         if r.status_code != requests.codes.ok:
             print r.text
             r.raise_for_status()
         return r.json()
     
 
-    def __getInv_doc_ids__(self, input_dict):
+    def __get_Inverse_docids__(self, input_dict):
+        """
+        Input: dictionary[queryID][living-labsDocID] = LerotDocID or dictionary[queryID][LerotDocID] = Living-labsDocID
+        Returns a dictionary[queryID][living-labsDocID] = LerotDocID or dictionary[queryID][LerotDocID] = Living-labsDocID
+        """
         return_dict = {}
-        """Inverts inner dictionary to 
-        dictionary[queryID][living-labs ID] = LerotDocID"""
         for qid in input_dict:
             return_dict[qid] = {v: k for k, v in input_dict[qid].items()}
         return return_dict
     
     
-    def __translate_docids__(self, query, qid, input_list, ranker_list=None):
+    def __lerot2LL_docids__(self, query, lerot_list):
+        """
+        Returns: List of living-labs doc ids coinciding with the lerot list entered
+        """
         return_list = []
-        '''If list is from lerot, translate to real docids'''
-        if ranker_list==None:# and str(type(input_list[0])) == "<class 'lerot.document.Document'>":
-            for doc in input_list:
-                return_list.append({'docid' : self.__doc_ids__[qid][doc.get_id()]})
-        else:#Else list is not from lerot, in which case translate to lerot ranked list (with click numbers) which was previously uploaded'''
-            for doc1 in ranker_list:
-                for doc2 in input_list['doclist']:
-                    if doc1['docid'] == doc2['docid']:
-                        if doc2['clicked'] == True:
-                            return_list.append(1)
-                        if doc2['clicked'] == False:
-                            return_list.append(0)
-            print ranker_list
-            print input_list
+        for doc in lerot_list:
+            return_list.append({'docid' : self.__doc_ids__[query.get_id()][doc.get_id()]})
         return return_list
+    
+    
+    
+    def __LL2lerot_docids__(self, query, LL_feedbacklist, lerot_list):
+        """
+        Returns list of clicks in lerot coinciding to lerot uploaded list e.g [0 0 0 1 0 0 0 0 0 0] 
+        """
+        return_list = []
+        for doc1 in LL_feedbacklist['doclist']:
+            common_doc = False#keep track if common document has been found
+            for doc2 in lerot_list:
+                if doc2['docid'] == doc1['docid']:#If document ID is the same in both lists
+                    if doc1['clicked'] == True:#if the document was clicked, append 1 and break to next document in feedback
+                        return_list.append(1)
+                        common_doc = True
+                        break
+                    if doc1['clicked'] == False:#if not clicked, append 0 and break to next document in feedback
+                        common_doc = True
+                        return_list.append(0)
+                        break
+            if common_doc == False:#if current docid is not within uploaded list, append 0 regardless
+                return_list.append(0)
+            return return_list
 
 
-    def upload_run(self, query, result_list, runid):
-        qid = query.__qid__
-        doc_list = self.__translate_docids__(query, qid, result_list)
+    def get_win(self, query, feedback_list, lerot_ranked_list):
+        """
+        Used for seznam site which interleaves ranked list with it's own list
+        Returns 'ranked list winner' with number of clicks of each ranker e.g. [0 2] where [lerot_list_score seznam_list_score]
+        """
+        ranker_winner = [0, 0]
+        for doc1 in feedback_list['doclist']:
+            common_doc = False#keep track if common document has been found
+            for doc2 in lerot_ranked_list:
+                if doc2['docid'] == doc1['docid']:#If document ID is the same in both lists
+                    if doc1['clicked'] == True:#if the document was clicked, append
+                        common_doc = True
+                        ranker_winner[0] += 1
+                        break
+                    if doc1['clicked'] == False:
+                        common_doc = True
+                        break
+            if common_doc == False:
+                if doc1['clicked'] == True:
+                    ranker_winner[1] += 1
+            if ranker_winner[0] > ranker_winner[1]:
+                return True
+            else:
+                return False
+    
+
+
+    def upload_run(self, query, upload_list, runid):
+        """
+        Uploads a run to living-labs api. 
+        """
+        doc_list = self.__lerot2LL_docids__(query, upload_list)
         payload = {"runid": runid, "doclist": doc_list}
-        r = requests.put("/".join([self.__HOST__, self.__RUNENDPOINT__, self.KEY, qid]), data=json.dumps(payload), headers=self.__HEADERS__)
+        r = requests.put("/".join([self.__HOST__, self.__RUNENDPOINT__, self.KEY, query.get_qid()]), data=json.dumps(payload), headers=self.__HEADERS__)
         if r.status_code != requests.codes.ok:
             print r.text
             r.raise_for_status()
@@ -108,18 +148,17 @@ class LivingLabsRealUser(AbstractUserModel):
 
     
     def get_clicks(self, result_list, labels, **kwargs):
+        """
+        Returns the list of clicked documents from an uploaded lerot ranking list, and the feedback
+        """
         query = kwargs['query']
         upload_time = kwargs['upload_time']
-        ranker_list = kwargs['ranker_list']['doclist']
+        lerot_ranked_list = kwargs['ranker_list']['doclist']
         qid = query.__qid__
         feedbacks = self.__get_feedback__(qid)
         for feedback in feedbacks['feedback']:
             if strptime(feedback['modified_time'], "%a, %d %b %Y %H:%M:%S -0000") > strptime(upload_time, "%a, %d %b %Y %H:%M:%S -0000"):
-                print feedback['modified_time'], '>', upload_time
-                print result_list
-                print self.__translate_docids__(query, qid, feedback, ranker_list)
-                return self.__translate_docids__(query, qid, feedback, ranker_list)
-        #print feedback['modified_time'], '<', upload_time
+                return feedback, self.__LL2lerot_docids__(query, feedback, lerot_ranked_list)
             
                         
                     
