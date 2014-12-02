@@ -12,8 +12,8 @@ class LivingLabsEval:
     
     
     
-    def update_score(self, wins_list):
-        if True:
+    def update_score(self, win):
+        if win == True:
             self.__wins_list__.append(1)
             self.__performance_list__.append(sum(self.__wins_list__)/float(len(self.__wins_list__)))
         else:

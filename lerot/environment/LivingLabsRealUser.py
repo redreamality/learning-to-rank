@@ -20,8 +20,9 @@ from .AbstractUserModel import AbstractUserModel
 
 import requests
 import json
-
-from time import strftime, strptime, localtime
+import time
+from numpy import asarray
+from time import strftime, strptime, localtime, sleep
 
 
 
@@ -46,15 +47,22 @@ class LivingLabsRealUser(AbstractUserModel):
     def __init__(self, key, doc_ids):
         self.KEY = key
         self.__doc_ids__ = doc_ids
-        self.__reversed_docids__ = self.__getInv_doc_ids__(self.__doc_ids__)
+        self.__reversed_docids__ = self.__get_Inverse_docids__(self.__doc_ids__)
     
     
     
-    def __get_feedback__(self, query):
+    def __get_feedback__(self, qid):
         """
         Returns the feedback for a given query
         """
-        r = requests.get("/".join([self.__HOST__, self.__FEEDBACKENDPOINT__, self.KEY, query.get_id()]), headers=self.__HEADERS__)
+        sleep(1)
+        while True:
+            try:
+                r = requests.get("/".join([self.__HOST__, self.__FEEDBACKENDPOINT__, self.KEY, qid]), headers=self.__HEADERS__, timeout=20)
+                break
+            except requests.exceptions.Timeout as e:
+                print e, 'Retrying....'
+                r = self.__get_feedback__(qid)
         if r.status_code != requests.codes.ok:
             print r.text
             r.raise_for_status()
@@ -78,7 +86,7 @@ class LivingLabsRealUser(AbstractUserModel):
         """
         return_list = []
         for doc in lerot_list:
-            return_list.append({'docid' : self.__doc_ids__[query.get_id()][doc.get_id()]})
+            return_list.append({'docid' : self.__doc_ids__[query.get_qid()][doc.get_id()]})
         return return_list
     
     
@@ -88,6 +96,7 @@ class LivingLabsRealUser(AbstractUserModel):
         Returns list of clicks in lerot coinciding to lerot uploaded list e.g [0 0 0 1 0 0 0 0 0 0] 
         """
         return_list = []
+        print LL_feedbacklist['doclist'], lerot_list
         for doc1 in LL_feedbacklist['doclist']:
             common_doc = False#keep track if common document has been found
             for doc2 in lerot_list:
@@ -102,7 +111,7 @@ class LivingLabsRealUser(AbstractUserModel):
                         break
             if common_doc == False:#if current docid is not within uploaded list, append 0 regardless
                 return_list.append(0)
-            return return_list
+        return asarray(return_list)
 
 
     def get_win(self, query, feedback_list, lerot_ranked_list):
@@ -111,9 +120,10 @@ class LivingLabsRealUser(AbstractUserModel):
         Returns 'ranked list winner' with number of clicks of each ranker e.g. [0 2] where [lerot_list_score seznam_list_score]
         """
         ranker_winner = [0, 0]
+        print feedback_list['doclist'], lerot_ranked_list
         for doc1 in feedback_list['doclist']:
             common_doc = False#keep track if common document has been found
-            for doc2 in lerot_ranked_list:
+            for doc2 in lerot_ranked_list['doclist']:
                 if doc2['docid'] == doc1['docid']:#If document ID is the same in both lists
                     if doc1['clicked'] == True:#if the document was clicked, append
                         common_doc = True
@@ -125,11 +135,11 @@ class LivingLabsRealUser(AbstractUserModel):
             if common_doc == False:
                 if doc1['clicked'] == True:
                     ranker_winner[1] += 1
-            if ranker_winner[0] > ranker_winner[1]:
-                return True
-            else:
-                return False
-    
+        if ranker_winner[0] > ranker_winner[1]:
+            return True
+        else:
+            return False
+
 
 
     def upload_run(self, query, upload_list, runid):
@@ -139,6 +149,7 @@ class LivingLabsRealUser(AbstractUserModel):
         doc_list = self.__lerot2LL_docids__(query, upload_list)
         payload = {"runid": runid, "doclist": doc_list}
         r = requests.put("/".join([self.__HOST__, self.__RUNENDPOINT__, self.KEY, query.get_qid()]), data=json.dumps(payload), headers=self.__HEADERS__)
+        sleep(0.1)
         if r.status_code != requests.codes.ok:
             print r.text
             r.raise_for_status()
@@ -148,6 +159,7 @@ class LivingLabsRealUser(AbstractUserModel):
 
     
     def get_clicks(self, result_list, labels, **kwargs):
+        time.sleep(0.1)
         """
         Returns the list of clicked documents from an uploaded lerot ranking list, and the feedback
         """
@@ -157,8 +169,9 @@ class LivingLabsRealUser(AbstractUserModel):
         qid = query.__qid__
         feedbacks = self.__get_feedback__(qid)
         for feedback in feedbacks['feedback']:
-            if strptime(feedback['modified_time'], "%a, %d %b %Y %H:%M:%S -0000") > strptime(upload_time, "%a, %d %b %Y %H:%M:%S -0000"):
+            if strptime(feedback['modified_time'], "%a, %d %b %Y %H:%M:%S -0000") >= strptime(upload_time, "%a, %d %b %Y %H:%M:%S -0000"):
+                print feedback['modified_time'], '>=', upload_time
                 return feedback, self.__LL2lerot_docids__(query, feedback, lerot_ranked_list)
-            
+        return None, None
                         
                     

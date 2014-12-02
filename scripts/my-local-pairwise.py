@@ -53,7 +53,6 @@ for fold in range(5):
             learner.get_ranked_list(q)#, firstTime
             learner.current_l = uploads[qid]['current_l']
             s = learner.update_solution(c)#update learner using clicks
-
             eval = evaluation.evaluate_all(learner.ranker, test_queries)
             out_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'/output_data/pairwise_local_evaluation_data/fold'+str(fold)+'_'+(str(repetition))
             evalString += str(eval)

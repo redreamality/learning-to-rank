@@ -323,7 +323,7 @@ class LivingLabsQueries(Queries):
         self.__queries__ = {}
         self.__LL_queries__  = self.__get_queries__()
         self.__doc_ids__ = {}
-        time.sleep(2)
+        time.sleep(4)
         self.__num_features__ = self.__get_num_features__(self.__LL_queries__ )
         qlen = len(self.__LL_queries__ ['queries'])
         print qlen, 'Num of queries'
@@ -333,10 +333,11 @@ class LivingLabsQueries(Queries):
             qid = query['qid']
             print qid,  counter, 'of', qlen
             doclist = self.__get_doclist__(qid)
+            time.sleep(4)
             instances = self.__get_features__(qid, doclist, self.__num_features__)
             self.__queries__[qid] = Query(qid, instances, [0]*len(instances), "")#instances = self.get_features(qid, HOST, KEY) # Should by numpy array
             self.__set_doc_ids__(qid, doclist)
-            
+            time.sleep(4)
 
 
     def __set_doc_ids__(self, qid, doclist):
@@ -355,7 +356,10 @@ class LivingLabsQueries(Queries):
         """Returns a Dictionary of all Queries."""
         time.sleep(1)
         print "/".join([self.__HOST__, self.__QUERYENDPOINT__, self.__KEY__])
-        r = requests.get("/".join([self.__HOST__, self.__QUERYENDPOINT__, self.__KEY__]), headers=self.__HEADERS__)
+        try:
+            r = requests.get("/".join([self.__HOST__, self.__QUERYENDPOINT__, self.__KEY__]), headers=self.__HEADERS__, timeout=3)
+        except Exception, e:
+            print e
         if r.status_code != requests.codes.ok:
             print r.text
             r.raise_for_status()
@@ -397,9 +401,9 @@ class LivingLabsQueries(Queries):
         """
         Return the document list for a given query.
         """
-        time.sleep(2)
+        time.sleep(1)
         print "/".join([self.__HOST__, self.__DOCLISTENDPOINT__, self.__KEY__, qid]), self.__HEADERS__
-        r = requests.get("/".join([self.__HOST__, self.__DOCLISTENDPOINT__, self.__KEY__, qid]), headers=self.__HEADERS__)
+        r = requests.get("/".join([self.__HOST__, self.__DOCLISTENDPOINT__, self.__KEY__, qid]), headers=self.__HEADERS__, timeout=10)
         print 'Worked'
         if r.status_code != requests.codes.ok:
                 print r.text
