@@ -23,7 +23,7 @@ import json
 import time
 from numpy import asarray
 from time import strftime, strptime, localtime, sleep
-
+import sys
 
 
 class LivingLabsRealUser(AbstractUserModel):
@@ -51,18 +51,18 @@ class LivingLabsRealUser(AbstractUserModel):
     
     
     
-    def __get_feedback__(self, qid):
+    def __get_feedback__(self, qid, runid):
         """
         Returns the feedback for a given query
         """
-        sleep(1)
+        sleep(0.1)
         while True:
             try:
-                r = requests.get("/".join([self.__HOST__, self.__FEEDBACKENDPOINT__, self.KEY, qid]), headers=self.__HEADERS__, timeout=20)
+                r = requests.get("/".join([self.__HOST__, self.__FEEDBACKENDPOINT__, self.KEY, qid, runid]), headers=self.__HEADERS__, timeout=20)
                 break
             except requests.exceptions.Timeout as e:
                 print e, 'Retrying....'
-                r = self.__get_feedback__(qid)
+                r = self.__get_feedback__(qid, runid)
         if r.status_code != requests.codes.ok:
             print r.text
             r.raise_for_status()
@@ -96,16 +96,15 @@ class LivingLabsRealUser(AbstractUserModel):
         Returns list of clicks in lerot coinciding to lerot uploaded list e.g [0 0 0 1 0 0 0 0 0 0] 
         """
         return_list = []
-        print LL_feedbacklist['doclist'], lerot_list
-        for doc1 in LL_feedbacklist['doclist']:
+        for doc2 in lerot_list:
             common_doc = False#keep track if common document has been found
-            for doc2 in lerot_list:
+            for doc1 in LL_feedbacklist['doclist']:
                 if doc2['docid'] == doc1['docid']:#If document ID is the same in both lists
-                    if doc1['clicked'] == True:#if the document was clicked, append 1 and break to next document in feedback
+                    if doc1['clicked'] ==True and doc1['team'] == 'participant':#if the document was clicked, append 1 and break to next document in feedback
                         return_list.append(1)
                         common_doc = True
                         break
-                    if doc1['clicked'] == False:#if not clicked, append 0 and break to next document in feedback
+                    if doc1['clicked'] == False and doc1['team'] == 'participant':#if not clicked, append 0 and break to next document in feedback
                         common_doc = True
                         return_list.append(0)
                         break
@@ -120,25 +119,17 @@ class LivingLabsRealUser(AbstractUserModel):
         Returns 'ranked list winner' with number of clicks of each ranker e.g. [0 2] where [lerot_list_score seznam_list_score]
         """
         ranker_winner = [0, 0]
-        print feedback_list['doclist'], lerot_ranked_list
         for doc1 in feedback_list['doclist']:
-            common_doc = False#keep track if common document has been found
             for doc2 in lerot_ranked_list['doclist']:
                 if doc2['docid'] == doc1['docid']:#If document ID is the same in both lists
-                    if doc1['clicked'] == True:#if the document was clicked, append
-                        common_doc = True
+                    if doc1['clicked'] == True and doc1['team'] == 'participant':#if the document was clicked, append
                         ranker_winner[0] += 1
                         break
-                    if doc1['clicked'] == False:
-                        common_doc = True
+                    if doc1['clicked'] == False and doc1['team'] == 'participant':
                         break
-            if common_doc == False:
-                if doc1['clicked'] == True:
-                    ranker_winner[1] += 1
-        if ranker_winner[0] > ranker_winner[1]:
-            return True
-        else:
-            return False
+            if doc1['clicked'] == True and doc1['team'] == 'site':
+                ranker_winner[1] += 1
+        return ranker_winner
 
 
 
@@ -156,7 +147,7 @@ class LivingLabsRealUser(AbstractUserModel):
         the_time = strftime("%a, %d %b %Y %H:%M:%S -0000", localtime())
         
         return payload, the_time    
-
+        
     
     def get_clicks(self, result_list, labels, **kwargs):
         time.sleep(0.1)
@@ -166,11 +157,12 @@ class LivingLabsRealUser(AbstractUserModel):
         query = kwargs['query']
         upload_time = kwargs['upload_time']
         lerot_ranked_list = kwargs['ranker_list']['doclist']
+        runid = kwargs['run_id']
         qid = query.__qid__
-        feedbacks = self.__get_feedback__(qid)
+        feedbacks = self.__get_feedback__(qid, runid)
         for feedback in feedbacks['feedback']:
             if strptime(feedback['modified_time'], "%a, %d %b %Y %H:%M:%S -0000") >= strptime(upload_time, "%a, %d %b %Y %H:%M:%S -0000"):
-                print feedback['modified_time'], '>=', upload_time
+                print feedback
                 return feedback, self.__LL2lerot_docids__(query, feedback, lerot_ranked_list)
         return None, None
                         

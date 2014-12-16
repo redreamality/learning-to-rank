@@ -323,21 +323,17 @@ class LivingLabsQueries(Queries):
         self.__queries__ = {}
         self.__LL_queries__  = self.__get_queries__()
         self.__doc_ids__ = {}
-        time.sleep(4)
+        time.sleep(1)
         self.__num_features__ = self.__get_num_features__(self.__LL_queries__ )
-        qlen = len(self.__LL_queries__ ['queries'])
-        print qlen, 'Num of queries'
-        counter = 0
         for query in self.__LL_queries__ ['queries']:
-            counter += 1
             qid = query['qid']
-            print qid,  counter, 'of', qlen
+            print 'Getting doclist for ', qid
             doclist = self.__get_doclist__(qid)
-            time.sleep(4)
+            time.sleep(1)
             instances = self.__get_features__(qid, doclist, self.__num_features__)
             self.__queries__[qid] = Query(qid, instances, [0]*len(instances), "")#instances = self.get_features(qid, HOST, KEY) # Should by numpy array
             self.__set_doc_ids__(qid, doclist)
-            time.sleep(4)
+            time.sleep(1)
 
 
     def __set_doc_ids__(self, qid, doclist):
@@ -355,11 +351,8 @@ class LivingLabsQueries(Queries):
     def __get_queries__(self):
         """Returns a Dictionary of all Queries."""
         time.sleep(1)
-        print "/".join([self.__HOST__, self.__QUERYENDPOINT__, self.__KEY__])
-        try:
-            r = requests.get("/".join([self.__HOST__, self.__QUERYENDPOINT__, self.__KEY__]), headers=self.__HEADERS__, timeout=3)
-        except Exception, e:
-            print e
+        r = requests.get("/".join([self.__HOST__, self.__QUERYENDPOINT__, self.__KEY__]), headers=self.__HEADERS__)
+        print 'Got Queries'
         if r.status_code != requests.codes.ok:
             print r.text
             r.raise_for_status()
@@ -388,13 +381,12 @@ class LivingLabsQueries(Queries):
         feature_num = 0
         for query in queries['queries']:
             qid = query['qid']
-            time.sleep(2)
+            time.sleep(1)
             doclist = self.__get_doclist__(qid)
             for doc in range(len(doclist['doclist'])):
-                if 'relevance_signals' in doclist['doclist'][doc]:
-                    for feature in doclist['doclist'][doc]['relevance_signals']:
-                        feature_num += 1
-                    return feature_num
+                for feature in doclist['doclist'][doc]['relevance_signals']:
+                    feature_num += 1
+                return feature_num
 
 
     def __get_doclist__(self, qid):
@@ -403,7 +395,7 @@ class LivingLabsQueries(Queries):
         """
         time.sleep(1)
         print "/".join([self.__HOST__, self.__DOCLISTENDPOINT__, self.__KEY__, qid]), self.__HEADERS__
-        r = requests.get("/".join([self.__HOST__, self.__DOCLISTENDPOINT__, self.__KEY__, qid]), headers=self.__HEADERS__, timeout=10)
+        r = requests.get("/".join([self.__HOST__, self.__DOCLISTENDPOINT__, self.__KEY__, qid]), headers=self.__HEADERS__, timeout=20)
         print 'Worked'
         if r.status_code != requests.codes.ok:
                 print r.text
