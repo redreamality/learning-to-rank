@@ -62,7 +62,7 @@ for repetition in range(index, 1001):
         #print qid, training_queries.keys()[:].index(qid), ':', len(training_queries.keys()[:])
         q = training_queries[qid]
         l = learner.get_ranked_list(q, firstTime)
-        payload, the_time = user_model.upload_run(q, l, theid)
+        payload, the_time = user_model.upload_run(q, l, 'listwise'+str(repetition))
         firstTime = False
         uploads[qid] = {'current_l':l,
                         'payload':payload,

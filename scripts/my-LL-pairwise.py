@@ -56,16 +56,15 @@ for repetition in range(index, 1001):
     uploads = {}
     print 'iteration: ', repetition
     print 'Uploading rankings....'
-    theid = 'pairwise'+str(repetition)
+
     for qid in training_queries.keys()[:]:
         q = training_queries[qid]
         l = learner.get_ranked_list(q)
-        payload, the_time = user_model.upload_run(q, l, theid)
+        payload, the_time = user_model.upload_run(q, l, repetition)
         uploads[qid] = {'current_l':l,
                         'payload':payload,
                         'upload_time':the_time,
-                        'current_query': q,
-                        'runid':theid
+                        'current_query': q
                         }
 
 
@@ -76,7 +75,7 @@ for repetition in range(index, 1001):
         for qid in shuffledQids:   
             q = training_queries[qid]
             feedback, c = user_model.get_clicks(uploads[qid]['current_l'], q.get_labels(), 
-                                                    query=q, ranker_list=uploads[qid]['payload'], upload_time=uploads[qid]['upload_time'], run_id=uploads[qid]['runid'])
+                                                    query=q, ranker_list=uploads[qid]['payload'], upload_time=uploads[qid]['upload_time'])
             if isinstance(c, np.ndarray):break
         if isinstance(c, np.ndarray):
             print c
