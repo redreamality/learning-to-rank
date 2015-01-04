@@ -58,9 +58,9 @@ class LivingLabsRealUser(AbstractUserModel):
         sleep(0.1)
         while True:
             try:
-                r = requests.get("/".join([self.__HOST__, self.__FEEDBACKENDPOINT__, self.KEY, qid, runid]), headers=self.__HEADERS__, timeout=20)
+                r = requests.get("/".join([self.__HOST__, self.__FEEDBACKENDPOINT__, self.KEY, qid, runid]), headers=self.__HEADERS__, timeout=60)
                 break
-            except requests.exceptions.Timeout as e:
+            except (requests.exceptions.RequestException, requests.exceptions.ConnectionError) as e:
                 print e, 'Retrying....'
                 r = self.__get_feedback__(qid, runid)
         if r.status_code != requests.codes.ok:
@@ -92,27 +92,19 @@ class LivingLabsRealUser(AbstractUserModel):
     
     
     def __LL2lerot_docids__(self, query, LL_feedbacklist, lerot_list):
-        string = '\nQid: '+ query.get_qid()+ ' Unknown Docids:'
-        for doc1 in LL_feedbacklist['doclist']:
-            if not doc1['docid'] in self.__doc_ids__[query.get_qid()].values():
-                string.join(str(doc1['docid'])+' , ') 
-        string.join(('FeedbackList: ', str(LL_feedbacklist)))
-        with open('feedbacklog.txt', 'a') as f:
-            f.write(string)
         """
         Returns list of clicks in lerot coinciding to lerot uploaded list e.g [0 0 0 1 0 0 0 0 0 0] 
         """
-        print 'qid: ', query.get_qid()
         return_list = []
         for doc2 in lerot_list:
             common_doc = False#keep track if common document has been found
             for doc1 in LL_feedbacklist['doclist']:
                 if doc2['docid'] == doc1['docid']:#If document ID is the same in both lists
-                    if doc1['clicked'] == True:#if the document was clicked, append 1 and break to next document in feedback
+                    if doc1['clicked'] ==True and doc1['team'] == 'participant':#if the document was clicked, append 1 and break to next document in feedback
                         return_list.append(1)
                         common_doc = True
                         break
-                    if doc1['clicked'] == False:#if not clicked, append 0 and break to next document in feedback
+                    if doc1['clicked'] == False and doc1['team'] == 'participant':#if not clicked, append 0 and break to next document in feedback
                         common_doc = True
                         return_list.append(0)
                         break
@@ -128,19 +120,15 @@ class LivingLabsRealUser(AbstractUserModel):
         """
         ranker_winner = [0, 0]
         for doc1 in feedback_list['doclist']:
-            common_doc = False#keep track if common document has been found
             for doc2 in lerot_ranked_list['doclist']:
                 if doc2['docid'] == doc1['docid']:#If document ID is the same in both lists
-                    if doc1['clicked'] == True:#if the document was clicked, append
-                        common_doc = True
+                    if doc1['clicked'] == True and doc1['team'] == 'participant':#if the document was clicked, append
                         ranker_winner[0] += 1
                         break
-                    if doc1['clicked'] == False:
-                        common_doc = True
+                    if doc1['clicked'] == False and doc1['team'] == 'participant':
                         break
-            if common_doc == False:
-                if doc1['clicked'] == True:
-                    ranker_winner[1] += 1
+            if doc1['clicked'] == True and doc1['team'] == 'site':
+                ranker_winner[1] += 1
         return ranker_winner
 
 
@@ -151,8 +139,14 @@ class LivingLabsRealUser(AbstractUserModel):
         """
         doc_list = self.__lerot2LL_docids__(query, upload_list)
         payload = {"runid": runid, "doclist": doc_list}
-        r = requests.put("/".join([self.__HOST__, self.__RUNENDPOINT__, self.KEY, query.get_qid()]), data=json.dumps(payload), headers=self.__HEADERS__)
-        sleep(0.1)
+        while True:
+            sleep(0.1)
+            try:
+                r = requests.put("/".join([self.__HOST__, self.__RUNENDPOINT__, self.KEY, query.get_qid()]), data=json.dumps(payload), headers=self.__HEADERS__)
+                break
+            except (requests.exceptions.RequestException, requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+                print e, 'Retrying....'
+                r = self.upload_run(query, upload_list, runid)
         if r.status_code != requests.codes.ok:
             print r.text
             r.raise_for_status()
@@ -173,10 +167,6 @@ class LivingLabsRealUser(AbstractUserModel):
         qid = query.__qid__
         feedbacks = self.__get_feedback__(qid, runid)
         for feedback in feedbacks['feedback']:
-            for doc in feedback['doclist']:
-                if doc['team'] == 'site':
-                    print feedback
-                    sys.exit()
             if strptime(feedback['modified_time'], "%a, %d %b %Y %H:%M:%S -0000") >= strptime(upload_time, "%a, %d %b %Y %H:%M:%S -0000"):
                 print feedback
                 return feedback, self.__LL2lerot_docids__(query, feedback, lerot_ranked_list)
