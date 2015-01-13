@@ -1,7 +1,7 @@
 '''
 Created on 12 jan. 2015
 
-@author: Jos
+@author: Harrie, Jos
 '''
 import cStringIO
 import random
