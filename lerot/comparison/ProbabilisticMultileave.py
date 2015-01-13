@@ -144,17 +144,17 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         -p: list with for each click the list containing the probability that
             the list comes from each ranker
         '''
-#         return_list = []
-#         sigmas = np.zeros([len(clickedDocs), len(rankers)])
-#         for i in range(len(rankers)):
-#             for j in range(len(clickedDocs)):
-#                 sigmas[i, j] = 0
-#             sigmas = sigmas / np.sum(sigmas)
-#             return_list.append(list(sigmas))
-#         return return_list
-        p = [[1. / len(result_list) for _ in range(len(result_list))]
-              for _ in range(len(clickedDocs[0]))]
-        return p
+        tau = 0.3 
+        probs = []
+        sigmoid_total =  np.sum(1.0/(np.arange(n)+1)**tau)
+        sigmas = np.zeros([len(clickedDocs),len(rankers)])
+        for i in range(len(rankers)):
+            ranks = np.array(get_rank(result_list[:max(clickedDocs)+1]))
+            for j in range(len(clickedDocs)):
+                sigmas[i,j] = ranks[j] / (sigmoid_total + np.sum(1.0/(ranks[:j]**tau)))
+            sigmas = sigmas / np.sum(sigmas)
+            probs.append(list(sigmas))
+        return probs
 
     def credits_of_list(self, p):
         '''
