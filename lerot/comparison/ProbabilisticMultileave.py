@@ -130,7 +130,6 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         for i, d in enumerate(documents):
             if d in docsInRanker:
                 ranks[i] = docsInRanker.index(d)
-        print(ranks)
         return ranks
 
     def probability_of_list(self, result_list, rankers, clickedDocs):
@@ -144,16 +143,20 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         -p: list with for each click the list containing the probability that
             the list comes from each ranker
         '''
-        tau = 0.3 
+        tau = 0.3
         probs = []
-        sigmoid_total =  np.sum(1.0/(np.arange(n)+1)**tau)
-        sigmas = np.zeros([len(clickedDocs),len(rankers)])
-        for i in range(len(rankers)):
-            ranks = np.array(get_rank(result_list[:max(clickedDocs)+1]))
-            for j in range(len(clickedDocs)):
-                sigmas[i,j] = ranks[j] / (sigmoid_total + np.sum(1.0/(ranks[:j]**tau)))
+        n = 100  # TODO: implement
+        sigmoid_total = np.sum(1.0 / (np.arange(n) + 1) ** tau)
+        sigmas = np.zeros([len(rankers), len(clickedDocs[0])])
+        for i, r in enumerate(rankers):
+            interestingDocs = result_list[:max(clickedDocs[0]) + 1]  # TODO: rename to something descriptive
+            ranks = np.array(self.get_rank(r, interestingDocs))
+            for j in range(len(clickedDocs[0])):
+                sigmas[i, j] = ranks[j] / (sigmoid_total
+                                           + np.sum(1.0 / (ranks[: j] ** tau)))
             sigmas = sigmas / np.sum(sigmas)
             probs.append(list(sigmas))
+        # TODO: probs is now with length of rankers, we expect length of clickedDocs, right?
         return probs
 
     def credits_of_list(self, p):
