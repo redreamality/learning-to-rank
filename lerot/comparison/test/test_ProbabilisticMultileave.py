@@ -10,6 +10,7 @@ import unittest
 import lerot.comparison.ProbabilisticMultileave as ml
 import lerot.query as qu
 import lerot.ranker.ProbabilisticRankingFunction as rnk
+import numpy as np
 
 
 PATH_QUERIES = '../../../data/Fold1/train.txt'
@@ -60,7 +61,9 @@ class Test(unittest.TestCase):
         query = self.query
 
         creds = self.multil.infer_outcome(l, rankers, clicks, query)
-        assert(creds is None)  # TODO implement
+        assert(len(creds) == len(l))
+        assert(np.allclose(sum(creds), 1.))
+        # TODO: unittest if values make sense
 
     def testSteps(self):
         steps = [self.step1_ListCreation, self.step2_InferOutcome]
