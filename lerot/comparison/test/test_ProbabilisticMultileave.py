@@ -10,10 +10,18 @@ import unittest
 import lerot.comparison.ProbabilisticMultileave as ml
 import lerot.query as qu
 import lerot.ranker.ProbabilisticRankingFunction as rnk
+import lerot.environment.CascadeUserModel as CascadeUserModel
 import numpy as np
 
 
-PATH_QUERIES = '../../../data/Fold1/train.txt'
+PATH_QUERIES = 'data/Fold1/train.txt'
+
+
+class Temp_doc():
+    def __init__(self,id):
+        self.id = id
+    def get_id(self):
+        return self.id
 
 
 class Test(unittest.TestCase):
@@ -58,10 +66,20 @@ class Test(unittest.TestCase):
         l = self.foundDocs
         rankers = self.rankers
         clicks = [random.randint(0, 1) for _ in range(len(l))]
-        user_model = environment.CascadeUserModel([])
+        user_model = CascadeUserModel("--p_click 0:.0, 1:1.0"
+                              " --p_stop 0:.0, 1:.0");
+       
         query = self.query
 
-        creds = self.multil.infer_outcome(l, rankers, clicks, query)
+        #TODO wtf does CascadeUserModel want as input?!? not a list of docids
+        c = user_model.get_clicks([Temp_doc(docid) for docid in l],query.get_labels())
+
+        creds = self.multil.infer_outcome(l, rankers, c, query)
+
+        print "Multileaved list:", l
+        print "Clicks on list:  ", c
+        print "Credit:          ", creds
+
         assert(len(creds) == len(l))
         assert(np.allclose(sum(creds), 1.))
         # TODO: unittest if values make sense
