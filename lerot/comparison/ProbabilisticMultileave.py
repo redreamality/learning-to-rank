@@ -121,20 +121,24 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         - clickedDocs: the docIds in the result_list which recieved a click
 
         RETURNS
-        -p: list with the probability that the list comes from each ranker
+        -p: list with for each click the list containing the probability that
+            the list comes from each ranker
         '''
         # TODO: this is not implemented yet, only copied from Interleave
-        p = None
+        p = [[1. / len(result_list) for _ in range(len(result_list))]
+             for _ in range(len(clickedDocs[0]))]
         return p
 
     def credits_of_list(self, p):
         '''
         ARGS:
-        -p: list with the probability that the list comes from each ranker
+        -p: list with for each click the list containing the probability that
+            the list comes from each ranker
 
         RETURNS:
         - credits: list of credits for each ranker
         '''
+        print p
         creds = None
         return creds
 
