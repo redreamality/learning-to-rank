@@ -2,7 +2,7 @@ import argparse
 from collections import defaultdict
 from random import randint
 
-from numpy import asarray, e, log, where
+from numpy import *
 
 from AbstractInterleavedComparison import AbstractInterleavedComparison
 from ..utils import split_arg_str
@@ -113,6 +113,10 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
 
         return creds
 
+    def get_rank(ranker, documents):
+        # get rank of all documents in list of documents and return in list
+        return [1]* len(documents)
+
     def probability_of_list(self, result_list, rankers, clickedDocs):
         '''
         ARGS:
@@ -124,10 +128,14 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         -p: list with for each click the list containing the probability that
             the list comes from each ranker
         '''
-        # TODO: this is not implemented yet, only copied from Interleave
-        p = [[1. / len(result_list) for _ in range(len(result_list))]
-             for _ in range(len(clickedDocs[0]))]
-        return p
+        return_list = []
+        sigmas = numpy.zeros([len(clickedDocs),len(rankers)])
+        for i in range(len(rankers)):
+            for j in range(len(clickedDocs)):
+                sigmas[i,j] = 
+            sigmas = sigmas / numpy.sum(sigmas)
+            return_list.append(list(sigmas))
+        return return_list
 
     def credits_of_list(self, p):
         '''
