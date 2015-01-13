@@ -48,7 +48,7 @@ class Test(unittest.TestCase):
         assert(len(foundDocs) == len(set(foundDocs)))  # No duplicates
 
         # For next step:
-        self.foundDocs = foundDocs
+        self.foundDocs = createdList
         self.rankers = rankers
         self.query = query
         self.multil = multil
