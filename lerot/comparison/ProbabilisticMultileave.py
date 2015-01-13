@@ -13,6 +13,8 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
 
     def __init__(self, arg_str=None):
         '''
+        TODO: docstring
+
         ARGS:
         - aggregate: "expectation", "log-likelihood-ratio",
             "likelihood-ratio", "log-ratio", "binary"
@@ -49,10 +51,16 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
 
     def multileave(self, rankers, query, length):
         '''
+        TODO: DOCSTRING
+
         ARGS:
         - rankers: a list of ...
         - query: ...
         - length: the desired length of the lists
+
+         RETURNS:
+        - l: multileaved list of documents
+        - a: list indicating which ranker is used at each row of l
         '''
         d = defaultdict(list)
         for i, r in enumerate(rankers):
@@ -78,10 +86,21 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
                     # TODO remove try / catch block
                 except:
                     pass
-        return (asarray(l), (a, rankers))
+        return (asarray(l), a)
 
     def infer_outcome(self, l, a, c, query):
-        # TODO: this is not implemented yet, only copied from Interleave
+        '''
+        TODO: DOCSTRING
+
+        ARGS:
+        - l: the created list of documents, using multileaving
+        - a: tuple containing td_a (team draft) and the rankers
+        - c: credits?
+        - query: the query
+
+        RETURNS
+        - The Credits (right ?)
+        '''
         (td_a, rankers) = a
 
         # for comparisons with TD, use naive comparison
@@ -204,7 +223,9 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
 
 
 class SimpleNAryTree:
-    """tree that keeps track of outcome, probability of arriving at this
+    """TODO: this is not a tree! this is a node...
+
+    tree that keeps track of outcome, probability of arriving at this
     outcome"""
     parent, left, right, prob, outcome = None, None, None, 0.0, 0
 

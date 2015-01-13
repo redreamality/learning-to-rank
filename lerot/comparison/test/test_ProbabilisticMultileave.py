@@ -36,9 +36,9 @@ class Test(unittest.TestCase):
         rankers = [rnk(ranker_arg_str, ties, feature_count)
                    for _ in range(n_rankers)]
         length = 10
-        (docs, _) = multil.multileave(rankers, query, length)
+        (createdList, _) = multil.multileave(rankers, query, length)
 
-        foundDocs = [d.docid for d in docs]
+        foundDocs = [d.docid for d in createdList]
         existingDocs = [q.docid for q in query.get_docids()]
         assert(set(foundDocs).issubset(set(existingDocs)))
         assert(len(foundDocs) == length)
