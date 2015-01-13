@@ -89,29 +89,29 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
                     pass
         return (asarray(l), a)
 
-    def infer_outcome(self, l, rankers, c, query):
+    def infer_outcome(self, l, rankers, clicks, query):
         '''
         TODO: DOCSTRING
 
         ARGS:
         - l: the created list of documents, using multileaving
         - rankers: the rankers
-        - c: the clicks
+        - clicks: the clicks
         - query: the query
 
         RETURNS
         - The Credits
         '''
 
-        click_ids = where(asarray(c) == 1)
+        click_ids = where(asarray(clicks) == 1)
         if not len(click_ids[0]):  # no clicks, will be a tie
             return 0
 
         rankers = [r.init_ranking(query) for r in rankers]
         p = self.probability_of_list(l, rankers, click_ids)
-        credits = self.credits_of_list(p)
+        creds = self.credits_of_list(p)
 
-        return credits
+        return creds
 
     def probability_of_list(self, result_list, rankers, clickedDocs):
         '''
@@ -135,8 +135,8 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         RETURNS:
         - credits: list of credits for each ranker
         '''
-        credits = None
-        return credits
+        creds = None
+        return creds
 
 
 class SimpleNAryTree:

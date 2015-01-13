@@ -4,6 +4,7 @@ Created on 12 jan. 2015
 @author: Jos
 '''
 import cStringIO
+import random
 import unittest
 
 import lerot.comparison.ProbabilisticMultileave as ml
@@ -18,12 +19,13 @@ class Test(unittest.TestCase):
 
     def setUp(self):
         self.test_num_features = 6
-        self.test_query = _readQueries(PATH_QUERIES)
+        self.test_queries = _readQueries(PATH_QUERIES)
 
-    def testListCreation(self, n_rankers=3):
+    def step1_ListCreation(self, n_rankers=3):
+        print('Testing step 1: creation of multileaved list')
         multil = ml.ProbabilisticMultileave()
 
-        query_fh = cStringIO.StringIO(self.test_query)
+        query_fh = cStringIO.StringIO(self.test_queries)
         queries = qu.Queries(query_fh, self.test_num_features)
 
         query = queries[queries.keys()[0]]
@@ -44,8 +46,26 @@ class Test(unittest.TestCase):
         assert(len(foundDocs) == length)
         assert(len(foundDocs) == len(set(foundDocs)))  # No duplicates
 
-    def testInfer_Outcome(self):
-        pass
+        # For next step:
+        self.foundDocs = foundDocs
+        self.rankers = rankers
+        self.query = query
+        self.multil = multil
+
+    def step2_InferOutcome(self):
+        print('Testing step 2: infer_outcome')
+        l = self.foundDocs
+        rankers = self.rankers
+        clicks = [random.randint(0, 1) for _ in range(len(l))]
+        query = self.query
+
+        creds = self.multil.infer_outcome(l, rankers, clicks, query)
+        assert(creds is None)  # TODO implement
+
+    def testSteps(self):
+        steps = [self.step1_ListCreation, self.step2_InferOutcome]
+        for step in steps:
+            step()
 
 
 def _readQueries(path, numberOfLines=100):

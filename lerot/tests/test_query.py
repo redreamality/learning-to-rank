@@ -28,7 +28,7 @@ class TestQuery(unittest.TestCase):
     # TODO: fix query.getlabel()
     def setUp(self):
         self.test_num_features = 6
-        self.test_query = """
+        self.test_queries = """
         4 qid:1 1:2.6 2:1 3:2.1 4:0 5:2 6:1.4 # highly relevant
         1 qid:1 1:1.2 2:1 3:2.9 4:0 5:2 6:1.9 # bad
         0 qid:1 1:0.5 2:1 3:2.3 4:0 5:2 6:5.6 # not relevant
@@ -36,13 +36,13 @@ class TestQuery(unittest.TestCase):
         """
 
     def test_queries(self):
-        query_fh = cStringIO.StringIO(self.test_query)
+        query_fh = cStringIO.StringIO(self.test_queries)
         queries = qu.Queries(query_fh, self.test_num_features)
         query_fh.close()
         self.assertEqual(1, queries.get_size())
 
-    def test_query(self):
-        query_fh = cStringIO.StringIO(self.test_query)
+    def test_queries(self):
+        query_fh = cStringIO.StringIO(self.test_queries)
         queries = qu.Queries(query_fh, self.test_num_features)
         query = queries['1']
         query_fh.close()
@@ -58,7 +58,7 @@ class TestQuery(unittest.TestCase):
         self.assertEqual(None, query.get_comment(0))
 
     def test_query_with_comments(self):
-        query_fh = cStringIO.StringIO(self.test_query)
+        query_fh = cStringIO.StringIO(self.test_queries)
         queries = qu.Queries(query_fh, self.test_num_features, True)
         query = queries['1']
         query_fh.close()
