@@ -102,8 +102,8 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         - The Credits
         '''
 
-        click_ids = np.where(np.asarray(clicks) == 1)
-        if not len(click_ids[0]):  # no clicks, will be a tie
+        click_ids = np.where(np.asarray(clicks) == 1)[0]
+        if not len(click_ids):  # no clicks, will be a tie
             # return [1/float(len(rankers))]*len(rankers)
             # the decision could be made to give each ranker equal credit in a tie
             return [0] * len(rankers)
@@ -156,7 +156,8 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
                 click = clickedDocs[j]
                 sigmas[j, i] = ranks[click] / (sigmoid_total
                                            - np.sum(1.0 / (ranks[: click] ** tau)))
-            sigmas = sigmas / np.sum(sigmas,1)
+            for i in range(sigmas.shape[0]):
+                sigmas[i,:] = sigmas[i,:] / np.sum(sigmas[i,:])
         return list(sigmas)
 
     def credits_of_list(self, p):

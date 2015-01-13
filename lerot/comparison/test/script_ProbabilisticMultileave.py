@@ -5,11 +5,10 @@ Created on 12 jan. 2015
 '''
 import cStringIO
 import random
-import unittest
 
 import lerot.comparison.ProbabilisticMultileave as ml
 import lerot.query as qu
-import lerot.ranker.ProbabilisticRankingFunction as rnk
+import lerot.ranker.DeterministicRankingFunction as rnk
 import lerot.environment.CascadeUserModel as CascadeUserModel
 import numpy as np
 
@@ -18,78 +17,72 @@ PATH_TEST_QUERIES  = 'data/Fold1/test.txt'
 PATH_VALI_QUERIES  = 'data/Fold1/vali.txt'
 PATH_TRAIN_QUERIES = 'data/Fold1/train.txt'
 
-class Test(unittest.TestCase):
+class Experiment(object):
 
-    def setUp(self):
-        self.test_num_features = 6
-        self.train_queries = _readQueries(PATH_TRAIN_QUERIES)
+    # 64 features as in NP2003
+    # k = ranking length
+    def __init__(self, n_rankers, n_features=64, k=10):
+        self.n_rankers  = n_rankers
+        self.n_features = n_features
+        self.k = k
+        train_raw  = _readQueries(PATH_TRAIN_QUERIES) + '\n' \
                             + _readQueries(PATH_VALI_QUERIES)
-        self.test_queries  = _readQueries(PATH_TRAIN_QUERIES)
+        test_raw   = _readQueries(PATH_TRAIN_QUERIES)
 
-    def step1_ListCreation(self, n_rankers=3):
-        print('Testing step 1: creation of multileaved list')
-        multil = ml.ProbabilisticMultileave()
-
-        query_fh = cStringIO.StringIO(self.test_queries)
-        queries  = qu.Queries(query_fh, self.test_num_features)
-
-        query = queries[queries.keys()[0]]
+        query_fh            = cStringIO.StringIO(train_raw)
+        self.train_queries  = qu.Queries(query_fh, self.n_features)
         query_fh.close()
 
-        ranker_arg_str = ['ranker.model.BM25', '1']
-            # second arg corresponds to ranker_type..
-        ties = "random"
-        feature_count = None
-        rankers = [rnk(ranker_arg_str, ties, feature_count)
-                   for _ in range(n_rankers)]
-        length = 10
-        (createdList, _) = multil.multileave(rankers, query, length)
+        query_fh            = cStringIO.StringIO(test_raw)
+        self.test_queries   = qu.Queries(query_fh, self.n_features)
+        query_fh.close()
 
-        foundDocs    = [d.docid for d in createdList]
-        existingDocs = [q.docid for q in query.get_docids()]
-        assert(set(foundDocs).issubset(set(existingDocs)))
-        assert(len(foundDocs) == length)
-        assert(len(foundDocs) == len(set(foundDocs)))  # No duplicates
+        self.multil = ml.ProbabilisticMultileave()
 
-        # For next step:
-        self.foundDocs = createdList
-        self.rankers   = rankers
-        self.query     = query
-        self.multil    = multil
+        self.rankers = [rnk("1", "random", self.n_features)
+                   for _ in range(self.n_rankers)]
 
-    def step2_InferOutcome(self):
-        print('Testing step 2: infer_outcome')
-        l = self.foundDocs
-        rankers = self.rankers
-        
-        user_model = CascadeUserModel("--p_click 0:.0, 1:1.0"
-                              " --p_stop 0:.0, 1:.0");
+        for ranker in self.rankers:
+            weights = np.zeros(self.n_features)
+            weights[np.random.randint(self.n_features)] = 1
+            # weights[40] = 1
+            ranker.update_weights(weights)
+        # random.shuffle(self.rankers)
 
-        query = self.query
+        # perfect click model
+        self.user_model = CascadeUserModel("--p_click 0:.0, 1:1.0 "
+                                           "--p_stop  0:.0, 1:.0" );
 
-        clicks = user_model.get_clicks(l,query.get_labels())
+    def run(self):
+        total_creds = np.zeros(len(self.rankers))
+        count = 0
+        for i in range(1000):
+            creds = self.impression()
+            if sum(creds) > 0:
+                count += 1
+            total_creds += np.array(creds)
+        return total_creds/count
 
-        creds = self.multil.infer_outcome(l, rankers, clicks, query)
+    def impression(self):
+        query = self.train_queries[random.choice(self.train_queries.keys())]
+        (ranking, _) = self.multil.multileave(self.rankers, query, self.k)
 
-        print "Clicks on list:  ", clicks
-        print "Credit:          ", creds
+        clicks  = self.user_model.get_clicks(ranking,query.get_labels())
 
-        assert(len(creds) == len(self.rankers))
-        assert(np.allclose(sum(creds), 1.) or (sum(clicks) == 0 and sum(creds) == 0))
-        # TODO: unittest if values make sense
+        creds   = self.multil.infer_outcome(ranking, self.rankers, clicks, query)
 
-    def testSteps(self):
-        steps = [self.step1_ListCreation, self.step2_InferOutcome]
-        for step in steps:
-            step()
+        return creds
 
 
-def _readQueries(path, numberOfLines=100):
+
+def _readQueries(path):
     with open(path, "r") as myfile:
         data = myfile.read()
-    data = '\n'.join(data.splitlines()[0:numberOfLines])
+    data = '\n'.join(data.splitlines())
     return data
 
 
 if __name__ == "__main__":
-    unittest.main()
+    experiment = Experiment(6)
+    for i in range(10):
+        print experiment.run()
