@@ -82,11 +82,11 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
 
     def infer_outcome(self, l, a, c, query):
         # TODO: this is not implemented yet, only copied from Interleave
-        raise Exception("Not implemented")
-        (td_a, r1, r2) = a
+        (td_a, rankers) = a
 
         # for comparisons with TD, use naive comparison
-        if self.compare_td:
+        if self.compare_td:  # TODO: implement
+            raise Exception('Not implemented for multileave')
             c1 = sum([1 if val_a == 0 and val_c == 1 else 0
                 for val_a, val_c in zip(td_a, c)])
             c2 = sum([1 if val_a == 1 and val_c == 1 else 0
@@ -99,13 +99,13 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         if not len(click_ids[0]):  # no clicks, will be a tie
             return 0
 
-        r1.init_ranking(query)
-        r2.init_ranking(query)
+        rankers = [r.init_ranking(query) for r in rankers]
+
 
         # enumerate all possible assignments that go with l, add their
         # outcomes weighted by probabilities
         # original outcome is not needed in this case, only clicks and probs
-        root = SimpleBinaryTree(None, 0.0, 0)  # root
+        root = SimpleNAryTree(None, 0.0, 0)  # root
         nextLevel = [root]
         currentLevel = []
 
@@ -137,7 +137,7 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
                     o_left = node.outcome
                     if c[n] == 1:
                         o_left += -1
-                    node.left = SimpleBinaryTree(node, p_left, o_left)
+                    node.left = SimpleNAryTree(node, p_left, o_left)
                     nextLevel.append(node.left)
                 # right child: r2 is selected, only expand if p > 0
                 if p_r2 > 0:
@@ -145,7 +145,7 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
                     o_right = node.outcome
                     if c[n] == 1:
                         o_right += 1
-                    node.right = SimpleBinaryTree(node, p_right, o_right)
+                    node.right = SimpleNAryTree(node, p_right, o_right)
                     nextLevel.append(node.right)
         # we have all log probabilities for outcomes =! 0
         o1 = 0.0
@@ -203,7 +203,7 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         return p_l
 
 
-class SimpleBinaryTree:
+class SimpleNAryTree:
     """tree that keeps track of outcome, probability of arriving at this
     outcome"""
     parent, left, right, prob, outcome = None, None, None, 0.0, 0
