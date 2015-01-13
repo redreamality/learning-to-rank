@@ -17,13 +17,6 @@ import numpy as np
 PATH_QUERIES = 'data/Fold1/train.txt'
 
 
-class Temp_doc():
-    def __init__(self,id):
-        self.id = id
-    def get_id(self):
-        return self.id
-
-
 class Test(unittest.TestCase):
 
     def setUp(self):
@@ -65,23 +58,22 @@ class Test(unittest.TestCase):
         print('Testing step 2: infer_outcome')
         l = self.foundDocs
         rankers = self.rankers
-        clicks = [random.randint(0, 1) for _ in range(len(l))]
+        
         user_model = CascadeUserModel("--p_click 0:.0, 1:1.0"
                               " --p_stop 0:.0, 1:.0");
-       
+
         query = self.query
 
         #TODO wtf does CascadeUserModel want as input?!? not a list of docids
-        c = user_model.get_clicks([Temp_doc(docid) for docid in l],query.get_labels())
+        clicks = user_model.get_clicks(l,query.get_labels())
 
-        creds = self.multil.infer_outcome(l, rankers, c, query)
+        creds = self.multil.infer_outcome(l, rankers, clicks, query)
 
-        print "Multileaved list:", l
-        print "Clicks on list:  ", c
+        print "Clicks on list:  ", clicks
         print "Credit:          ", creds
 
-        assert(len(creds) == len(l))
-        assert(np.allclose(sum(creds), 1.))
+        assert(len(creds) == len(self.rankers))
+        assert(np.allclose(sum(creds), 1.) or (sum(clicks) == 0 and sum(creds) == 0))
         # TODO: unittest if values make sense
 
     def testSteps(self):

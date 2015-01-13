@@ -104,7 +104,9 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
 
         click_ids = np.where(np.asarray(clicks) == 1)
         if not len(click_ids[0]):  # no clicks, will be a tie
-            return 0
+            # return [1/float(len(rankers))]*len(rankers)
+            # the decision could be made to give each ranker equal credit in a tie
+            return [0] * len(rankers)
 
         for r in rankers:
             r.init_ranking(query)
@@ -115,7 +117,8 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
 
     def get_rank(self, ranker, documents):
         '''
-        Return the rank of given documents in given ranker
+        Return the rank of given documents in given ranker.
+        Note: rank is not index (rank is index+1)
 
         ARGS:
         - ranker
@@ -129,7 +132,7 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
 
         for i, d in enumerate(documents):
             if d in docsInRanker:
-                ranks[i] = docsInRanker.index(d)
+                ranks[i] = docsInRanker.index(d)+1
         return ranks
 
     def probability_of_list(self, result_list, rankers, clickedDocs):
