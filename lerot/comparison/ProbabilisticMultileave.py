@@ -2,11 +2,10 @@ import argparse
 from collections import defaultdict
 from random import randint
 
-from numpy import *
-
 from AbstractInterleavedComparison import AbstractInterleavedComparison
+import numpy as np
+
 from ..utils import split_arg_str
-from nltk.test import probability_fixt
 
 
 class ProbabilisticMultileave(AbstractInterleavedComparison):
@@ -71,7 +70,7 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         # start with empty document list
         l = []
         # random bits indicate which r to use at each rank
-        a = asarray([randint(0, len(rankers) - 1) for _ in range(length)])
+        a = np.asarray([randint(0, len(rankers) - 1) for _ in range(length)])
         for next_a in a:
             # flip coin - which r contributes doc (pre-computed in a)
             select = rankers[next_a]
@@ -87,7 +86,7 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
                     # TODO remove try / catch block
                 except:
                     pass
-        return (asarray(l), a)
+        return (np.asarray(l), a)
 
     def infer_outcome(self, l, rankers, clicks, query):
         '''
@@ -103,7 +102,7 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         - The Credits
         '''
 
-        click_ids = where(asarray(clicks) == 1)
+        click_ids = np.where(np.asarray(clicks) == 1)
         if not len(click_ids[0]):  # no clicks, will be a tie
             return 0
 
@@ -113,9 +112,9 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
 
         return creds
 
-    def get_rank(ranker, documents):
+    def get_rank(self, ranker, documents):
         # get rank of all documents in list of documents and return in list
-        return [1]* len(documents)
+        return [1] * len(documents)
 
     def probability_of_list(self, result_list, rankers, clickedDocs):
         '''
@@ -128,14 +127,17 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         -p: list with for each click the list containing the probability that
             the list comes from each ranker
         '''
-        return_list = []
-        sigmas = numpy.zeros([len(clickedDocs),len(rankers)])
-        for i in range(len(rankers)):
-            for j in range(len(clickedDocs)):
-                sigmas[i,j] = 
-            sigmas = sigmas / numpy.sum(sigmas)
-            return_list.append(list(sigmas))
-        return return_list
+#         return_list = []
+#         sigmas = np.zeros([len(clickedDocs), len(rankers)])
+#         for i in range(len(rankers)):
+#             for j in range(len(clickedDocs)):
+#                 sigmas[i, j] = 0
+#             sigmas = sigmas / np.sum(sigmas)
+#             return_list.append(list(sigmas))
+#         return return_list
+        p = [[1. / len(result_list) for _ in range(len(result_list))]
+              for _ in range(len(clickedDocs[0]))]
+        return p
 
     def credits_of_list(self, p):
         '''
@@ -146,8 +148,7 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         RETURNS:
         - credits: list of credits for each ranker
         '''
-        print p
-        creds = None
+        creds = [np.average(col) for col in zip(*p)]
         return creds
 
 

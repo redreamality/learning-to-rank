@@ -58,6 +58,7 @@ class Test(unittest.TestCase):
         l = self.foundDocs
         rankers = self.rankers
         clicks = [random.randint(0, 1) for _ in range(len(l))]
+        # TODO: Implement also other clickmodel
         query = self.query
 
         creds = self.multil.infer_outcome(l, rankers, clicks, query)
