@@ -64,7 +64,6 @@ class Test(unittest.TestCase):
 
         query = self.query
 
-        #TODO wtf does CascadeUserModel want as input?!? not a list of docids
         clicks = user_model.get_clicks(l,query.get_labels())
 
         creds = self.multil.infer_outcome(l, rankers, clicks, query)
