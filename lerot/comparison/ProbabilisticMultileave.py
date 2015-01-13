@@ -2,11 +2,10 @@ import argparse
 from collections import defaultdict
 from random import randint
 
-from numpy import asarray, e, log, where
-
 from AbstractInterleavedComparison import AbstractInterleavedComparison
+import numpy as np
+
 from ..utils import split_arg_str
-from nltk.test import probability_fixt
 
 
 class ProbabilisticMultileave(AbstractInterleavedComparison):
@@ -71,7 +70,7 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         # start with empty document list
         l = []
         # random bits indicate which r to use at each rank
-        a = asarray([randint(0, len(rankers) - 1) for _ in range(length)])
+        a = np.asarray([randint(0, len(rankers) - 1) for _ in range(length)])
         for next_a in a:
             # flip coin - which r contributes doc (pre-computed in a)
             select = rankers[next_a]
@@ -87,7 +86,7 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
                     # TODO remove try / catch block
                 except:
                     pass
-        return (asarray(l), a)
+        return (np.asarray(l), a)
 
     def infer_outcome(self, l, rankers, clicks, query):
         '''
@@ -103,7 +102,7 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         - The Credits
         '''
 
-        click_ids = where(asarray(clicks) == 1)
+        click_ids = np.where(np.asarray(clicks) == 1)
         if not len(click_ids[0]):  # no clicks, will be a tie
             return 0
 
@@ -138,19 +137,5 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         RETURNS:
         - credits: list of credits for each ranker
         '''
-        print p
-        creds = None
+        creds = [np.average(col) for col in zip(*p)]
         return creds
-
-
-class SimpleNAryTree:
-    """TODO: this is not a tree! this is a node...
-
-    tree that keeps track of outcome, probability of arriving at this
-    outcome"""
-    parent, left, right, prob, outcome = None, None, None, 0.0, 0
-
-    def __init__(self, parent, prob, outcome):
-        self.parent = parent
-        self.prob = prob
-        self.outcome = outcome
