@@ -106,15 +106,31 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         if not len(click_ids[0]):  # no clicks, will be a tie
             return 0
 
-        rankers = [r.init_ranking(query) for r in rankers]
+        for r in rankers:
+            r.init_ranking(query)
         p = self.probability_of_list(l, rankers, click_ids)
         creds = self.credits_of_list(p)
 
         return creds
 
     def get_rank(self, ranker, documents):
-        # get rank of all documents in list of documents and return in list
-        return [1] * len(documents)
+        '''
+        Return the rank of given documents in given ranker
+
+        ARGS:
+        - ranker
+        - documents
+
+        RETURN:
+        - a list containing the rank in the ranker for each of the documents
+        '''
+        ranks = [None] * len(documents)
+        docsInRanker = ranker.docids
+
+        for i, d in enumerate(documents):
+            if d in docsInRanker:
+                ranks[i] = docsInRanker.index(d)
+        return ranks
 
     def probability_of_list(self, result_list, rankers, clickedDocs):
         '''
@@ -124,20 +140,21 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         - clickedDocs: the docIds in the result_list which recieved a click
 
         RETURNS
-        -p: list with for each click the list containing the probability that
+        -sigmas: list with for each click the list containing the probability that
             the list comes from each ranker
         '''
-#         return_list = []
-#         sigmas = np.zeros([len(clickedDocs), len(rankers)])
-#         for i in range(len(rankers)):
-#             for j in range(len(clickedDocs)):
-#                 sigmas[i, j] = 0
-#             sigmas = sigmas / np.sum(sigmas)
-#             return_list.append(list(sigmas))
-#         return return_list
-        p = [[1. / len(result_list) for _ in range(len(result_list))]
-              for _ in range(len(clickedDocs[0]))]
-        return p
+        tau = 0.3
+        n = 100  # TODO: implement, number of documents
+        sigmoid_total = np.sum(1.0 / (np.arange(n) + 1) ** tau)
+        sigmas = np.zeros([len(clickedDocs),len(rankers)])
+        for i, r in enumerate(rankers):
+            ranks = np.array(self.get_rank(r, result_list))
+            for j in range(len(clickedDocs)):
+                click = clickedDocs[j]
+                sigmas[j, i] = ranks[click] / (sigmoid_total
+                                           - np.sum(1.0 / (ranks[: click] ** tau)))
+            sigmas = sigmas / np.sum(sigmas,1)
+        return list(sigmas)
 
     def credits_of_list(self, p):
         '''
