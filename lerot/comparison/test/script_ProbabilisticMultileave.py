@@ -26,8 +26,8 @@ class Experiment(object):
     # 64 features as in NP2003
     # k = ranking length
     def __init__(self, feature_sets, n_features=64, cutoff=10, click_model="navigational"):
-        self.n_rankers = n_rankers
-        self.n_features = len(feature_sets)
+        self.n_rankers  = len(n_rankers)
+        self.n_features = n_features
 
         self.cutoff = cutoff
         train_raw = _readQueries(PATH_TRAIN_QUERIES) + '\n' \
