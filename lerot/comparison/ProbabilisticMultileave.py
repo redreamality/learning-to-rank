@@ -76,7 +76,6 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
             select = rankers[next_a]
             others = [r for r in rankers if r is not select]
             # draw doc
-            # TODO add deterministic interleaving?
             pick = select.next()
             l.append(pick)
             # let other ranker know that we removed this document
@@ -147,7 +146,7 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
          that the list comes from each ranker
         '''
         tau = 0.3
-        n = 100  # TODO: implement, number of documents
+        n = len(rankers[0].docids)
         sigmoid_total = np.sum(1.0 / (np.arange(n) + 1) ** tau)
         sigmas = np.zeros([len(clickedDocs), len(rankers)])
         for i, r in enumerate(rankers):
@@ -155,7 +154,7 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
             for j in range(len(clickedDocs)):
                 click = clickedDocs[j]
                 sigmas[j, i] = ranks[click] / (sigmoid_total
-                                           - np.sum(1.0 / (ranks[: click] ** tau)))
+                                    - np.sum(1.0 / (ranks[: click] ** tau)))
             for i in range(sigmas.shape[0]):
                 sigmas[i, :] = sigmas[i, :] / np.sum(sigmas[i, :])
         return list(sigmas)
@@ -171,16 +170,3 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         '''
         creds = [np.average(col) for col in zip(*p)]
         return creds
-
-
-class SimpleNAryTree:
-    """TODO: this is not a tree! this is a node...
-
-    tree that keeps track of outcome, probability of arriving at this
-    outcome"""
-    parent, left, right, prob, outcome = None, None, None, 0.0, 0
-
-    def __init__(self, parent, prob, outcome):
-        self.parent = parent
-        self.prob = prob
-        self.outcome = outcome
