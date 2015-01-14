@@ -77,12 +77,27 @@ class Experiment(object):
         return total_creds / count
 
     def impression(self):
+        # select query
         query = self.train_queries[random.choice(self.train_queries.keys())]
+
+        # probabilistic multileave
         (ranking, _) = self.multil.multileave(self.rankers, query, self.k)
-
         clicks = self.user_model.get_clicks(ranking, query.get_labels())
+        pm_creds = self.multil.infer_outcome(ranking, self.rankers, clicks, query)
 
-        creds = self.multil.infer_outcome(ranking, self.rankers, clicks, query)
+        #probabilistic interleave
+        # pick pair of rankers
+        # interleave
+        # observe clicks
+        # assign credits
+
+        #team draft multileave
+        # multileave
+        # observe clicks
+        # assign credits
+
+        # merge all credits into preference matrix
+
 
         return creds
 
