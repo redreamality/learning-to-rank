@@ -42,9 +42,11 @@ class Experiment(object):
         self.rankers = [rnk("1", "random", self.n_features)
                    for _ in range(self.n_rankers)]
 
+
+
         for ranker in self.rankers:
             weights = np.zeros(self.n_features)
-            weights[np.random.randint(self.n_features)] = 1
+            # weights[np.random.randint(self.n_features)] = 1
             # weights[40] = 1
             ranker.update_weights(weights)
         # random.shuffle(self.rankers)
@@ -56,7 +58,7 @@ class Experiment(object):
     def run(self):
         total_creds = np.zeros(len(self.rankers))
         count = 0
-        for i in range(1000):
+        for i in range(2000):
             creds = self.impression()
             if sum(creds) > 0:
                 count += 1
