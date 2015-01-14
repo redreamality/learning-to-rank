@@ -16,9 +16,9 @@ import lerot.ranker.ProbabilisticRankingFunction as rnk
 import numpy as np
 
 
-PATH_TEST_QUERIES  = 'data/Fold1/test.txt'
-PATH_VALI_QUERIES  = 'data/Fold1/vali.txt'
-PATH_TRAIN_QUERIES = 'data/Fold1/train.txt'
+PATH_TEST_QUERIES  = 'data/Fold4/test.txt'
+PATH_VALI_QUERIES  = 'data/Fold4/vali.txt'
+PATH_TRAIN_QUERIES = 'data/Fold4/train.txt'
 
 
 class Experiment(object):
@@ -92,12 +92,20 @@ class Experiment(object):
             total_pm += pm_preferences
             total_td += td_preferences
             total_pm_nb += pm_nonbin_creds
-            total_pi[pi_r1][pi_r2] =  pi_creds
-            total_pi[pi_r2][pi_r1] = -pi_creds
+            total_pi[pi_r1][pi_r2] +=  1-pi_creds
+            total_pi[pi_r2][pi_r1] +=  pi_creds
             count_pi[pi_r1][pi_r2] += 1
             count_pi[pi_r2][pi_r1] += 1
 
-            print [ self.preference_error(matrix) for matrix in [total_pm/i,
+            print 
+            print td_preferences
+            print
+            print total_td/i
+            print
+            print self.true_pref
+            print
+
+            print i, [ self.preference_error(matrix) for matrix in [total_pm/i,
                                 total_td/i, total_pm_nb/i, total_pi/count_pi]]
 
         total_pm    /= n_impressions
@@ -146,7 +154,7 @@ class Experiment(object):
         clicks = self.user_model.get_clicks(ranking, query.get_labels())
         creds = self.interl.infer_outcome(ranking, (_, r1, r2),
                                           clicks, query)
-        return creds, (self.rankers.index(r1), self.rankers.index(r2))
+        return creds/2.+0.5, (self.rankers.index(r1), self.rankers.index(r2))
 
     def impression_teamDraftMultileave(self, query):
         ranking, a = self.TeamDraftMultileave.interleave(self.rankers, query,
@@ -174,10 +182,9 @@ class Experiment(object):
         - preferences: list of list containing 1 if ranker_row is better than
           ranker_collumn, 0 if he is worse, 0.5 if he is equal
         '''
-        n = len(self.rankers)
-        preferences = [[None] * n] * n
-        for i in range(len(self.rankers)):
-            for j in range(len(self.rankers)):
+        preferences = np.zeros((self.n_rankers,self.n_rankers))
+        for i in range(self.n_rankers):
+            for j in range(i+1):
                 if creds[i] > creds[j]:
                     pref = 1
                 elif creds[i] < creds[j]:
