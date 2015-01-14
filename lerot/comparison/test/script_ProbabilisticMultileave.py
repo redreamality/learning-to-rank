@@ -10,6 +10,7 @@ import lerot.comparison.ProbabilisticMultileave as ml
 import lerot.query as qu
 import lerot.ranker.ProbabilisticRankingFunction as rnk
 import lerot.environment.CascadeUserModel as CascadeUserModel
+import lerot.evaluation.NdcgEval as NdcgEval
 import numpy as np
 
 
@@ -22,10 +23,10 @@ class Experiment(object):
 
     # 64 features as in NP2003
     # k = ranking length
-    def __init__(self, n_rankers, n_features=64, k=10):
+    def __init__(self, n_rankers, n_features=64, cutoff=10):
         self.n_rankers = n_rankers
         self.n_features = n_features
-        self.k = k
+        self.cutoff = cutoff
         train_raw = _readQueries(PATH_TRAIN_QUERIES) + '\n' \
                             + _readQueries(PATH_VALI_QUERIES)
         test_raw = _readQueries(PATH_TRAIN_QUERIES)
@@ -51,15 +52,29 @@ class Experiment(object):
         # weights[np.random.randint(self.n_features)] = 1
 
         for ranker in self.rankers:
-            # weights = np.zeros(self.n_features)
-            # weights[np.random.randint(self.n_features)] = 1
+            weights = np.zeros(self.n_features)
+            for i in range(5):
+                weights[np.random.randint(self.n_features)] = 1
             # weights[40] = 1
-            ranker.update_weights(weights.copy())
+            ranker.update_weights(weights)
         # random.shuffle(self.rankers)
 
-        # perfect click model
-        self.user_model = CascadeUserModel("--p_click 0:.0, 1:1.0 "
-                                           "--p_stop  0:.0, 1:.0")
+        ndcg = NdcgEval()
+        average_ndcgs = np.zeros((self.n_rankers))
+        for query in self.test_queries:
+            for i, ranker in enumerate(self.rankers):
+                ranker.init_ranking(query)
+                average_ndcgs[i] += ndcg.get_value(ranker.get_ranking(), query.get_labels().tolist(),None,self.cutoff)
+        average_ndcgs /= len(self.test_queries)
+
+        self.true_pref = np.zeros((self.n_rankers,self.n_rankers))
+        for i in range(self.n_rankers):
+            for j in range(self.n_rankers):
+                self.true_pref[i][j] = 0.5*(average_ndcgs[i] - average_ndcgs[j]) + 0.5
+
+        # navigational click model
+        self.user_model = CascadeUserModel("--p_click 0:.05, 1:0.95 "
+                                           "--p_stop  0:.2, 1:.5")
 
     def run(self):
         total_creds = np.zeros(len(self.rankers))
@@ -78,7 +93,7 @@ class Experiment(object):
         query = self.train_queries[random.choice(self.train_queries.keys())]
 
         # probabilistic multileave
-        (ranking, _) = self.multil.multileave(self.rankers, query, self.k)
+        (ranking, _) = self.multil.multileave(self.rankers, query, self.cutoff)
         clicks = self.user_model.get_clicks(ranking, query.get_labels())
         pm_creds = self.multil.infer_outcome(ranking, self.rankers, clicks, query)
 
@@ -96,7 +111,7 @@ class Experiment(object):
         # merge all credits into preference matrix
 
 
-        return creds
+        return pm_creds
 
 
 def _readQueries(path):
