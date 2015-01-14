@@ -28,7 +28,7 @@ class Experiment(object):
         self.n_features = n_features
         self.cutoff = cutoff
         train_raw = _readQueries(PATH_TRAIN_QUERIES) + '\n' \
-                            + _readQueries(PATH_VALI_QUERIES)
+                                        + _readQueries(PATH_VALI_QUERIES)
         test_raw = _readQueries(PATH_TRAIN_QUERIES)
 
         query_fh = cStringIO.StringIO(train_raw)
@@ -39,10 +39,13 @@ class Experiment(object):
         self.test_queries = qu.Queries(query_fh, self.n_features)
         query_fh.close()
 
-        self.multil = ml.ProbabilisticMultileave()
+        arg_str = ""
+        if (credits):
+            arg_str = "-c True"
+        self.multil = ml.ProbabilisticMultileave(arg_str)
 
         self.rankers = [rnk("1", "random", self.n_features)
-                   for _ in range(self.n_rankers)]
+                        for _ in range(self.n_rankers)]
 
         weights = np.zeros(self.n_features)
         # weights[np.random.randint(self.n_features)] = 1
