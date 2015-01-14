@@ -22,6 +22,7 @@ description = "Script for experiments for probabilistic multileaving."
 
 parser = argparse.ArgumentParser(description=description)
 parser.add_argument("FOLD_PATH", help="path to folder containing train.txt, test.txt and vali.txt")
+parser.add_argument("click_model", help="click model to use")
 
 args = parser.parse_args()
 
@@ -87,7 +88,9 @@ class Experiment(object):
             click_str="--p_click 0:.05, 1:0.95 --p_stop  0:.2, 1:.5"
         elif click_model=="perfect":
             click_str="--p_click 0:.0, 1:1. --p_stop  0:.0, 1:.0"
-        # navigational click model
+        elif click_model=="informational":
+            click_str="--p_click 0:.4, 1:.9 --p_stop  0:.1, 1:.5"
+
         self.user_model = CascadeUserModel(click_str)
 
     def run(self, n_impressions):
@@ -111,6 +114,7 @@ class Experiment(object):
             ave_nb_cred += pm_nonbin_creds
             total_pm_nb =  self.preferencesFromCredits(ave_nb_cred/i)
 
+            # may be usefull for later debugging
             # print 
             # print pm_nonbin_creds
             # print ave_nb_cred/i
@@ -264,6 +268,8 @@ def _readQueries(path):
 
 
 if __name__ == "__main__":
+    # for our output we don't want to see the zero divisions
+    np.seterr("ignore");
     ranker_feature_sets = [
                              range(11,16), #TF-IDF
                              range(21,26), #BM25
@@ -271,8 +277,8 @@ if __name__ == "__main__":
                              [41,42],      #SiteMap
                              [49,50]       #HITS
                             ]
-    experiment = Experiment(ranker_feature_sets)
-    for i in range(10):
+    experiment = Experiment(ranker_feature_sets, click_model=args.click_model)
+    for i in range(5):
         print "RUN", i
         for name in ["probablistic_multi" "teamdraft_multi", "probabilistic_non_bin_multi", "probabilistic_inter"]:
             print name,
