@@ -10,6 +10,7 @@ from lerot.comparison.ProbabilisticInterleave import ProbabilisticInterleave
 import lerot.comparison.ProbabilisticMultileave as ml
 from lerot.comparison.TeamDraftMultileave import TeamDraftMultileave
 import lerot.environment.CascadeUserModel as CascadeUserModel
+import lerot.evaluation.NdcgEval as NdcgEval
 import lerot.query as qu
 import lerot.ranker.ProbabilisticRankingFunction as rnk
 import numpy as np
@@ -24,12 +25,12 @@ class Experiment(object):
 
     # 64 features as in NP2003
     # k = ranking length
-    def __init__(self, n_rankers, n_features=64, k=10):
+    def __init__(self, n_rankers, n_features=64, cutoff=10):
         self.n_rankers = n_rankers
         self.n_features = n_features
-        self.k = k
+        self.cutoff = cutoff
         train_raw = _readQueries(PATH_TRAIN_QUERIES) + '\n' \
-                            + _readQueries(PATH_VALI_QUERIES)
+                                        + _readQueries(PATH_VALI_QUERIES)
         test_raw = _readQueries(PATH_TRAIN_QUERIES)
 
         query_fh = cStringIO.StringIO(train_raw)
@@ -40,12 +41,15 @@ class Experiment(object):
         self.test_queries = qu.Queries(query_fh, self.n_features)
         query_fh.close()
 
-        self.multil = ml.ProbabilisticMultileave()
+        arg_str = ""
+        # if (credits):
+        #     arg_str = "-c True"
+        self.multil = ml.ProbabilisticMultileave(arg_str)
         self.interl = ProbabilisticInterleave('--aggregate binary')
         self.TeamDraftMultileave = TeamDraftMultileave()
 
         self.rankers = [rnk("1", "random", self.n_features)
-                   for _ in range(self.n_rankers)]
+                        for _ in range(self.n_rankers)]
 
         weights = np.zeros(self.n_features)
         # weights[np.random.randint(self.n_features)] = 1
@@ -55,15 +59,32 @@ class Experiment(object):
         # weights[np.random.randint(self.n_features)] = 1
 
         for ranker in self.rankers:
-            # weights = np.zeros(self.n_features)
-            # weights[np.random.randint(self.n_features)] = 1
+            weights = np.zeros(self.n_features)
+            for i in range(5):
+                weights[np.random.randint(self.n_features)] = 1
             # weights[40] = 1
-            ranker.update_weights(weights.copy())
+            ranker.update_weights(weights)
         # random.shuffle(self.rankers)
 
-        # perfect click model
-        self.user_model = CascadeUserModel("--p_click 0:.0, 1:1.0 "
-                                           "--p_stop  0:.0, 1:.0")
+        ndcg = NdcgEval()
+        average_ndcgs = np.zeros((self.n_rankers))
+        for query in self.test_queries:
+            for i, ranker in enumerate(self.rankers):
+                ranker.init_ranking(query)
+                average_ndcgs[i] += ndcg.get_value(ranker.get_ranking(),
+                                                   query.get_labels().tolist(),
+                                                   None, self.cutoff)
+        average_ndcgs /= len(self.test_queries)
+
+        self.true_pref = np.zeros((self.n_rankers, self.n_rankers))
+        for i in range(self.n_rankers):
+            for j in range(self.n_rankers):
+                self.true_pref[i, j] = 0.5 * (average_ndcgs[i] -
+                                              average_ndcgs[j]) + 0.5
+
+        # navigational click model
+        self.user_model = CascadeUserModel("--p_click 0:.05, 1:0.95 "
+                                           "--p_stop  0:.2, 1:.5")
 
     def run(self):
         total_creds = np.zeros(len(self.rankers))
@@ -87,7 +108,6 @@ class Experiment(object):
         - probabilisticInterleaving: tuple of (tuple with index of rankers),
           credits)
         '''
-        # select query
         query = self.train_queries[random.choice(self.train_queries.keys())]
 
         pm_creds = self.impression_probabilisticMultileave(query)
@@ -97,9 +117,7 @@ class Experiment(object):
 
         pm_preferences = self.preferencesFromCredits(pm_creds)
         td_preferences = self.preferencesFromCredits(td_creds)
-        print(pm_preferences)
-        print(td_preferences)
-        print(pi_creds)
+
         return pm_preferences, td_preferences, ((pi_r1, pi_r2), pi_creds)
 
     def impression_probabilisticMultileave(self, query):
@@ -124,6 +142,15 @@ class Experiment(object):
         creds = self.TeamDraftMultileave.infer_outcome(ranking, a, clicks,
                                                           query)
         return creds
+
+    def preference_error(self, preference_matrix):
+        error = 0
+        for i in range(self.n_rankers):
+            for j in range(self.n_rankers):
+                if np.sign(preference_matrix[i, j] - 0.5) != \
+                        np.sign(preference_matrix[i, j] - 0.5):
+                    error += 1.
+        return error / (self.n_rankers * (self.n_rankers - 1))
 
     def preferencesFromCredits(self, creds):
         '''
