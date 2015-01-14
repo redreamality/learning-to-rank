@@ -8,7 +8,7 @@ import random
 
 import lerot.comparison.ProbabilisticMultileave as ml
 import lerot.query as qu
-import lerot.ranker.DeterministicRankingFunction as rnk
+import lerot.ranker.ProbabilisticRankingFunction as rnk
 import lerot.environment.CascadeUserModel as CascadeUserModel
 import numpy as np
 
@@ -43,11 +43,18 @@ class Experiment(object):
         self.rankers = [rnk("1", "random", self.n_features)
                    for _ in range(self.n_rankers)]
 
+        weights = np.zeros(self.n_features)
+        # weights[np.random.randint(self.n_features)] = 1
+        # weights[np.random.randint(self.n_features)] = 1
+        # weights[np.random.randint(self.n_features)] = 1
+        # weights[np.random.randint(self.n_features)] = 1
+        # weights[np.random.randint(self.n_features)] = 1
+
         for ranker in self.rankers:
-            weights = np.zeros(self.n_features)
+            # weights = np.zeros(self.n_features)
             # weights[np.random.randint(self.n_features)] = 1
             # weights[40] = 1
-            ranker.update_weights(weights)
+            ranker.update_weights(weights.copy())
         # random.shuffle(self.rankers)
 
         # perfect click model
@@ -57,11 +64,13 @@ class Experiment(object):
     def run(self):
         total_creds = np.zeros(len(self.rankers))
         count = 0
-        for _ in range(2000):
+
+        for _ in range(500):
             creds = self.impression()
+            total_creds += np.array(creds)
             if sum(creds) > 0:
                 count += 1
-            total_creds += np.array(creds)
+
         return total_creds / count
 
     def impression(self):

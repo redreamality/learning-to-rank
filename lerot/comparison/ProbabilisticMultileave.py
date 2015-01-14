@@ -105,11 +105,12 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         if not len(click_ids):  # no clicks, will be a tie
             # return [1/float(len(rankers))]*len(rankers)
             # the decision could be made to give each ranker equal credit in a tie
-            return [0] * len(rankers)
+            return [1.0/len(rankers)] * len(rankers)
 
         for r in rankers:
             r.init_ranking(query)
         p = self.probability_of_list(l, rankers, click_ids)
+
         creds = self.credits_of_list(p)
 
         return self.credits_to_outcome(creds)
@@ -147,16 +148,16 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         '''
         tau = 0.3
         n = len(rankers[0].docids)
-        sigmoid_total = np.sum(1.0 / (np.arange(n) + 1) ** tau)
+        sigmoid_total = np.sum(float(n) / (np.arange(n) + 1) ** tau)
         sigmas = np.zeros([len(clickedDocs), len(rankers)])
         for i, r in enumerate(rankers):
             ranks = np.array(self.get_rank(r, result_list))
             for j in range(len(clickedDocs)):
                 click = clickedDocs[j]
                 sigmas[j, i] = ranks[click] / (sigmoid_total
-                                    - np.sum(1.0 / (ranks[: click] ** tau)))
-            for i in range(sigmas.shape[0]):
-                sigmas[i, :] = sigmas[i, :] / np.sum(sigmas[i, :])
+                                           - np.sum(float(n) / (ranks[: click] ** tau)))
+        for i in range(sigmas.shape[0]):
+            sigmas[i,:] = sigmas[i,:] / np.sum(sigmas[i,:])
         return list(sigmas)
 
     def credits_of_list(self, p):
