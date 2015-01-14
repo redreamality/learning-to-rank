@@ -26,9 +26,12 @@ class Test(unittest.TestCase):
             + _readQueries(PATH_VALI_QUERIES)
         self.test_queries = _readQueries(PATH_TRAIN_QUERIES)
 
-    def step1_ListCreation(self, n_rankers=3):
+    def step1_ListCreation(self, n_rankers=3, credits=False):
         print('Testing step 1: creation of multileaved list')
-        multil = ml.ProbabilisticMultileave()
+        arg_str = ""
+        if (credits):
+            arg_str = "-c True"
+        multil = ml.ProbabilisticMultileave(arg_str)
 
         query_fh = cStringIO.StringIO(self.test_queries)
         queries = qu.Queries(query_fh, self.test_num_features)

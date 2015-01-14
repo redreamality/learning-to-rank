@@ -22,7 +22,7 @@ class Experiment(object):
 
     # 64 features as in NP2003
     # k = ranking length
-    def __init__(self, n_rankers, n_features=64, k=10):
+    def __init__(self, n_rankers, n_features=64, k=10, credits=False):
         self.n_rankers = n_rankers
         self.n_features = n_features
         self.k = k
@@ -38,7 +38,10 @@ class Experiment(object):
         self.test_queries = qu.Queries(query_fh, self.n_features)
         query_fh.close()
 
-        self.multil = ml.ProbabilisticMultileave()
+        arg_str = ""
+        if (credits):
+            arg_str = "-c True"
+        self.multil = ml.ProbabilisticMultileave(arg_str)
 
         self.rankers = [rnk("1", "random", self.n_features)
                    for _ in range(self.n_rankers)]

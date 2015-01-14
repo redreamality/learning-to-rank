@@ -35,6 +35,8 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
             parser.add_argument("-t", "--compare_td", type=bool,
                 help="If true, compare rankers using observed assignments "
                 "instead of marginalizing over possible assignments.")
+            parser.add_argument("-c", "--credits", type=bool,
+                help="If true, return credits of rankers instead of ranks.")
             args = vars(parser.parse_known_args(split_arg_str(arg_str))[0])
             if "aggregate" in args and args["aggregate"]:
                 self.aggregate = args["aggregate"]
@@ -42,12 +44,16 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
                 self.det_interleave = True
             if "compare_td" in args and args["compare_td"]:
                 self.compare_td = True
+            if "credits" in args and args["credits"]:
+                self.credits = True
         if not hasattr(self, "aggregate") or not self.aggregate:
             self.aggregate = "expectation"
         if not hasattr(self, "det_interleave"):
             self.det_interleave = False
         if not hasattr(self, "compare_td"):
             self.compare_td = False
+        if not hasattr(self, "credits"):
+            self.credits = False
 
     def multileave(self, rankers, query, length):
         '''
@@ -106,6 +112,8 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
             # return [1/float(len(rankers))]*len(rankers)
             # the decision could be made to give each ranker equal credit in a tie
             # so all rankers get rank 1
+            if (self.credits):
+                return [1.0/float(len(rankers))] * len(rankers)
             return [1] * len(rankers)
 
         for r in rankers:
@@ -114,6 +122,8 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
 
         creds = self.credits_of_list(p)
 
+        if (self.credits):
+            return creds;
         return self.credits_to_outcome(creds)
 
     def get_rank(self, ranker, documents):
