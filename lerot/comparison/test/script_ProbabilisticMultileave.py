@@ -41,10 +41,8 @@ class Experiment(object):
         self.test_queries = qu.Queries(query_fh, self.n_features)
         query_fh.close()
 
-        arg_str = ""
-        # if (credits):
-        #     arg_str = "-c True"
-        self.multil = ml.ProbabilisticMultileave(arg_str)
+        self.multil        = ml.ProbabilisticMultileave()
+        self.multil_nonbin = ml.ProbabilisticMultileave("-c True")
         self.interl = ProbabilisticInterleave('--aggregate binary')
         self.TeamDraftMultileave = TeamDraftMultileave()
 
@@ -89,17 +87,30 @@ class Experiment(object):
         # navigational click model
         self.user_model = CascadeUserModel(click_str)
 
-    def run(self):
-        total_creds = np.zeros(len(self.rankers))
-        count = 0
+    def run(self, n_impressions):
+        error       = np.zeros(len(self.rankers))
+        total_pm    = np.zeros((self.n_rankers, self.n_rankers))
+        total_td    = np.zeros((self.n_rankers, self.n_rankers))
+        total_pi    = np.zeros((self.n_rankers, self.n_rankers))
+        count_pi    = np.zeros((self.n_rankers, self.n_rankers))
+        total_pm_nb = np.zeros((self.n_rankers, self.n_rankers))
+        
+        for _ in range(n_impressions):
+            pm_preferences, td_preferences, ((pi_r1, pi_r2), pi_creds), pm_nonbin_creds = self.impression()
+            total_pm += pm_preferences
+            total_td += td_preferences
+            total_pm_nb += pm_nonbin_creds
+            total_pi[pi_r1][pi_r2] =  pi_creds
+            total_pi[pi_r2][pi_r1] = -pi_creds
+            count_pi[pi_r1][pi_r2] += 1
+            count_pi[pi_r2][pi_r1] += 1
 
-        for _ in range(500):
-            creds = self.impression()
-            total_creds += np.array(creds)
-            if sum(creds) > 0:
-                count += 1
+        total_pm    /= n_impressions
+        total_td    /= n_impressions
+        total_pm_nb /= n_impressions
+        total_pi    /= count_pi
 
-        return total_creds / count
+        return [ self.preference_error(matrix) for matrix in [total_pm, total_td, total_pm_nb, total_pi]]
 
     def impression(self):
         '''
@@ -117,14 +128,18 @@ class Experiment(object):
         pi_creds, (pi_r1, pi_r2) = \
             self.impression_probabilisticInterleave(query)
         td_creds = self.impression_teamDraftMultileave(query)
+        pm_nonbin_creds = self.impression_probabilisticMultileave(query,False)
 
         pm_preferences = self.preferencesFromCredits(pm_creds)
         td_preferences = self.preferencesFromCredits(td_creds)
 
-        return pm_preferences, td_preferences, ((pi_r1, pi_r2), pi_creds)
+        return pm_preferences, td_preferences, ((pi_r1, pi_r2), pi_creds), pm_nonbin_creds
 
-    def impression_probabilisticMultileave(self, query):
-        ranking, _ = self.multil.multileave(self.rankers, query, self.cutoff)
+    def impression_probabilisticMultileave(self, query, binary=True):
+        if binary:
+            ranking, _ = self.multil.multileave(self.rankers, query, self.cutoff)
+        else:
+            ranking, _ = self.multil_nonbin.multileave(self.rankers, query, self.cutoff)
         clicks = self.user_model.get_clicks(ranking, query.get_labels())
         creds = self.multil.infer_outcome(ranking, self.rankers, clicks,
                                           query)
