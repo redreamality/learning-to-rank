@@ -23,7 +23,7 @@ class Experiment(object):
 
     # 64 features as in NP2003
     # k = ranking length
-    def __init__(self, n_rankers, n_features=64, cutoff=10):
+    def __init__(self, n_rankers, n_features=64, cutoff=10, click_model="navigational"):
         self.n_rankers = n_rankers
         self.n_features = n_features
         self.cutoff = cutoff
@@ -75,9 +75,13 @@ class Experiment(object):
             for j in range(self.n_rankers):
                 self.true_pref[i,j] = 0.5*(average_ndcgs[i] - average_ndcgs[j]) + 0.5
 
+        click_str=
+        if click_model=="navigational":
+            click_str="--p_click 0:.05, 1:0.95 --p_stop  0:.2, 1:.5"
+        elif click_model=="perfect":
+            click_str="--p_click 0:.0, 1:1. --p_stop  0:.0, 1:.0"
         # navigational click model
-        self.user_model = CascadeUserModel("--p_click 0:.05, 1:0.95 "
-                                           "--p_stop  0:.2, 1:.5")
+        self.user_model = CascadeUserModel(click_str)
 
     def run(self):
         total_creds = np.zeros(len(self.rankers))
