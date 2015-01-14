@@ -283,5 +283,5 @@ if __name__ == "__main__":
         for name in ["probablistic_multi" "teamdraft_multi", "probabilistic_non_bin_multi", "probabilistic_inter"]:
             print name,
         print
-        experiment.run(10000)
+        experiment.run(5000)
         print
