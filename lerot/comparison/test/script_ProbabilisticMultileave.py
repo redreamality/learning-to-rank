@@ -82,7 +82,6 @@ class Experiment(object):
                 self.true_pref[i, j] = 0.5 * (average_ndcgs[i] -
                                               average_ndcgs[j]) + 0.5
 
-        click_str=
         if click_model=="navigational":
             click_str="--p_click 0:.05, 1:0.95 --p_stop  0:.2, 1:.5"
         elif click_model=="perfect":
