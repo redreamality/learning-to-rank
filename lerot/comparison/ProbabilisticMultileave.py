@@ -132,7 +132,7 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
 
         for i, d in enumerate(documents):
             if d in docsInRanker:
-                ranks[i] = docsInRanker.index(d)+1
+                ranks[i] = docsInRanker.index(d) + 1
         return ranks
 
     def probability_of_list(self, result_list, rankers, clickedDocs):
@@ -143,13 +143,13 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         - clickedDocs: the docIds in the result_list which recieved a click
 
         RETURNS
-        -sigmas: list with for each click the list containing the probability that
-            the list comes from each ranker
+        -sigmas: list with for each click the list containing the probability
+         that the list comes from each ranker
         '''
         tau = 0.3
         n = 100  # TODO: implement, number of documents
         sigmoid_total = np.sum(1.0 / (np.arange(n) + 1) ** tau)
-        sigmas = np.zeros([len(clickedDocs),len(rankers)])
+        sigmas = np.zeros([len(clickedDocs), len(rankers)])
         for i, r in enumerate(rankers):
             ranks = np.array(self.get_rank(r, result_list))
             for j in range(len(clickedDocs)):
@@ -157,7 +157,7 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
                 sigmas[j, i] = ranks[click] / (sigmoid_total
                                            - np.sum(1.0 / (ranks[: click] ** tau)))
             for i in range(sigmas.shape[0]):
-                sigmas[i,:] = sigmas[i,:] / np.sum(sigmas[i,:])
+                sigmas[i, :] = sigmas[i, :] / np.sum(sigmas[i, :])
         return list(sigmas)
 
     def credits_of_list(self, p):

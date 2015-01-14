@@ -4,34 +4,34 @@ Created on 12 jan. 2015
 @author: Jos
 '''
 import cStringIO
-import random
 import unittest
 
 import lerot.comparison.ProbabilisticMultileave as ml
+import lerot.environment.CascadeUserModel as CascadeUserModel
 import lerot.query as qu
 import lerot.ranker.ProbabilisticRankingFunction as rnk
-import lerot.environment.CascadeUserModel as CascadeUserModel
 import numpy as np
 
 
-PATH_TEST_QUERIES  = 'data/Fold1/test.txt'
-PATH_VALI_QUERIES  = 'data/Fold1/vali.txt'
+PATH_TEST_QUERIES = 'data/Fold1/test.txt'
+PATH_VALI_QUERIES = 'data/Fold1/vali.txt'
 PATH_TRAIN_QUERIES = 'data/Fold1/train.txt'
+
 
 class Test(unittest.TestCase):
 
     def setUp(self):
         self.test_num_features = 6
-        self.train_queries = _readQueries(PATH_TRAIN_QUERIES)
-                            + _readQueries(PATH_VALI_QUERIES)
-        self.test_queries  = _readQueries(PATH_TRAIN_QUERIES)
+        self.train_queries = _readQueries(PATH_TRAIN_QUERIES) \
+            + _readQueries(PATH_VALI_QUERIES)
+        self.test_queries = _readQueries(PATH_TRAIN_QUERIES)
 
     def step1_ListCreation(self, n_rankers=3):
         print('Testing step 1: creation of multileaved list')
         multil = ml.ProbabilisticMultileave()
 
         query_fh = cStringIO.StringIO(self.test_queries)
-        queries  = qu.Queries(query_fh, self.test_num_features)
+        queries = qu.Queries(query_fh, self.test_num_features)
 
         query = queries[queries.keys()[0]]
         query_fh.close()
@@ -45,7 +45,7 @@ class Test(unittest.TestCase):
         length = 10
         (createdList, _) = multil.multileave(rankers, query, length)
 
-        foundDocs    = [d.docid for d in createdList]
+        foundDocs = [d.docid for d in createdList]
         existingDocs = [q.docid for q in query.get_docids()]
         assert(set(foundDocs).issubset(set(existingDocs)))
         assert(len(foundDocs) == length)
@@ -53,21 +53,21 @@ class Test(unittest.TestCase):
 
         # For next step:
         self.foundDocs = createdList
-        self.rankers   = rankers
-        self.query     = query
-        self.multil    = multil
+        self.rankers = rankers
+        self.query = query
+        self.multil = multil
 
     def step2_InferOutcome(self):
         print('Testing step 2: infer_outcome')
         l = self.foundDocs
         rankers = self.rankers
-        
+
         user_model = CascadeUserModel("--p_click 0:.0, 1:1.0"
-                              " --p_stop 0:.0, 1:.0");
+                              " --p_stop 0:.0, 1:.0")
 
         query = self.query
 
-        clicks = user_model.get_clicks(l,query.get_labels())
+        clicks = user_model.get_clicks(l, query.get_labels())
 
         creds = self.multil.infer_outcome(l, rankers, clicks, query)
 
@@ -75,7 +75,8 @@ class Test(unittest.TestCase):
         print "Credit:          ", creds
 
         assert(len(creds) == len(self.rankers))
-        assert(np.allclose(sum(creds), 1.) or (sum(clicks) == 0 and sum(creds) == 0))
+        assert(np.allclose(sum(creds), 1.) or
+               (sum(clicks) == 0 and sum(creds) == 0))
         # TODO: unittest if values make sense
 
     def testSteps(self):
