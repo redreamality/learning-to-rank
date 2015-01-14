@@ -13,9 +13,9 @@ import lerot.ranker.ProbabilisticRankingFunction as rnk
 import numpy as np
 
 
-PATH_TEST_QUERIES = 'data/Fold1/test.txt'
-PATH_VALI_QUERIES = 'data/Fold1/vali.txt'
-PATH_TRAIN_QUERIES = 'data/Fold1/train.txt'
+PATH_TEST_QUERIES = '../../../data/Fold1/test.txt'
+PATH_VALI_QUERIES = '../../../data/Fold1/vali.txt'
+PATH_TRAIN_QUERIES = '../../../data/Fold1/train.txt'
 
 
 class Test(unittest.TestCase):
@@ -72,12 +72,13 @@ class Test(unittest.TestCase):
         creds = self.multil.infer_outcome(l, rankers, clicks, query)
 
         print "Clicks on list:  ", clicks
-        print "Credit:          ", creds
+        print "Ranks:           ", creds
 
         assert(len(creds) == len(self.rankers))
-        assert(np.allclose(sum(creds), 1.) or
-               (sum(clicks) == 0 and sum(creds) == 0))
-        # TODO: unittest if values make sense
+        # New asserts because ranks are returned, not creds
+        assert(1 in creds)
+        assert(0 not in creds)
+        assert(len(creds)+1 not in creds)
 
     def testSteps(self):
         steps = [self.step1_ListCreation, self.step2_InferOutcome]

@@ -112,7 +112,7 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         p = self.probability_of_list(l, rankers, click_ids)
         creds = self.credits_of_list(p)
 
-        return creds
+        return self.credits_to_outcome(creds)
 
     def get_rank(self, ranker, documents):
         '''
@@ -170,3 +170,22 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         '''
         creds = [np.average(col) for col in zip(*p)]
         return creds
+
+    def credits_to_outcome(self, creds):        
+        rankers_credits = sorted(zip(range(len(creds)), creds), reverse=True, 
+                                 key=lambda item: item[1])
+        
+        ranked_credits = len(rankers_credits)*[None];
+        last_c = None
+        last_rank = 0
+        rank = 0
+        for (r, c) in rankers_credits:
+            rank += 1
+            if not (c == last_c):
+                ranked_credits[r] = rank
+                last_rank = rank
+            else:
+                ranked_credits[r] = last_rank
+            last_c = c
+        
+        return ranked_credits
