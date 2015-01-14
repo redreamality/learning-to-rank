@@ -76,7 +76,6 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
             select = rankers[next_a]
             others = [r for r in rankers if r is not select]
             # draw doc
-            # TODO add deterministic interleaving?
             pick = select.next()
             l.append(pick)
             # let other ranker know that we removed this document
@@ -135,7 +134,7 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
 
         for i, d in enumerate(documents):
             if d in docsInRanker:
-                ranks[i] = docsInRanker.index(d)+1
+                ranks[i] = docsInRanker.index(d) + 1
         return ranks
 
     def probability_of_list(self, result_list, rankers, clickedDocs):
@@ -146,13 +145,13 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         - clickedDocs: the docIds in the result_list which recieved a click
 
         RETURNS
-        -sigmas: list with for each click the list containing the probability that
-            the list comes from each ranker
+        -sigmas: list with for each click the list containing the probability
+         that the list comes from each ranker
         '''
         tau = 0.3
-        n = 100  # TODO: implement, number of documents
+        n = len(rankers[0].docids)
         sigmoid_total = np.sum(float(n) / (np.arange(n) + 1) ** tau)
-        sigmas = np.zeros([len(clickedDocs),len(rankers)])
+        sigmas = np.zeros([len(clickedDocs), len(rankers)])
         for i, r in enumerate(rankers):
             ranks = np.array(self.get_rank(r, result_list))
             for j in range(len(clickedDocs)):
@@ -174,16 +173,3 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         '''
         creds = [np.average(col) for col in zip(*p)]
         return creds
-
-
-class SimpleNAryTree:
-    """TODO: this is not a tree! this is a node...
-
-    tree that keeps track of outcome, probability of arriving at this
-    outcome"""
-    parent, left, right, prob, outcome = None, None, None, 0.0, 0
-
-    def __init__(self, parent, prob, outcome):
-        self.parent = parent
-        self.prob = prob
-        self.outcome = outcome
