@@ -40,8 +40,8 @@ class Experiment(object):
         query_fh.close()
 
         arg_str = ""
-        if (credits):
-            arg_str = "-c True"
+        # if (credits):
+        #     arg_str = "-c True"
         self.multil = ml.ProbabilisticMultileave(arg_str)
 
         self.rankers = [rnk("1", "random", self.n_features)
