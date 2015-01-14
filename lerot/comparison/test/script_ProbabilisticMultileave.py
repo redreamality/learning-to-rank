@@ -4,6 +4,7 @@ Created on 12 jan. 2015
 @author: Harrie, Jos
 '''
 import cStringIO
+from datetime import datetime
 import random
 
 from lerot.comparison.ProbabilisticInterleave import ProbabilisticInterleave
@@ -13,12 +14,15 @@ import lerot.environment.CascadeUserModel as CascadeUserModel
 import lerot.evaluation.NdcgEval as NdcgEval
 import lerot.query as qu
 import lerot.ranker.ProbabilisticRankingFunction as rnk
+import matplotlib.pyplot as plt
 import numpy as np
 
 
 PATH_TEST_QUERIES = '../../../data/Fold1/test.txt'
 PATH_VALI_QUERIES = '../../../data/Fold1/vali.txt'
 PATH_TRAIN_QUERIES = '../../../data/Fold1/train.txt'
+
+PATH_PLOTS = '../../../plots/'
 
 
 class Experiment(object):
@@ -192,6 +196,44 @@ class Experiment(object):
                 preferences[i][j] = pref
                 preferences[j][i] = 1 - pref
         return preferences
+
+
+def visualizeError(errors, labels, path_plots=PATH_PLOTS, imageName=None):
+    '''
+    Show and save a graph of the errors over time
+
+    ARGS:
+    - errors: list of list of errors: for each method an list of the errors
+      over time
+    - labels: list of names for the methods
+    - path_plots = where to save the data. If None, it wont be saved
+    - imageName = name of the image if it is saved in the path_plots
+    '''
+
+    fig = plt.figure()
+    plt.hold(True)
+    for e, l in zip(errors, labels):
+        plt.plot(e, label=l)
+
+    ax = plt.subplot(111)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.get_xaxis().tick_bottom()
+    ax.get_yaxis().tick_left()
+
+    plt.xlabel('Queries')
+    plt.ylabel('Binary error')
+    plt.legend()
+
+    plt.show()
+    plt.hold(False)
+
+    if path_plots is not None:
+        if imageName is None:
+            now = datetime.now()
+            imageName = 'plot_' + '_'.join([str(now.hour), str(now.minute),
+                                           str(now.second)])
+        fig.savefig(path_plots + imageName)
 
 
 def _readQueries(path):
