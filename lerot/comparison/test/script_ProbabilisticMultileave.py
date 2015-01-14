@@ -203,4 +203,4 @@ def _readQueries(path):
 if __name__ == "__main__":
     experiment = Experiment(6)
     for i in range(10):
-        print experiment.run()
+        print experiment.run(500)
