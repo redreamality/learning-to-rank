@@ -73,7 +73,7 @@ class Experiment(object):
         self.true_pref = np.zeros((self.n_rankers,self.n_rankers))
         for i in range(self.n_rankers):
             for j in range(self.n_rankers):
-                self.true_pref[i][j] = 0.5*(average_ndcgs[i] - average_ndcgs[j]) + 0.5
+                self.true_pref[i,j] = 0.5*(average_ndcgs[i] - average_ndcgs[j]) + 0.5
 
         # navigational click model
         self.user_model = CascadeUserModel("--p_click 0:.05, 1:0.95 "
@@ -115,6 +115,14 @@ class Experiment(object):
 
 
         return pm_creds
+
+    def preference_error(self, preference_matrix):
+        error = 0
+        for i in range(self.n_rankers):
+            for j in range(self.n_rankers):
+                if np.sign(preference_matrix[i,j] - 0.5) != np.sign(preference_matrix[i,j] -0.5):
+                    error += 1.
+        return error/(self.n_rankers*(self.n_rankers-1))
 
 
 def _readQueries(path):
