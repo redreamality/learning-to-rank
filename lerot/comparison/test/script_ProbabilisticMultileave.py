@@ -125,7 +125,7 @@ class Experiment(object):
         return pm_preferences, td_preferences, ((pi_r1, pi_r2), pi_creds)
 
     def impression_probabilisticMultileave(self, query):
-        ranking, _ = self.multil.multileave(self.rankers, query, self.k)
+        ranking, _ = self.multil.multileave(self.rankers, query, self.cutoff)
         clicks = self.user_model.get_clicks(ranking, query.get_labels())
         creds = self.multil.infer_outcome(ranking, self.rankers, clicks,
                                           query)
@@ -133,7 +133,7 @@ class Experiment(object):
 
     def impression_probabilisticInterleave(self, query):
         [r1, r2] = random.sample(self.rankers, 2)
-        ranking, _ = self.interl.interleave(r1, r2, query, self.k)
+        ranking, _ = self.interl.interleave(r1, r2, query, self.cutoff)
         clicks = self.user_model.get_clicks(ranking, query.get_labels())
         creds = self.interl.infer_outcome(ranking, (_, r1, r2),
                                           clicks, query)
@@ -141,7 +141,7 @@ class Experiment(object):
 
     def impression_teamDraftMultileave(self, query):
         ranking, a = self.TeamDraftMultileave.interleave(self.rankers, query,
-                                                         self.k)
+                                                         self.cutoff)
         clicks = self.user_model.get_clicks(ranking, query.get_labels())
         creds = self.TeamDraftMultileave.infer_outcome(ranking, a, clicks,
                                                           query)
