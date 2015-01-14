@@ -110,8 +110,8 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         click_ids = np.where(np.asarray(clicks) == 1)[0]
         if not len(click_ids):  # no clicks, will be a tie
             # return [1/float(len(rankers))]*len(rankers)
-            # the decision could be made to give each ranker equal credit in a tie
-            # so all rankers get rank 1
+            # the decision could be made to give each ranker equal credit in a
+            # tie so all rankers get rank 1
             if (self.credits):
                 return [1.0/float(len(rankers))] * len(rankers)
             return [1] * len(rankers)
@@ -123,7 +123,7 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         creds = self.credits_of_list(p)
 
         if (self.credits):
-            return creds;
+            return creds
         return self.credits_to_outcome(creds)
 
     def get_rank(self, ranker, documents):
@@ -166,9 +166,11 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
             for j in range(len(clickedDocs)):
                 click = clickedDocs[j]
                 sigmas[j, i] = ranks[click] / (sigmoid_total
-                                           - np.sum(float(n) / (ranks[: click] ** tau)))
+                                               - np.sum(float(n) /
+                                                        (ranks[: click]
+                                                         ** tau)))
         for i in range(sigmas.shape[0]):
-            sigmas[i,:] = sigmas[i,:] / np.sum(sigmas[i,:])
+            sigmas[i, :] = sigmas[i, :] / np.sum(sigmas[i, :])
         return list(sigmas)
 
     def credits_of_list(self, p):
@@ -183,11 +185,11 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         creds = [np.average(col) for col in zip(*p)]
         return creds
 
-    def credits_to_outcome(self, creds):        
-        rankers_credits = sorted(zip(range(len(creds)), creds), reverse=True, 
+    def credits_to_outcome(self, creds):
+        rankers_credits = sorted(zip(range(len(creds)), creds), reverse=True,
                                  key=lambda item: item[1])
-        
-        ranked_credits = len(rankers_credits)*[None];
+
+        ranked_credits = len(rankers_credits)*[None]
         last_c = None
         last_rank = 0
         rank = 0
@@ -199,5 +201,5 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
             else:
                 ranked_credits[r] = last_rank
             last_c = c
-        
+
         return ranked_credits

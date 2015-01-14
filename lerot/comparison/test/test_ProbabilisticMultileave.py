@@ -40,7 +40,7 @@ class Test(unittest.TestCase):
         query_fh.close()
 
         ranker_arg_str = ['ranker.model.BM25', '1']
-            # second arg corresponds to ranker_type..
+        # second arg corresponds to ranker_type..
         ties = "random"
         feature_count = None
         rankers = [rnk(ranker_arg_str, ties, feature_count)
@@ -66,7 +66,7 @@ class Test(unittest.TestCase):
         rankers = self.rankers
 
         user_model = CascadeUserModel("--p_click 0:.0, 1:1.0"
-                              " --p_stop 0:.0, 1:.0")
+                                      " --p_stop 0:.0, 1:.0")
 
         query = self.query
 
