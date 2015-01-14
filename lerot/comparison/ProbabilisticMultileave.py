@@ -105,7 +105,8 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         if not len(click_ids):  # no clicks, will be a tie
             # return [1/float(len(rankers))]*len(rankers)
             # the decision could be made to give each ranker equal credit in a tie
-            return [1.0/len(rankers)] * len(rankers)
+            # so all rankers get rank 1
+            return [1] * len(rankers)
 
         for r in rankers:
             r.init_ranking(query)
