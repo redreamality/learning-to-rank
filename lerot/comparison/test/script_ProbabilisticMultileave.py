@@ -5,7 +5,7 @@ Created on 12 jan. 2015
 '''
 import cStringIO
 from datetime import datetime
-import random
+import random, argparse, os
 
 from lerot.comparison.ProbabilisticInterleave import ProbabilisticInterleave
 import lerot.comparison.ProbabilisticMultileave as ml
@@ -18,9 +18,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-PATH_TEST_QUERIES  = 'data/Fold4/test.txt'
-PATH_VALI_QUERIES  = 'data/Fold4/vali.txt'
-PATH_TRAIN_QUERIES = 'data/Fold4/train.txt'
+description = "Script for experiments for probabilistic multileaving."
+
+parser = argparse.ArgumentParser(description=description)
+parser.add_argument("FOLD_PATH", help="path to folder containing train.txt, test.txt and vali.txt")
+
+args = parser.parse_args()
+
+PATH_TEST_QUERIES  = os.path.join(args.FOLD_PATH,'test.txt')
+PATH_VALI_QUERIES  = os.path.join(args.FOLD_PATH,'vali.txt')
+PATH_TRAIN_QUERIES = os.path.join(args.FOLD_PATH,'train.txt')
 
 PATH_PLOTS = '../../../plots/'
 
@@ -90,27 +97,35 @@ class Experiment(object):
         total_pi    = np.zeros((self.n_rankers, self.n_rankers))
         count_pi    = np.zeros((self.n_rankers, self.n_rankers))
         total_pm_nb = np.zeros((self.n_rankers, self.n_rankers))
+        ave_nb_cred = np.zeros((self.n_rankers))
         
-        for i in range(n_impressions):
+        for i in range(1,n_impressions+1):
             pm_preferences, td_preferences, ((pi_r1, pi_r2), pi_creds), pm_nonbin_creds = self.impression()
             total_pm += pm_preferences
             total_td += td_preferences
-            total_pm_nb += pm_nonbin_creds
             total_pi[pi_r1][pi_r2] +=  1-pi_creds
             total_pi[pi_r2][pi_r1] +=  pi_creds
             count_pi[pi_r1][pi_r2] += 1
             count_pi[pi_r2][pi_r1] += 1
 
-            print 
-            print td_preferences
-            print
-            print total_td/i
-            print
-            print self.true_pref
-            print
+            ave_nb_cred += pm_nonbin_creds
+            total_pm_nb =  self.preferencesFromCredits(ave_nb_cred/i)
 
-            print i, [ self.preference_error(matrix) for matrix in [total_pm/i,
-                                total_td/i, total_pm_nb/i, total_pi/count_pi]]
+            # print 
+            # print pm_nonbin_creds
+            # print ave_nb_cred/i
+            # print
+            # print self.preferencesFromCredits(ave_nb_cred/i)
+            # print
+            # print self.true_pref
+            # print
+
+            print i,
+
+            for score in [ self.preference_error(matrix) for matrix in [total_pm/i,
+                                total_td/i, total_pm_nb/i, total_pi/count_pi]]:
+                print score,
+            print
 
         total_pm    /= n_impressions
         total_td    /= n_impressions
@@ -148,8 +163,12 @@ class Experiment(object):
         else:
             ranking, _ = self.multil_nonbin.multileave(self.rankers, query, self.cutoff)
         clicks = self.user_model.get_clicks(ranking, query.get_labels())
-        creds = self.multil.infer_outcome(ranking, self.rankers, clicks,
-                                          query)
+        if binary:
+            creds = self.multil.infer_outcome(ranking, self.rankers, clicks,
+                                              query)
+        else:
+            creds = self.multil_nonbin.infer_outcome(ranking, self.rankers, clicks,
+                                              query)
         return creds
 
     def impression_probabilisticInterleave(self, query):
@@ -255,4 +274,8 @@ if __name__ == "__main__":
     experiment = Experiment(ranker_feature_sets)
     for i in range(10):
         print "RUN", i
-        print experiment.run(500)
+        for name in ["probablistic_multi" "teamdraft_multi", "probabilistic_non_bin_multi", "probabilistic_inter"]:
+            print name,
+        print
+        experiment.run(1000)
+        print
