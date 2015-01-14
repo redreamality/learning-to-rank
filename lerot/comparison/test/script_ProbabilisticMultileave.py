@@ -16,18 +16,19 @@ import lerot.ranker.ProbabilisticRankingFunction as rnk
 import numpy as np
 
 
-PATH_TEST_QUERIES = '../../../data/Fold1/test.txt'
-PATH_VALI_QUERIES = '../../../data/Fold1/vali.txt'
-PATH_TRAIN_QUERIES = '../../../data/Fold1/train.txt'
+PATH_TEST_QUERIES  = 'data/Fold1/test.txt'
+PATH_VALI_QUERIES  = 'data/Fold1/vali.txt'
+PATH_TRAIN_QUERIES = 'data/Fold1/train.txt'
 
 
 class Experiment(object):
 
     # 64 features as in NP2003
     # k = ranking length
-    def __init__(self, n_rankers, n_features=64, cutoff=10, click_model="navigational"):
+    def __init__(self, feature_sets, n_features=64, cutoff=10, click_model="navigational"):
         self.n_rankers = n_rankers
-        self.n_features = n_features
+        self.n_features = len(feature_sets)
+
         self.cutoff = cutoff
         train_raw = _readQueries(PATH_TRAIN_QUERIES) + '\n' \
                                         + _readQueries(PATH_VALI_QUERIES)
@@ -49,20 +50,11 @@ class Experiment(object):
         self.rankers = [rnk("1", "random", self.n_features)
                         for _ in range(self.n_rankers)]
 
-        weights = np.zeros(self.n_features)
-        # weights[np.random.randint(self.n_features)] = 1
-        # weights[np.random.randint(self.n_features)] = 1
-        # weights[np.random.randint(self.n_features)] = 1
-        # weights[np.random.randint(self.n_features)] = 1
-        # weights[np.random.randint(self.n_features)] = 1
-
-        for ranker in self.rankers:
+        for feature_ids,ranker in zip(feature_sets,self.rankers):
             weights = np.zeros(self.n_features)
-            for i in range(5):
-                weights[np.random.randint(self.n_features)] = 1
-            # weights[40] = 1
+            for fid in feature_ids:
+                weights[fid] = 1
             ranker.update_weights(weights)
-        # random.shuffle(self.rankers)
 
         ndcg = NdcgEval()
         average_ndcgs = np.zeros((self.n_rankers))
@@ -95,7 +87,7 @@ class Experiment(object):
         count_pi    = np.zeros((self.n_rankers, self.n_rankers))
         total_pm_nb = np.zeros((self.n_rankers, self.n_rankers))
         
-        for _ in range(n_impressions):
+        for i in range(n_impressions):
             pm_preferences, td_preferences, ((pi_r1, pi_r2), pi_creds), pm_nonbin_creds = self.impression()
             total_pm += pm_preferences
             total_td += td_preferences
@@ -104,6 +96,9 @@ class Experiment(object):
             total_pi[pi_r2][pi_r1] = -pi_creds
             count_pi[pi_r1][pi_r2] += 1
             count_pi[pi_r2][pi_r1] += 1
+
+            print [ self.preference_error(matrix) for matrix in [total_pm/i,
+                                total_td/i, total_pm_nb/i, total_pi/count_pi]]
 
         total_pm    /= n_impressions
         total_td    /= n_impressions
@@ -165,8 +160,8 @@ class Experiment(object):
         error = 0
         for i in range(self.n_rankers):
             for j in range(self.n_rankers):
-                if np.sign(preference_matrix[i, j] - 0.5) != \
-                        np.sign(preference_matrix[i, j] - 0.5):
+                if j != i and np.sign(preference_matrix[i, j] - 0.5) != \
+                        np.sign(self.true_pref[i, j] - 0.5):
                     error += 1.
         return error / (self.n_rankers * (self.n_rankers - 1))
 
@@ -201,6 +196,14 @@ def _readQueries(path):
 
 
 if __name__ == "__main__":
-    experiment = Experiment(6)
+    ranker_feature_sets = [
+                             range(11,16), #TF-IDF
+                             range(21,26), #BM25
+                             range(36,41), #LMIR
+                             [41,42],      #SiteMap
+                             [49,50]       #HITS
+                            ]
+    experiment = Experiment(ranker_feature_sets)
     for i in range(10):
+        print "RUN", i
         print experiment.run(500)
