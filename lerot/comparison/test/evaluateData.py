@@ -6,8 +6,6 @@ Created on 15 jan. 2015
 from datetime import datetime
 import os
 
-from scipy import ndimage
-
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -16,7 +14,7 @@ PATH_DATA = '../../../results/'
 PATH_PLOTS = '../../../results/plots/'
 METHODS = ['informational', 'navigational', 'perfect']
 MEASURES = ['Probabilistic multileaving', 'Teamdraft multileaving',
-            'Probabilistic Interleaving']
+            'Probabilistic interleaving', 'Sample probabilistic multileaving']
 
 
 def evaluate():
@@ -26,7 +24,7 @@ def evaluate():
                                           for fold in range(5)])
                               for run in range(5)])
                   for k in range(5000)]
-                 for measure in [1, 2, 4]]
+                 for measure in range(1,5)]
                 for method in range(len(METHODS))]
     for i, average in enumerate(averages):
         method = METHODS[i]
@@ -86,7 +84,6 @@ def visualizeError(errors, labels, std, path_plots=PATH_PLOTS, imageName='',
     - path_plots = where to save the data. If None, it wont be saved
     - imageName = name of the image if it is saved in the path_plots
     '''
-    smoothing_factor = 20
     fig = plt.figure()
     plt.hold(True)
     colors = ['blue', 'green', 'red']
@@ -97,7 +94,6 @@ def visualizeError(errors, labels, std, path_plots=PATH_PLOTS, imageName='',
         x = np.arange(len(e))
         e = np.array(e)
 
-#         smoothed = ndimage.filters.gaussian_filter(e, smoothing_factor)
         n = 50
         plt.errorbar(x[::n], e[x[::n]], yerr=np.array(s)[x[::n]] / 3, color=c,
                      fmt='none')
