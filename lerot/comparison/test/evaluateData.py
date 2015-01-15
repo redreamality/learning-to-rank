@@ -15,12 +15,13 @@ import numpy as np
 PATH_DATA = '../../../results/'
 PATH_PLOTS = '../../../results/plots/'
 METHODS = ['informational', 'navigational', 'perfect']
+MEASURES = ['Probabilistic multileaving', 'Teamdraft multileaving',
+            'Probabilistic Interleaving']
 
 
 def evaluate():
     output = readData()
-    measures = ['Probabilisticmultileave', 'Teamdraft multileave',
-                'Probabilistic Interleave']
+
     averages = [[[np.average([np.average([output[method][fold][run][k][measure]
                                           for fold in range(5)])
                               for run in range(5)])
@@ -29,7 +30,13 @@ def evaluate():
                 for method in range(len(METHODS))]
     for i, average in enumerate(averages):
         method = METHODS[i]
-        visualizeError(average, measures, imageName=method, show=False)
+        std = [[np.std(np.array([output[METHODS.index(method)][i][j][k][measure]
+                                for i in range(5)
+                                for j in range(5)]))
+               for k in range(5000)]
+               for measure in [1, 2, 4]]
+        visualizeError(average, MEASURES, std, imageName=method, show=False,
+                       x_range=1000)
 
 
 def readData(path=PATH_DATA, methods=METHODS):
@@ -67,8 +74,8 @@ def readData(path=PATH_DATA, methods=METHODS):
     return output
 
 
-def visualizeError(errors, labels, path_plots=PATH_PLOTS, imageName='',
-                   show=True):
+def visualizeError(errors, labels, std, path_plots=PATH_PLOTS, imageName='',
+                   show=True, x_range=None, y_range=None):
     '''
     Show and save a graph of the errors over time
 
@@ -82,16 +89,26 @@ def visualizeError(errors, labels, path_plots=PATH_PLOTS, imageName='',
     smoothing_factor = 20
     fig = plt.figure()
     plt.hold(True)
+    colors = ['blue', 'green', 'red']
+    for e, s, l, c in zip(errors, std, labels, colors):
+        if x_range is not None:
+            e = e[:x_range]
+            s = s[:x_range]
+        x = np.arange(len(e))
+        e = np.array(e)
 
-    for e, l in zip(errors, labels):
-        smoothed = ndimage.filters.gaussian_filter(e, smoothing_factor)
-        plt.plot(np.arange(len(e)), smoothed, label=l)
+#         smoothed = ndimage.filters.gaussian_filter(e, smoothing_factor)
+        n = 50
+        plt.errorbar(x[::n], e[x[::n]], yerr=np.array(s)[x[::n]] / 3, color=c,
+                     fmt='none')
+        plt.plot(x, e, label=l, color=c)
 
     ax = plt.subplot(111)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     ax.get_xaxis().tick_bottom()
     ax.get_yaxis().tick_left()
+    plt.xlim([0, x_range])
 
     plt.xlabel('Queries')
     plt.ylabel('Binary error')
