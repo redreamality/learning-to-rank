@@ -10,8 +10,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-PATH_DATA = '../../../results/'
-PATH_PLOTS = '../../../results/plots/'
+PATH_DATA = '../../../final_results/'
+PATH_PLOTS = '../../../final_results/plots/'
 METHODS = ['informational', 'navigational', 'perfect']
 MEASURES = ['Probabilistic multileaving', 'Teamdraft multileaving',
             'Probabilistic interleaving', 'Sample probabilistic multileaving']
@@ -23,16 +23,16 @@ def evaluate():
     averages = [[[np.average([np.average([output[method][fold][run][k][measure]
                                           for fold in range(5)])
                               for run in range(5)])
-                  for k in range(5000)]
-                 for measure in range(1,5)]
+                  for k in range(1000)]
+                 for measure in range(1, 5)]
                 for method in range(len(METHODS))]
     for i, average in enumerate(averages):
         method = METHODS[i]
-        std = [[np.std(np.array([output[METHODS.index(method)][i][j][k][measure]
-                                for i in range(5)
-                                for j in range(5)]))
-               for k in range(5000)]
-               for measure in [1, 2, 4]]
+        std = [[np.std(np.array([output[METHODS.index(method)][fold][run][k][measure]
+                                for fold in range(5)
+                                for run in range(5)]))
+               for k in range(1000)]
+               for measure in range(1, 5)]
         visualizeError(average, MEASURES, std, imageName=method, show=False,
                        x_range=1000)
 
@@ -86,7 +86,7 @@ def visualizeError(errors, labels, std, path_plots=PATH_PLOTS, imageName='',
     '''
     fig = plt.figure()
     plt.hold(True)
-    colors = ['blue', 'green', 'red']
+    colors = ['blue', 'green', 'red', 'cyan']
     for e, s, l, c in zip(errors, std, labels, colors):
         if x_range is not None:
             e = e[:x_range]
@@ -105,6 +105,7 @@ def visualizeError(errors, labels, std, path_plots=PATH_PLOTS, imageName='',
     ax.get_xaxis().tick_bottom()
     ax.get_yaxis().tick_left()
     plt.xlim([0, x_range])
+    plt.ylim([0, 1])
 
     plt.xlabel('Queries')
     plt.ylabel('Binary error')
