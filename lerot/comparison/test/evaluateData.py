@@ -19,9 +19,18 @@ METHODS = ['informational', 'navigational', 'perfect']
 
 def evaluate():
     output = readData()
-
-    errors = [[l[4] for l in output[0][0][i]] for i in range(5)]
-    visualizeError(errors, METHODS)
+    measures = ['Probabilistic_multileave', 'Teamdraft multileave',
+                'probabilistic non binary multileave',
+                'Probabilistic Interleave']
+    averages = [[[np.average([np.average([output[method][fold][run][k][measure]
+                                          for fold in range(5)])
+                              for run in range(5)])
+                  for k in range(5000)]
+                 for method in range(len(METHODS))]
+                for measure in range(len(measures))]
+    for i, average in enumerate(averages):
+        measure = measures[i]
+#         visualizeError(average, METHODS, imageName=measure)
 
 
 def readData(path=PATH_DATA, methods=METHODS):
@@ -33,9 +42,9 @@ def readData(path=PATH_DATA, methods=METHODS):
                 containing a list of iteration, probablistic_multileave,
                 teamdraft_multi, probabilistic_non_bin_multi, probabilistic_inter
     '''
-    files = []
     output = []
     for m in methods:
+        files = []
         for i in os.listdir(path):
             if os.path.isfile(os.path.join(path, i)) and m in i:
                 files.append(i)
@@ -59,7 +68,8 @@ def readData(path=PATH_DATA, methods=METHODS):
     return output
 
 
-def visualizeError(errors, labels, path_plots=PATH_PLOTS, imageName=None):
+def visualizeError(errors, labels, path_plots=PATH_PLOTS, imageName='',
+                   show=True):
     '''
     Show and save a graph of the errors over time
 
@@ -88,14 +98,15 @@ def visualizeError(errors, labels, path_plots=PATH_PLOTS, imageName=None):
     plt.ylabel('Binary error')
     plt.legend()
 
-    plt.show()
+    if show:
+        plt.show()
     plt.hold(False)
 
     if path_plots is not None:
-        if imageName is None:
-            now = datetime.now()
-            imageName = 'plot_' + '_'.join([str(now.hour), str(now.minute),
-                                           str(now.second)])
+        now = datetime.now()
+        imageName = 'plot_' + imageName + '_'.join([str(now.hour),
+                                                    str(now.minute),
+                                       str(now.second)])
         fig.savefig(path_plots + imageName)
 if __name__ == '__main__':
     evaluate()
