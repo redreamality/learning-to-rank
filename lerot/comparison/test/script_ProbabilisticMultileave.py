@@ -99,11 +99,11 @@ class Experiment(object):
         total_td    = np.zeros((self.n_rankers, self.n_rankers))
         total_pi    = np.zeros((self.n_rankers, self.n_rankers))
         count_pi    = np.zeros((self.n_rankers, self.n_rankers))
-        total_pm_nb = np.zeros((self.n_rankers, self.n_rankers))
+        # total_pm_nb = np.zeros((self.n_rankers, self.n_rankers))
         ave_nb_cred = np.zeros((self.n_rankers))
         
         for i in range(1,n_impressions+1):
-            pm_preferences, td_preferences, ((pi_r1, pi_r2), pi_creds), pm_nonbin_creds, sbpm_pref = self.impression()
+            pm_preferences, td_preferences, ((pi_r1, pi_r2), pi_creds), sbpm_pref = self.impression()
             total_spm += sbpm_pref
             total_pm  += pm_preferences
             total_td  += td_preferences
@@ -112,8 +112,8 @@ class Experiment(object):
             count_pi[pi_r1][pi_r2] += 1
             count_pi[pi_r2][pi_r1] += 1
 
-            ave_nb_cred += pm_nonbin_creds
-            total_pm_nb =  self.preferencesFromCredits(ave_nb_cred/i)
+            # ave_nb_cred += pm_nonbin_creds
+            # total_pm_nb =  self.preferencesFromCredits((1-ave_nb_cred/i))
 
             # may be usefull for later debugging
             # print 
@@ -128,17 +128,16 @@ class Experiment(object):
             print i,
 
             for score in [ self.preference_error(matrix) for matrix in [total_pm/i,
-                                total_td/i, total_pm_nb/i, total_pi/count_pi, total_spm/i]]:
+                                total_td/i, total_pi/count_pi, total_spm/i]]:
                 print score,
             print
 
         total_spm   /= n_impressions
         total_pm    /= n_impressions
         total_td    /= n_impressions
-        total_pm_nb /= n_impressions
         total_pi    /= count_pi
 
-        return [ self.preference_error(matrix) for matrix in [total_pm, total_td, total_pm_nb, total_pi, total_spm]]
+        return [ self.preference_error(matrix) for matrix in [total_pm, total_td, total_pi, total_spm]]
 
     def impression(self):
         '''
@@ -156,12 +155,12 @@ class Experiment(object):
         pi_creds, (pi_r1, pi_r2) = \
             self.impression_probabilisticInterleave(query)
         td_creds = self.impression_teamDraftMultileave(query)
-        pm_nonbin_creds = self.impression_probabilisticMultileave(query,False)
+        # pm_nonbin_creds = self.impression_probabilisticMultileave(query,False)
 
         pm_preferences = self.preferencesFromCredits(pm_creds)
         td_preferences = self.preferencesFromCredits(td_creds)
 
-        return pm_preferences, td_preferences, ((pi_r1, pi_r2), pi_creds), pm_nonbin_creds, self.impression_sampleProbabilisticMultileave(query)
+        return pm_preferences, td_preferences, ((pi_r1, pi_r2), pi_creds), self.impression_sampleProbabilisticMultileave(query)
 
     def impression_sampleProbabilisticMultileave(self, query):
         
@@ -253,7 +252,7 @@ if __name__ == "__main__":
     experiment = Experiment(ranker_feature_sets, click_model=args.click_model)
     for i in range(5):
         print "RUN", i
-        for name in ["probablistic_multi", "teamdraft_multi", "probabilistic_non_bin_multi", "probabilistic_inter"]:
+        for name in ["probablistic_multi", "teamdraft_multi", "probabilistic_inter", "sample_probablistic_multi",]:
             print name,
         print
         experiment.run(1000)
