@@ -6,7 +6,10 @@ Created on 15 jan. 2015
 from datetime import datetime
 import os
 
+from scipy import ndimage
+
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 PATH_DATA = '../../../results/'
@@ -17,7 +20,6 @@ METHODS = ['informational', 'navigational', 'perfect']
 def evaluate():
     output = readData()
 
-    print('visualizing test...')
     errors = [[l[4] for l in output[0][0][i]] for i in range(5)]
     visualizeError(errors, METHODS)
 
@@ -25,9 +27,11 @@ def evaluate():
 def readData(path=PATH_DATA, methods=METHODS):
     '''
     OUTPUT:
-    - list containing a list for each method containing a list for each run
-      containing a list of iteration, probablistic_multileave, teamdraft_multi,
-      probabilistic_non_bin_multi, probabilistic_inter
+    - list containing a list for each method
+         containing a list for each fold
+            containing a list for each run
+                containing a list of iteration, probablistic_multileave,
+                teamdraft_multi, probabilistic_non_bin_multi, probabilistic_inter
     '''
     files = []
     output = []
@@ -49,7 +53,7 @@ def readData(path=PATH_DATA, methods=METHODS):
                     elif 'probabilistic' in line:
                         pass
                     else:
-                        output_run.append(line.split())
+                        output_run.append([float(l) for l in line.split()])
             output_method.append(output_file)
         output.append(output_method)
     return output
@@ -66,11 +70,13 @@ def visualizeError(errors, labels, path_plots=PATH_PLOTS, imageName=None):
     - path_plots = where to save the data. If None, it wont be saved
     - imageName = name of the image if it is saved in the path_plots
     '''
-
+    smoothing_factor = 20
     fig = plt.figure()
     plt.hold(True)
+
     for e, l in zip(errors, labels):
-        plt.plot(e, label=l)
+        smoothed = ndimage.filters.gaussian_filter(e, smoothing_factor)
+        plt.plot(np.arange(len(e)), smoothed, label=l)
 
     ax = plt.subplot(111)
     ax.spines["top"].set_visible(False)
