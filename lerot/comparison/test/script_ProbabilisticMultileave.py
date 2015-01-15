@@ -128,7 +128,7 @@ class Experiment(object):
             print i,
 
             for score in [ self.preference_error(matrix) for matrix in [total_pm/i,
-                                total_td/i, total_pi/count_pi, total_spm/i]]:
+                                total_td/i, total_pi/count_pi, 1-total_spm/i]]:
                 print score,
             print
 
@@ -137,7 +137,7 @@ class Experiment(object):
         total_td    /= n_impressions
         total_pi    /= count_pi
 
-        return [ self.preference_error(matrix) for matrix in [total_pm, total_td, total_pi, total_spm]]
+        return [ self.preference_error(matrix) for matrix in [total_pm, total_td, total_pi, 1-total_spm]]
 
     def impression(self):
         '''
