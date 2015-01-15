@@ -5,7 +5,7 @@ Created on 14 jan. 2015
 '''
 import unittest
 
-import lerot.comparison.test.script_ProbabilisticMultileave as exp
+import lerot.comparison.test.evaluateData as ev
 
 
 class Test(unittest.TestCase):
@@ -16,7 +16,7 @@ class Test(unittest.TestCase):
     def testDataVisualization(self):
         errors = [[i + j * 10 for i in range(100)] for j in range(3)]
         labels = ['a', 'b', 'c']
-        exp.visualizeError(errors, labels)
+        ev.visualizeError(errors, labels)
 
 
 if __name__ == "__main__":
