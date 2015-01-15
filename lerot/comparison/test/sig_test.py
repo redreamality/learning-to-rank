@@ -30,21 +30,26 @@ def readallData():
     errors_perfect = errors[2]
     return errors_informational, errors_navigational, errors_perfect
      
-def test_all_significance(testPoint = 4999):
+def test_all_significance(testPoint = 999):
     errors = evaluateData.readData()
     for x in range(len(errors)):
         PM_mean = np.mean(np.array([errors[x][i][j][testPoint][1] for i in range(5) for j in range(5)]))
         PM_std = np.std(np.array([errors[x][i][j][testPoint][1] for i in range(5) for j in range(5)]))
-        PI_mean = np.mean(np.array([errors[x][i][j][testPoint][-1] for i in range(5) for j in range(5)]))
-        PI_std = np.std(np.array([errors[x][i][j][testPoint][-1] for i in range(5) for j in range(5)]))
         TDM_mean = np.mean(np.array([errors[x][i][j][testPoint][2] for i in range(5) for j in range(5)]))
         TDM_std = np.std(np.array([errors[x][i][j][testPoint][2] for i in range(5) for j in range(5)]))
+        PI_mean = np.mean(np.array([errors[x][i][j][testPoint][3] for i in range(5) for j in range(5)]))
+        PI_std = np.std(np.array([errors[x][i][j][testPoint][3] for i in range(5) for j in range(5)]))
+        SPM_mean = np.mean(np.array([errors[x][i][j][testPoint][4] for i in range(5) for j in range(5)]))
+        SPM_std = np.std(np.array([errors[x][i][j][testPoint][4] for i in range(5) for j in range(5)]))
         
         sig_PMvPI = get_significance(PM_mean,PI_mean,PM_std,PI_std,25)
         sig_PMvTDM = get_significance(PM_mean,TDM_mean,PM_std,TDM_std,25)
+        
+        sig_SPMvPI = get_significance(SPM_mean,PI_mean,SPM_std,PI_std,25)
+        sig_SPMvTDM = get_significance(SPM_mean,TDM_mean,SPM_std,TDM_std,25)
         print '============'
-        print "PM " + str(PM_mean) + str(sig_PMvPI) + '\n' + "PI" + str(PI_mean)
-        print "PM " + str(PM_mean) + str(sig_PMvTDM) + '\n' + "TDM" + str(TDM_mean)
+        print "PM " + str(PM_mean) + str(sig_PMvPI) + " SPM " + str(SPM_mean) + sig_SPMvPI + '\n' + "PI" + str(PI_mean)
+        print "PM " + str(PM_mean) + str(sig_PMvTDM) + " SPM " + str(SPM_mean) + sig_SPMvTDM +'\n' + "TDM" + str(TDM_mean)
         print '============'
     
     
