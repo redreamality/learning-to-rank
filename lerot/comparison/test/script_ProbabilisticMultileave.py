@@ -9,6 +9,7 @@ import random, argparse, os
 
 from lerot.comparison.ProbabilisticInterleave import ProbabilisticInterleave
 import lerot.comparison.ProbabilisticMultileave as ml
+import lerot.comparison.SampleBasedProbabilisticMultileave as sbml
 from lerot.comparison.TeamDraftMultileave import TeamDraftMultileave
 import lerot.environment.CascadeUserModel as CascadeUserModel
 import lerot.evaluation.NdcgEval as NdcgEval
@@ -54,6 +55,8 @@ class Experiment(object):
         self.test_queries = qu.Queries(query_fh, self.n_features)
         query_fh.close()
 
+        self.samplemultil  = sbml.SampleBasedProbabilisticMultileave()
+
         self.multil        = ml.ProbabilisticMultileave()
         self.multil_nonbin = ml.ProbabilisticMultileave("-c True")
         self.interl = ProbabilisticInterleave('--aggregate binary')
@@ -96,6 +99,7 @@ class Experiment(object):
     def run(self, n_impressions):
         error       = np.zeros(len(self.rankers))
         total_pm    = np.zeros((self.n_rankers, self.n_rankers))
+        total_spm   = np.zeros((self.n_rankers, self.n_rankers))
         total_td    = np.zeros((self.n_rankers, self.n_rankers))
         total_pi    = np.zeros((self.n_rankers, self.n_rankers))
         count_pi    = np.zeros((self.n_rankers, self.n_rankers))
@@ -103,9 +107,10 @@ class Experiment(object):
         ave_nb_cred = np.zeros((self.n_rankers))
         
         for i in range(1,n_impressions+1):
-            pm_preferences, td_preferences, ((pi_r1, pi_r2), pi_creds), pm_nonbin_creds = self.impression()
-            total_pm += pm_preferences
-            total_td += td_preferences
+            pm_preferences, td_preferences, ((pi_r1, pi_r2), pi_creds), pm_nonbin_creds, sbpm_pref = self.impression()
+            total_spm += sbpm_pref
+            total_pm  += pm_preferences
+            total_td  += td_preferences
             total_pi[pi_r1][pi_r2] +=  1-pi_creds
             total_pi[pi_r2][pi_r1] +=  pi_creds
             count_pi[pi_r1][pi_r2] += 1
@@ -127,16 +132,17 @@ class Experiment(object):
             print i,
 
             for score in [ self.preference_error(matrix) for matrix in [total_pm/i,
-                                total_td/i, total_pm_nb/i, total_pi/count_pi]]:
+                                total_td/i, total_pm_nb/i, total_pi/count_pi, total_spm/i]]:
                 print score,
             print
 
+        total_spm   /= n_impressions
         total_pm    /= n_impressions
         total_td    /= n_impressions
         total_pm_nb /= n_impressions
         total_pi    /= count_pi
 
-        return [ self.preference_error(matrix) for matrix in [total_pm, total_td, total_pm_nb, total_pi]]
+        return [ self.preference_error(matrix) for matrix in [total_pm, total_td, total_pm_nb, total_pi, total_spm]]
 
     def impression(self):
         '''
@@ -159,7 +165,16 @@ class Experiment(object):
         pm_preferences = self.preferencesFromCredits(pm_creds)
         td_preferences = self.preferencesFromCredits(td_creds)
 
-        return pm_preferences, td_preferences, ((pi_r1, pi_r2), pi_creds), pm_nonbin_creds
+        return pm_preferences, td_preferences, ((pi_r1, pi_r2), pi_creds), pm_nonbin_creds, self.impression_sampleProbabilisticMultileave(query)
+
+    def impression_sampleProbabilisticMultileave(self, query):
+        
+        ranking, _ = self.samplemultil.multileave(self.rankers, query, self.cutoff)
+        clicks     = self.user_model.get_clicks(ranking, query.get_labels())
+        creds      = self.samplemultil.infer_outcome(ranking, self.rankers, clicks,
+                                              query)
+        return 1-creds
+
 
     def impression_probabilisticMultileave(self, query, binary=True):
         if binary:
@@ -280,8 +295,8 @@ if __name__ == "__main__":
     experiment = Experiment(ranker_feature_sets, click_model=args.click_model)
     for i in range(5):
         print "RUN", i
-        for name in ["probablistic_multi" "teamdraft_multi", "probabilistic_non_bin_multi", "probabilistic_inter"]:
+        for name in ["probablistic_multi", "teamdraft_multi", "probabilistic_non_bin_multi", "probabilistic_inter"]:
             print name,
         print
-        experiment.run(5000)
+        experiment.run(1000)
         print
