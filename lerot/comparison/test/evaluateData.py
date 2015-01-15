@@ -19,18 +19,17 @@ METHODS = ['informational', 'navigational', 'perfect']
 
 def evaluate():
     output = readData()
-    measures = ['Probabilistic_multileave', 'Teamdraft multileave',
-                'probabilistic non binary multileave',
+    measures = ['Probabilisticmultileave', 'Teamdraft multileave',
                 'Probabilistic Interleave']
     averages = [[[np.average([np.average([output[method][fold][run][k][measure]
                                           for fold in range(5)])
                               for run in range(5)])
                   for k in range(5000)]
-                 for method in range(len(METHODS))]
-                for measure in range(len(measures))]
+                 for measure in [1, 2, 4]]
+                for method in range(len(METHODS))]
     for i, average in enumerate(averages):
-        measure = measures[i]
-#         visualizeError(average, METHODS, imageName=measure)
+        method = METHODS[i]
+        visualizeError(average, measures, imageName=method, show=False)
 
 
 def readData(path=PATH_DATA, methods=METHODS):
@@ -107,6 +106,6 @@ def visualizeError(errors, labels, path_plots=PATH_PLOTS, imageName='',
         imageName = 'plot_' + imageName + '_'.join([str(now.hour),
                                                     str(now.minute),
                                        str(now.second)])
-        fig.savefig(path_plots + imageName)
+        fig.savefig(path_plots + imageName + '.PDF', format='pdf')
 if __name__ == '__main__':
     evaluate()
