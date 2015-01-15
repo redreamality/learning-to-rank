@@ -30,7 +30,7 @@ PATH_TEST_QUERIES  = os.path.join(args.FOLD_PATH,'test.txt')
 PATH_VALI_QUERIES  = os.path.join(args.FOLD_PATH,'vali.txt')
 PATH_TRAIN_QUERIES = os.path.join(args.FOLD_PATH,'train.txt')
 
-PATH_PLOTS = '../../../plots/'
+PATH_PLOTS = '../../../results/plots/'
 
 
 class Experiment(object):
