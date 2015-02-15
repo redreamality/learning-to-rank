@@ -40,17 +40,8 @@ class Experiment(object):
         self.n_features = n_features
 
         self.cutoff = cutoff
-        train_raw = _readQueries(PATH_TRAIN_QUERIES) + '\n' \
-                                        + _readQueries(PATH_VALI_QUERIES)
-        test_raw = _readQueries(PATH_TEST_QUERIES)
-
-        query_fh = cStringIO.StringIO(train_raw)
-        self.train_queries = qu.Queries(query_fh, self.n_features)
-        query_fh.close()
-
-        query_fh = cStringIO.StringIO(test_raw)
-        self.test_queries = qu.Queries(query_fh, self.n_features)
-        query_fh.close()
+        self.test_queries = qu.load_queries(PATH_TRAIN_QUERIES, self.n_features)
+        self.test_queries = qu.load_queries(PATH_TEST_QUERIES, self.n_features)
 
         self.samplemultil  = sbml.SampleBasedProbabilisticMultileave()
 
