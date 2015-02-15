@@ -4,7 +4,7 @@ Created on 12 jan. 2015
 @author: Harrie, Jos
 '''
 import cStringIO
-import random, argparse, os, sys
+import random, argparse, os, sys, math
 
 from lerot.comparison.ProbabilisticInterleave import ProbabilisticInterleave
 import lerot.comparison.ProbabilisticMultileave as ml
@@ -240,18 +240,21 @@ class Experiment(object):
 
 
     def preference_error(self, preference_matrix):
-        
         error = 0.0
+        counter = 0
         for i in range(self.n_rankers):
             for j in range(self.n_rankers):
                 if j != i:
+                    if math.isnan(preference_matrix[i, j]):
+                        continue
+                    counter += 1
                     if self.experiment_type == "bias":
                         error += abs(preference_matrix[i, j] - 0.5)
                     else:
                         if self.sgn(preference_matrix[i, j] - 0.5) != \
                                 self.sgn(self.true_pref[i, j] - 0.5):
                             error += 1.
-        return error / (self.n_rankers * (self.n_rankers - 1))
+        return error / counter
 
     def preferencesFromCredits(self, creds):
         '''
