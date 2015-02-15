@@ -22,7 +22,7 @@ description = "Script for experiments for probabilistic multileaving."
 parser = argparse.ArgumentParser(description=description)
 parser.add_argument("FOLD_PATH", help="path to folder containing train.txt, test.txt and vali.txt")
 parser.add_argument("click_model", help="click model to use")
-parser.add_argument("experiment_type", default="sensitivity", help="experiment type (bias or sensitivity) ")
+parser.add_argument("experiment_type", help="experiment type (bias or sensitivity) ")
 
 args = parser.parse_args()
 
@@ -35,7 +35,8 @@ class Experiment(object):
 
     # 64 features as in NP2003
     # k = ranking length
-    def __init__(self, feature_sets, n_features=64, cutoff=10, click_model="navigational", experiment_type="sensitivity"):
+    def __init__(self, feature_sets, n_features=64, cutoff=10, click_model="navigational", experiment_type=""):
+        self.experiment_type = experiment_type
         self.n_rankers  = len(feature_sets)
         self.n_features = n_features
 
@@ -82,6 +83,8 @@ class Experiment(object):
             for i in range(self.n_rankers):
                 for j in range(self.n_rankers):
                     self.all_true_pref[i, j] = 0.5
+        else:
+            raise Exception("Set experiment type")
 
         if click_model=="navigational":
             click_str="--p_click 0:.05, 1:0.95 --p_stop  0:.2, 1:.5"
@@ -90,7 +93,7 @@ class Experiment(object):
         elif click_model=="informational":
             click_str="--p_click 0:.4, 1:.9 --p_stop  0:.1, 1:.5"
         elif click_model=="random":
-            click_str="--p_click 0:.5, 1:.5 --p_stop  0:0, 1:0"
+            click_str="--p_click 0:.5, 1:.5 --p_stop  0:.0, 1:.0"
 
         self.user_model = CascadeUserModel(click_str)
 
@@ -223,12 +226,17 @@ class Experiment(object):
 
 
     def preference_error(self, preference_matrix):
-        error = 0
+        
+        error = 0.0
         for i in range(self.n_rankers):
             for j in range(self.n_rankers):
-                if j != i and self.sgn(preference_matrix[i, j] - 0.5) != \
-                        self.sgn(self.true_pref[i, j] - 0.5):
-                    error += 1.
+                if j != i:
+                    if self.experiment_type == "bias":
+                        error += abs(preference_matrix[i, j] - 0.5)
+                    else:
+                        if self.sgn(preference_matrix[i, j] - 0.5) != \
+                                self.sgn(self.true_pref[i, j] - 0.5):
+                            error += 1.
         return error / (self.n_rankers * (self.n_rankers - 1))
 
     def preferencesFromCredits(self, creds):
@@ -272,7 +280,7 @@ if __name__ == "__main__":
                             ]
     experiment = Experiment(ranker_feature_sets, click_model=args.click_model, experiment_type=args.experiment_type)
     for i in range(25):
-        print "RUN", i
+        print "RUN", args.experiment_type, args.click_model, i
         for name in ["probablistic_multi", "teamdraft_multi", "probabilistic_inter", "sample_probablistic_multi",]:
             print name,
         print
