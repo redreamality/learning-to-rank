@@ -44,9 +44,9 @@ class Experiment(object):
         self.train_queries = qu.load_queries(PATH_TRAIN_QUERIES, self.n_features)
         self.test_queries = qu.load_queries(PATH_TEST_QUERIES, self.n_features)
 
-        self.samplemultil100  = sbml.SampleBasedProbabilisticMultileave("--n_samples 100")
-        self.samplemultil1000  = sbml.SampleBasedProbabilisticMultileave("--n_samples 1000")
-        self.samplemultil10000  = sbml.SampleBasedProbabilisticMultileave("--n_samples 10000")
+        self.samplemultil100  = sbml.SampleBasedProbabilisticMultileave("--n_samples 10")
+        self.samplemultil1000  = sbml.SampleBasedProbabilisticMultileave("--n_samples 100")
+        self.samplemultil10000  = sbml.SampleBasedProbabilisticMultileave("--n_samples 1000")
 
         self.multil        = ml.ProbabilisticMultileave()
         self.multil_nonbin = ml.ProbabilisticMultileave("-c True")
@@ -295,7 +295,7 @@ if __name__ == "__main__":
     experiment = Experiment(ranker_feature_sets, click_model=args.click_model, experiment_type=args.experiment_type)
     for i in range(25):
         print "RUN", args.experiment_type, args.click_model, i
-        for name in ["probablistic_multi", "teamdraft_multi", "probabilistic_inter", "sample_probablistic_multi_100","sample_probablistic_multi_1000","sample_probablistic_multi_10000",]:
+        for name in ["probablistic_multi", "teamdraft_multi", "probabilistic_inter", "sample_probablistic_multi_10","sample_probablistic_multi_100","sample_probablistic_multi_1000",]:
             print name,
         print
         experiment.run(1000, 5)
