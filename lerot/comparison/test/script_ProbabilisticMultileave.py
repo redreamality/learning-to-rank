@@ -89,6 +89,8 @@ class Experiment(object):
             click_str="--p_click 0:.0, 1:1. --p_stop  0:.0, 1:.0"
         elif click_model=="informational":
             click_str="--p_click 0:.4, 1:.9 --p_stop  0:.1, 1:.5"
+        elif click_model=="random":
+            click_str="--p_click 0:.5, 1:.5 --p_stop  0:.5, 1:.5"
 
         self.user_model = CascadeUserModel(click_str)
 
