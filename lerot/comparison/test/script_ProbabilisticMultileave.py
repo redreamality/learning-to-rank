@@ -86,7 +86,7 @@ class Experiment(object):
                     self.true_pref[i, j] = 0.5 * (average_ndcgs[i] -
                                                   average_ndcgs[j]) + 0.5
         elif experiment_type == "bias":
-            click_model=="random"
+            click_model = "random"
             self.true_pref = np.zeros((self.n_rankers, self.n_rankers))
             for i in range(self.n_rankers):
                 for j in range(self.n_rankers):
