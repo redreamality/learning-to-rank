@@ -4,7 +4,7 @@ Created on 12 jan. 2015
 @author: Harrie, Jos
 '''
 import cStringIO
-import random, argparse, os
+import random, argparse, os, sys
 
 from lerot.comparison.ProbabilisticInterleave import ProbabilisticInterleave
 import lerot.comparison.ProbabilisticMultileave as ml
@@ -213,12 +213,21 @@ class Experiment(object):
                                                           query)
         return creds
 
+    def sgn(self, v):
+        if v < (0 - sys.float_info.epsilon):
+            return -1
+        elif v > (0 + sys.float_info.epsilon):
+            return 1
+        else:
+            return 0
+
+
     def preference_error(self, preference_matrix):
         error = 0
         for i in range(self.n_rankers):
             for j in range(self.n_rankers):
-                if j != i and np.sign(preference_matrix[i, j] - 0.5) != \
-                        np.sign(self.true_pref[i, j] - 0.5):
+                if j != i and self.sgn(preference_matrix[i, j] - 0.5) != \
+                        self.sgn(self.true_pref[i, j] - 0.5):
                     error += 1.
         return error / (self.n_rankers * (self.n_rankers - 1))
 
