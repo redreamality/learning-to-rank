@@ -36,6 +36,7 @@ class SampleBasedProbabilisticMultileave(AbstractInterleavedComparison):
             parser.add_argument("-t", "--compare_td", type=bool,
                 help="If true, compare rankers using observed assignments "
                 "instead of marginalizing over possible assignments.")
+            parser.add_argument("--n_samples", type=int)
             args = vars(parser.parse_known_args(split_arg_str(arg_str))[0])
             if "aggregate" in args and args["aggregate"]:
                 self.aggregate = args["aggregate"]
@@ -43,6 +44,8 @@ class SampleBasedProbabilisticMultileave(AbstractInterleavedComparison):
                 self.det_interleave = True
             if "compare_td" in args and args["compare_td"]:
                 self.compare_td = True
+            if "n_samples" in args:
+                self.n_samples = args["n_samples"]
         if not hasattr(self, "aggregate") or not self.aggregate:
             self.aggregate = "expectation"
         if not hasattr(self, "det_interleave"):
@@ -51,8 +54,8 @@ class SampleBasedProbabilisticMultileave(AbstractInterleavedComparison):
             self.compare_td = False
         if not hasattr(self, "credits"):
             self.credits = False
-
-        self.n_samples = 1000
+        if not hasattr(self, "n_samples"):
+            self.n_samples = 1000
 
     def multileave(self, rankers, query, length):
         '''
