@@ -22,6 +22,7 @@ description = "Script for experiments for probabilistic multileaving."
 parser = argparse.ArgumentParser(description=description)
 parser.add_argument("FOLD_PATH", help="path to folder containing train.txt, test.txt and vali.txt")
 parser.add_argument("click_model", help="click model to use")
+parser.add_argument("experiment_type", default="sensitivity", help="experiment type (bias or sensitivity) ")
 
 args = parser.parse_args()
 
@@ -34,7 +35,7 @@ class Experiment(object):
 
     # 64 features as in NP2003
     # k = ranking length
-    def __init__(self, feature_sets, n_features=64, cutoff=10, click_model="navigational"):
+    def __init__(self, feature_sets, n_features=64, cutoff=10, click_model="navigational", experiment_type="sensitivity"):
         self.n_rankers  = len(feature_sets)
         self.n_features = n_features
 
@@ -67,21 +68,29 @@ class Experiment(object):
                 weights[fid] = 1
             ranker.update_weights(weights)
 
-        ndcg = NdcgEval()
-        average_ndcgs = np.zeros((self.n_rankers))
-        for query in self.test_queries:
-            for i, ranker in enumerate(self.rankers):
-                ranker.init_ranking(query)
-                average_ndcgs[i] += ndcg.get_value(ranker.get_ranking(),
-                                                   query.get_labels().tolist(),
-                                                   None, self.cutoff)
-        average_ndcgs /= len(self.test_queries)
+        if experiment_type == "sensitivity":
+            ndcg = NdcgEval()
+        
+            average_ndcgs = np.zeros((self.n_rankers))
+            for query in self.test_queries:
+                for i, ranker in enumerate(self.rankers):
+                    ranker.init_ranking(query)
+                    average_ndcgs[i] += ndcg.get_value(ranker.get_ranking(),
+                                                       query.get_labels().tolist(),
+                                                       None, self.cutoff)
+            average_ndcgs /= len(self.test_queries)
 
-        self.true_pref = np.zeros((self.n_rankers, self.n_rankers))
-        for i in range(self.n_rankers):
-            for j in range(self.n_rankers):
-                self.true_pref[i, j] = 0.5 * (average_ndcgs[i] -
-                                              average_ndcgs[j]) + 0.5
+            self.true_pref = np.zeros((self.n_rankers, self.n_rankers))
+            for i in range(self.n_rankers):
+                for j in range(self.n_rankers):
+                    self.true_pref[i, j] = 0.5 * (average_ndcgs[i] -
+                                                  average_ndcgs[j]) + 0.5
+        elif experiment_type == "bias":
+            click_model=="random"
+            self.true_pref = np.zeros((self.n_rankers, self.n_rankers))
+            for i in range(self.n_rankers):
+                for j in range(self.n_rankers):
+                    self.true_pref[i, j] = 0.5
 
         if click_model=="navigational":
             click_str="--p_click 0:.05, 1:0.95 --p_stop  0:.2, 1:.5"
@@ -251,7 +260,7 @@ if __name__ == "__main__":
                              [41,42],      #SiteMap
                              [49,50]       #HITS
                             ]
-    experiment = Experiment(ranker_feature_sets, click_model=args.click_model)
+    experiment = Experiment(ranker_feature_sets, click_model=args.click_model, experiment_type=args.experiment_type)
     for i in range(5):
         print "RUN", i
         for name in ["probablistic_multi", "teamdraft_multi", "probabilistic_inter", "sample_probablistic_multi",]:
