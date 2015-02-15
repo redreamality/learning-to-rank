@@ -50,10 +50,10 @@ class Experiment(object):
         self.interl = ProbabilisticInterleave('--aggregate binary')
         self.TeamDraftMultileave = TeamDraftMultileave()
 
-        self.rankers = [rnk("1", "random", self.n_features)
+        self.allrankers = [rnk("1", "random", self.n_features)
                         for _ in range(self.n_rankers)]
 
-        for feature_ids,ranker in zip(feature_sets,self.rankers):
+        for feature_ids,ranker in zip(feature_sets,self.allrankers):
             weights = np.zeros(self.n_features)
             for fid in feature_ids:
                 weights[fid] = 1
@@ -64,24 +64,24 @@ class Experiment(object):
         
             average_ndcgs = np.zeros((self.n_rankers))
             for query in self.test_queries:
-                for i, ranker in enumerate(self.rankers):
+                for i, ranker in enumerate(self.allrankers):
                     ranker.init_ranking(query)
                     average_ndcgs[i] += ndcg.get_value(ranker.get_ranking(),
                                                        query.get_labels().tolist(),
                                                        None, self.cutoff)
             average_ndcgs /= len(self.test_queries)
 
-            self.true_pref = np.zeros((self.n_rankers, self.n_rankers))
+            self.all_true_pref = np.zeros((self.n_rankers, self.n_rankers))
             for i in range(self.n_rankers):
                 for j in range(self.n_rankers):
-                    self.true_pref[i, j] = 0.5 * (average_ndcgs[i] -
+                    self.all_true_pref[i, j] = 0.5 * (average_ndcgs[i] -
                                                   average_ndcgs[j]) + 0.5
         elif experiment_type == "bias":
             click_model = "random"
-            self.true_pref = np.zeros((self.n_rankers, self.n_rankers))
+            self.all_true_pref = np.zeros((self.n_rankers, self.n_rankers))
             for i in range(self.n_rankers):
                 for j in range(self.n_rankers):
-                    self.true_pref[i, j] = 0.5
+                    self.all_true_pref[i, j] = 0.5
 
         if click_model=="navigational":
             click_str="--p_click 0:.05, 1:0.95 --p_stop  0:.2, 1:.5"
@@ -94,7 +94,17 @@ class Experiment(object):
 
         self.user_model = CascadeUserModel(click_str)
 
-    def run(self, n_impressions):
+    def run(self, n_impressions, n_rankers):
+        self.n_rankers  = n_rankers
+        self.rankerids = sorted(random.sample(range(len(self.allrankers)), self.n_rankers))
+        self.rankers = [self.allrankers[i] for i in self.rankerids]
+        
+        self.true_pref = np.zeros((self.n_rankers, self.n_rankers))
+        
+        for inew, i in enumerate(self.rankerids):
+            for jnew, j in enumerate(self.rankerids):
+                self.true_pref[inew, jnew] = self.all_true_pref[i, j]
+
         error       = np.zeros(len(self.rankers))
         total_pm    = np.zeros((self.n_rankers, self.n_rankers))
         total_spm   = np.zeros((self.n_rankers, self.n_rankers))
@@ -252,10 +262,10 @@ if __name__ == "__main__":
                              [49,50]       #HITS
                             ]
     experiment = Experiment(ranker_feature_sets, click_model=args.click_model, experiment_type=args.experiment_type)
-    for i in range(5):
+    for i in range(25):
         print "RUN", i
         for name in ["probablistic_multi", "teamdraft_multi", "probabilistic_inter", "sample_probablistic_multi",]:
             print name,
         print
-        experiment.run(1000)
+        experiment.run(1000, 5)
         print
