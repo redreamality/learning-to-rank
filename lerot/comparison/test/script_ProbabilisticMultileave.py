@@ -40,7 +40,7 @@ class Experiment(object):
         self.n_features = n_features
 
         self.cutoff = cutoff
-        self.test_queries = qu.load_queries(PATH_TRAIN_QUERIES, self.n_features)
+        self.train_queries = qu.load_queries(PATH_TRAIN_QUERIES, self.n_features)
         self.test_queries = qu.load_queries(PATH_TEST_QUERIES, self.n_features)
 
         self.samplemultil  = sbml.SampleBasedProbabilisticMultileave()
