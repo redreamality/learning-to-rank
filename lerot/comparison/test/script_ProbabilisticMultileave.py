@@ -41,7 +41,7 @@ class Experiment(object):
         self.cutoff = cutoff
         train_raw = _readQueries(PATH_TRAIN_QUERIES) + '\n' \
                                         + _readQueries(PATH_VALI_QUERIES)
-        test_raw = _readQueries(PATH_TRAIN_QUERIES)
+        test_raw = _readQueries(PATH_TEST_QUERIES)
 
         query_fh = cStringIO.StringIO(train_raw)
         self.train_queries = qu.Queries(query_fh, self.n_features)
