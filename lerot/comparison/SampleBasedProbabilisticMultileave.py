@@ -78,7 +78,14 @@ class SampleBasedProbabilisticMultileave(AbstractInterleavedComparison):
         # start with empty document list
         l = []
         # random bits indicate which r to use at each rank
-        a = np.asarray([randint(0, len(rankers) - 1) for _ in range(length)])
+        #a = np.asarray([randint(0, len(rankers) - 1) for _ in range(length)])
+        a = []
+        pool = []
+        while len(a) < length:
+            if len(pool) == 0:
+                pool = range(len(rankers))
+                random.shuffle(pool)
+            a.append(pool.pop())
         for next_a in a:
             # flip coin - which r contributes doc (pre-computed in a)
             select = rankers[next_a]
@@ -166,7 +173,7 @@ class SampleBasedProbabilisticMultileave(AbstractInterleavedComparison):
             sigmas[i, :] = sigmas[i, :] / np.sum(sigmas[i, :])
         return list(sigmas)
 
-    def pick_from_probability(self,probability_list):
+    def pick_from_probability(self, probability_list):
         '''
         ARGS:
         -p: list with for each click the list containing the probability that
@@ -175,8 +182,13 @@ class SampleBasedProbabilisticMultileave(AbstractInterleavedComparison):
         RETURNS:
         - index: index of ranker assigned to click
         '''
+
         pick = random.random()
-        for i, prob in enumerate(probability_list):
+
+        sortedprobs = sorted(zip(probability_list,
+                                 range(len(probability_list))))
+
+        for prob, i in sortedprobs:
             if prob >= pick:
                 return i
             else:
@@ -195,13 +207,14 @@ class SampleBasedProbabilisticMultileave(AbstractInterleavedComparison):
         - credits: list of credits for each ranker
         '''
         total_pref = np.zeros((len(p[0]),len(p[0])))
-
+ 
         for i in range(self.n_samples):
             creds = np.zeros(len(p[0]))
             for probs in p:
                 creds[self.pick_from_probability(probs)] += 1
             total_pref += self.preferencesFromCredits(creds)
         return total_pref/self.n_samples
+
 
     def preferencesFromCredits(self, creds):
         '''

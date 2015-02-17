@@ -1,6 +1,7 @@
 import argparse
 from collections import defaultdict
 from random import randint
+import random
 
 from AbstractInterleavedComparison import AbstractInterleavedComparison
 import numpy as np
@@ -76,7 +77,14 @@ class ProbabilisticMultileave(AbstractInterleavedComparison):
         # start with empty document list
         l = []
         # random bits indicate which r to use at each rank
-        a = np.asarray([randint(0, len(rankers) - 1) for _ in range(length)])
+        #a = np.asarray([randint(0, len(rankers) - 1) for _ in range(length)])
+        a = []
+        pool = []
+        while len(a) < length:
+            if len(pool) == 0:
+                pool = range(len(rankers))
+                random.shuffle(pool)
+            a.append(pool.pop())
         for next_a in a:
             # flip coin - which r contributes doc (pre-computed in a)
             select = rankers[next_a]

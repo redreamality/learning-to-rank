@@ -148,8 +148,9 @@ class Experiment(object):
 
             print i,
 
-            for score in [ self.preference_error(matrix) for matrix in [total_pm/i,
-                                total_td/i, total_pi/count_pi, 1-total_spm100/i, 1-total_spm1000/i, 1-total_spm10000/i]]:
+            names  = ["probablistic_multi", "teamdraft_multi", "probabilistic_inter", "sample_probablistic_multi_10","sample_probablistic_multi_100","sample_probablistic_multi_1000",]
+            for name, matrix in zip(names, [total_pm/i, total_td/i, total_pi/count_pi, 1-total_spm100/i, 1-total_spm1000/i, 1-total_spm10000/i]):
+                score = self.preference_error(matrix)
                 print score,
             print
 
@@ -187,7 +188,7 @@ class Experiment(object):
         sbpm_pref100 = self.impression_sampleProbabilisticMultileave(query, self.samplemultil100)
         sbpm_pref1000 = self.impression_sampleProbabilisticMultileave(query, self.samplemultil1000)
         sbpm_pref10000 = self.impression_sampleProbabilisticMultileave(query, self.samplemultil10000)
-
+        
         return pm_preferences, td_preferences, ((pi_r1, pi_r2), pi_creds), sbpm_pref100, sbpm_pref1000, sbpm_pref10000
 
 
