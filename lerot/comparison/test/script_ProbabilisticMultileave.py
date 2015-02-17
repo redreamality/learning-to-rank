@@ -8,7 +8,8 @@ import random, argparse, os, sys, math
 
 from lerot.comparison.ProbabilisticInterleave import ProbabilisticInterleave
 import lerot.comparison.ProbabilisticMultileave as ml
-import lerot.comparison.SampleBasedProbabilisticMultileave as sbml
+import lerot.comparison.SampleBasedProbabilisticMultileaveAS as sbml
+#import lerot.comparison.SampleBasedProbabilisticMultileave as sbml
 from lerot.comparison.TeamDraftMultileave import TeamDraftMultileave
 import lerot.environment.CascadeUserModel as CascadeUserModel
 import lerot.evaluation.NdcgEval as NdcgEval
@@ -44,9 +45,12 @@ class Experiment(object):
         self.train_queries = qu.load_queries(PATH_TRAIN_QUERIES, self.n_features)
         self.test_queries = qu.load_queries(PATH_TEST_QUERIES, self.n_features)
 
-        self.samplemultil100  = sbml.SampleBasedProbabilisticMultileave("--n_samples 10")
-        self.samplemultil1000  = sbml.SampleBasedProbabilisticMultileave("--n_samples 100")
-        self.samplemultil10000  = sbml.SampleBasedProbabilisticMultileave("--n_samples 1000")
+        self.samplemultil100  = sbml.SampleBasedProbabilisticMultileaveAS("--n_samples 100")
+        self.samplemultil1000  = sbml.SampleBasedProbabilisticMultileaveAS("--n_samples 1000")
+        self.samplemultil10000  = sbml.SampleBasedProbabilisticMultileaveAS("--n_samples 10000")
+        #self.samplemultil10  = sbml.SampleBasedProbabilisticMultileave("--n_samples 10")
+        #self.samplemultil1000  = sbml.SampleBasedProbabilisticMultileave("--n_samples 100")
+        #self.samplemultil10000  = sbml.SampleBasedProbabilisticMultileave("--n_samples 1000")
 
         self.multil        = ml.ProbabilisticMultileave()
         self.multil_nonbin = ml.ProbabilisticMultileave("-c True")
@@ -186,6 +190,8 @@ class Experiment(object):
 
 
         sbpm_pref100 = self.impression_sampleProbabilisticMultileave(query, self.samplemultil100)
+        #sbpm_pref1000 = sbpm_pref100
+        #sbpm_pref10000 = sbpm_pref100
         sbpm_pref1000 = self.impression_sampleProbabilisticMultileave(query, self.samplemultil1000)
         sbpm_pref10000 = self.impression_sampleProbabilisticMultileave(query, self.samplemultil10000)
         

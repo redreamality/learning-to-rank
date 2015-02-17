@@ -2,6 +2,7 @@ import argparse
 from collections import defaultdict
 from random import randint
 import random
+from numpy import asarray, e, log, where
 
 from AbstractInterleavedComparison import AbstractInterleavedComparison
 import numpy as np
@@ -9,7 +10,7 @@ import numpy as np
 from ..utils import split_arg_str
 
 
-class SampleBasedProbabilisticMultileave(AbstractInterleavedComparison):
+class SampleBasedProbabilisticMultileaveAS(AbstractInterleavedComparison):
     """Probabilistic ..."""
 
     def __init__(self, arg_str=None):
@@ -122,9 +123,55 @@ class SampleBasedProbabilisticMultileave(AbstractInterleavedComparison):
 
         for r in rankers:
             r.init_ranking(query)
-        p = self.probability_of_list(l, rankers, click_ids)
 
-        return self.preferences_of_list(p)
+        root = SimpleTree(None, 0.0, [0]*len(rankers))  # root
+        nextLevel = [root]
+        currentLevel = []
+
+        log_p_a = len(l) * log(0.5)
+        log_p_l = len(l) * log(0.5)
+
+        ratio = pow(self.n_samples, 1.0/len(l))/len(rankers)
+
+        for n in range(len(l)):
+            currentLevel = nextLevel
+            nextLevel = []
+            ps = []
+            allzero = True
+            for r in rankers:
+                p = r.get_document_probability(l[n])
+                if p != 0:
+                    allzero = False
+                ps.append(p)
+            if allzero:
+                return .0
+            for r in rankers:
+                try:
+                    r.rm_document(l[n])
+                except:
+                    pass
+            log_p_l += log(sum(ps))
+
+            clicked = clicks[n] == 1
+            for node in currentLevel:
+                for i, p in enumerate(ps):
+                    if random.random() > ratio:
+                        continue
+                    if p > 0:
+                        pl = node.prob + log(.5 * p)
+                        ol = node.outcome[:]
+                        if clicked:
+                            ol[i] += 1
+                        leaf = SimpleTree(node, pl, ol)
+                        #node.leaves.append(leaf)
+                        nextLevel.append(leaf)
+        #print "L", len(nextLevel)
+
+        o = np.zeros(len(rankers))
+        for node in nextLevel:
+            o += asarray(node.outcome) * (e ** (node.prob + log_p_a - log_p_l))
+
+        return 1-self.preferencesFromCredits(o)
 
     def get_rank(self, ranker, documents):
         '''
@@ -238,3 +285,16 @@ class SampleBasedProbabilisticMultileave(AbstractInterleavedComparison):
                 preferences[i][j] = pref
                 preferences[j][i] = 1 - pref
         return preferences
+
+
+class SimpleTree:
+    """tree that keeps track of outcome, probability of arriving at this
+    outcome"""
+    parent, leaves, prob, [] = None, [], 0.0, []
+
+    def __init__(self, parent, prob, outcome):
+        self.parent = parent
+        self.prob = prob
+        self.outcome = outcome
+        self.leaves = []
+
