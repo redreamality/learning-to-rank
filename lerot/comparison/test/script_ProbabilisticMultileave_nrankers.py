@@ -310,5 +310,5 @@ if __name__ == "__main__":
         for name in ["teamdraft_multi", "probabilistic_inter","sample_probablistic_multi_10000",]:
             print name,
         print
-        experiment.run(1000, args.n_rankers)
+        experiment.run(1000, int(args.n_rankers))
         print
