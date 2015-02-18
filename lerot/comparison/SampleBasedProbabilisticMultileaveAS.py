@@ -128,50 +128,43 @@ class SampleBasedProbabilisticMultileaveAS(AbstractInterleavedComparison):
         nextLevel = [root]
         currentLevel = []
 
-        log_p_a = len(l) * log(0.5)
-        log_p_l = len(l) * log(0.5)
+        #log_p_a = len(l) * log(0.5)
+        #log_p_l = len(l) * log(0.5)
 
         ratio = pow(self.n_samples, 1.0/len(l))/len(rankers)
 
-        for n in range(len(l)):
+        for n in range(max(click_ids) + 1):
             currentLevel = nextLevel
             nextLevel = []
             ps = []
-            allzero = True
             for r in rankers:
                 p = r.get_document_probability(l[n])
-                if p != 0:
-                    allzero = False
                 ps.append(p)
-            if allzero:
-                return .0
             for r in rankers:
                 try:
                     r.rm_document(l[n])
                 except:
                     pass
-            log_p_l += log(sum(ps))
+            #log_p_l += log(sum(ps))
 
             clicked = clicks[n] == 1
+
             for node in currentLevel:
                 for i, p in enumerate(ps):
-                    if random.random() > ratio:
+                    if p <= 0 or random.random() > ratio:
                         continue
-                    if p > 0:
-                        pl = node.prob + log(.5 * p)
-                        ol = node.outcome[:]
-                        if clicked:
-                            ol[i] += 1
-                        leaf = SimpleTree(node, pl, ol)
-                        #node.leaves.append(leaf)
-                        nextLevel.append(leaf)
-        #print "L", len(nextLevel)
+                    pl = node.prob + log(.5 * p)
+                    ol = node.outcome[:]
+                    if clicked:
+                        ol[i] += 1
+                    leaf = SimpleTree(node, pl, ol)
+                    nextLevel.append(leaf)
 
         o = np.zeros(len(rankers))
         for node in nextLevel:
-            o += asarray(node.outcome) * (e ** (node.prob + log_p_a - log_p_l))
+            o += asarray(node.outcome) * (e ** (node.prob)) #+ log_p_a - log_p_l))
 
-        return 1-self.preferencesFromCredits(o)
+        return 1 - self.preferencesFromCredits(o)
 
     def get_rank(self, ranker, documents):
         '''

@@ -53,12 +53,13 @@ plt.rcParams.update(params)
 EXP='sensitivity'
 #EXP='bias'
 
-PATH_DATA = '/Users/aschuth/Documents/lerot/lerot-PM/sigir2015short/' + EXP
+PATH_DATA = '/Users/aschuth/Documents/lerot/lerot-PM/sigir2015short/fixed/' + EXP
 PATH_PLOTS = '/Users/aschuth/Documents/lerot/lerot-PM/sigir2015short/plots/' + EXP
 METHODS = ['informational', 'navigational', 'perfect']
 #METHODS = ['perfect']
 #METHODS = ['random']
-MEASURES = ['PM', 'TDM', 'PI', 'SPM10', 'SPM100', 'SPM1000']
+MEASURES = ['PM', 'TDM', 'PI', 'PM $n=10$', 'PM $n=100$', 'PM $n=1000$']
+MEASURORDER = ['PM $n=10$', 'PM $n=100$', 'PM $n=1000$','TDM', 'PI',]
 
 
 def evaluate():
@@ -167,9 +168,16 @@ def visualizeError(errors, labels, std, path_plots=PATH_PLOTS, imageName='',
     plt.hold(True)
     colors = [('red', '-'), ('green', '-'), ('blue', '-'), ('orange', '--'), ('orange', '-.'), ('orange', ':')]
     
-    vals = {}
     
+    valdict = {}
     for e, s, l, c in zip(errors, std, labels, colors):
+        if  l == "PM":
+            continue
+        valdict[l] = (e, s, c)
+    
+    vals = {}
+    for l in MEASURORDER:
+        e, s, c = valdict[l]
         if x_range is not None:
             e = e[:x_range]
             s = s[:x_range]
@@ -187,7 +195,9 @@ def visualizeError(errors, labels, std, path_plots=PATH_PLOTS, imageName='',
 
     print imageName
 
-    for l in labels:
+    for l in MEASURORDER:
+        if  l == "PM":
+            continue
         e, s = vals[l]
         sig1 = ""
         sig2 = ""

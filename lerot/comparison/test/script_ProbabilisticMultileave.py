@@ -48,6 +48,7 @@ class Experiment(object):
         self.samplemultil100  = sbml.SampleBasedProbabilisticMultileaveAS("--n_samples 100")
         self.samplemultil1000  = sbml.SampleBasedProbabilisticMultileaveAS("--n_samples 1000")
         self.samplemultil10000  = sbml.SampleBasedProbabilisticMultileaveAS("--n_samples 10000")
+        self.samplemultil100000  = sbml.SampleBasedProbabilisticMultileaveAS("--n_samples 100000")
         #self.samplemultil10  = sbml.SampleBasedProbabilisticMultileave("--n_samples 10")
         #self.samplemultil1000  = sbml.SampleBasedProbabilisticMultileave("--n_samples 100")
         #self.samplemultil10000  = sbml.SampleBasedProbabilisticMultileave("--n_samples 1000")
@@ -115,10 +116,11 @@ class Experiment(object):
                 self.true_pref[inew, jnew] = self.all_true_pref[i, j]
 
         error       = np.zeros(len(self.rankers))
-        total_pm    = np.zeros((self.n_rankers, self.n_rankers))
+        #total_pm    = np.zeros((self.n_rankers, self.n_rankers))
         total_spm100   = np.zeros((self.n_rankers, self.n_rankers))
         total_spm1000   = np.zeros((self.n_rankers, self.n_rankers))
         total_spm10000   = np.zeros((self.n_rankers, self.n_rankers))
+        total_spm100000   = np.zeros((self.n_rankers, self.n_rankers))
         total_td    = np.zeros((self.n_rankers, self.n_rankers))
         total_pi    = np.zeros((self.n_rankers, self.n_rankers))
         count_pi    = np.zeros((self.n_rankers, self.n_rankers))
@@ -126,11 +128,12 @@ class Experiment(object):
         ave_nb_cred = np.zeros((self.n_rankers))
         
         for i in range(1,n_impressions+1):
-            pm_preferences, td_preferences, ((pi_r1, pi_r2), pi_creds), sbpm_pref100, sbpm_pref1000, sbpm_pref10000 = self.impression()
+            td_preferences, ((pi_r1, pi_r2), pi_creds), sbpm_pref100, sbpm_pref1000, sbpm_pref10000, sbpm_pref100000 = self.impression()
             total_spm100 += sbpm_pref100
             total_spm1000 += sbpm_pref1000
             total_spm10000 += sbpm_pref10000
-            total_pm  += pm_preferences
+            total_spm100000 += sbpm_pref100000
+            #total_pm  += pm_preferences
             total_td  += td_preferences
             total_pi[pi_r1][pi_r2] +=  1-pi_creds
             total_pi[pi_r2][pi_r1] +=  pi_creds
@@ -152,8 +155,7 @@ class Experiment(object):
 
             print i,
 
-            names  = ["probablistic_multi", "teamdraft_multi", "probabilistic_inter", "sample_probablistic_multi_10","sample_probablistic_multi_100","sample_probablistic_multi_1000",]
-            for name, matrix in zip(names, [total_pm/i, total_td/i, total_pi/count_pi, 1-total_spm100/i, 1-total_spm1000/i, 1-total_spm10000/i]):
+            for matrix in [total_td/i, total_pi/count_pi, 1-total_spm100/i, 1-total_spm1000/i, 1-total_spm10000/i, 1-total_spm100000/i]:
                 score = self.preference_error(matrix)
                 print score,
             print
@@ -161,11 +163,12 @@ class Experiment(object):
         total_spm100   /= n_impressions
         total_spm1000   /= n_impressions
         total_spm10000   /= n_impressions
-        total_pm    /= n_impressions
+        total_spm100000   /= n_impressions
+        #total_pm    /= n_impressions
         total_td    /= n_impressions
         total_pi    /= count_pi
 
-        return [ self.preference_error(matrix) for matrix in [total_pm, total_td, total_pi, 1-total_spm100,1-total_spm1000, 1-total_spm10000]]
+        return [ self.preference_error(matrix) for matrix in [total_td, total_pi, 1-total_spm100,1-total_spm1000, 1-total_spm10000,1-total_spm100000]]
 
     def impression(self):
         '''
@@ -179,23 +182,22 @@ class Experiment(object):
         '''
         query = self.train_queries[random.choice(self.train_queries.keys())]
 
-        pm_creds = self.impression_probabilisticMultileave(query)
+        #pm_creds = self.impression_probabilisticMultileave(query)
         pi_creds, (pi_r1, pi_r2) = \
             self.impression_probabilisticInterleave(query)
         td_creds = self.impression_teamDraftMultileave(query)
         # pm_nonbin_creds = self.impression_probabilisticMultileave(query,False)
 
-        pm_preferences = self.preferencesFromCredits(pm_creds)
+        #pm_preferences = self.preferencesFromCredits(pm_creds)
         td_preferences = self.preferencesFromCredits(td_creds)
 
 
         sbpm_pref100 = self.impression_sampleProbabilisticMultileave(query, self.samplemultil100)
-        #sbpm_pref1000 = sbpm_pref100
-        #sbpm_pref10000 = sbpm_pref100
         sbpm_pref1000 = self.impression_sampleProbabilisticMultileave(query, self.samplemultil1000)
         sbpm_pref10000 = self.impression_sampleProbabilisticMultileave(query, self.samplemultil10000)
+        sbpm_pref100000 = self.impression_sampleProbabilisticMultileave(query, self.samplemultil100000)
         
-        return pm_preferences, td_preferences, ((pi_r1, pi_r2), pi_creds), sbpm_pref100, sbpm_pref1000, sbpm_pref10000
+        return td_preferences, ((pi_r1, pi_r2), pi_creds), sbpm_pref100, sbpm_pref1000, sbpm_pref10000, sbpm_pref100000
 
 
     def impression_sampleProbabilisticMultileave(self, query, multileaver):
@@ -272,7 +274,7 @@ class Experiment(object):
         - preferences: list of list containing 1 if ranker_row is better than
           ranker_collumn, 0 if he is worse, 0.5 if he is equal
         '''
-        preferences = np.zeros((self.n_rankers,self.n_rankers))
+        preferences = np.zeros((self.n_rankers, self.n_rankers))
         for i in range(self.n_rankers):
             for j in range(i+1):
                 if creds[i] > creds[j]:
@@ -305,7 +307,7 @@ if __name__ == "__main__":
     experiment = Experiment(ranker_feature_sets, click_model=args.click_model, experiment_type=args.experiment_type)
     for i in range(25):
         print "RUN", args.experiment_type, args.click_model, i
-        for name in ["probablistic_multi", "teamdraft_multi", "probabilistic_inter", "sample_probablistic_multi_10","sample_probablistic_multi_100","sample_probablistic_multi_1000",]:
+        for name in ["teamdraft_multi", "probabilistic_inter", "sample_probablistic_multi_100","sample_probablistic_multi_1000","sample_probablistic_multi_10000","sample_probablistic_multi_100000",]:
             print name,
         print
         experiment.run(1000, 5)
