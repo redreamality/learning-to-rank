@@ -297,13 +297,9 @@ def _readQueries(path):
 if __name__ == "__main__":
     # for our output we don't want to see the zero divisions
     np.seterr("ignore");
-    ranker_feature_sets = [
-                             range(11,16), #TF-IDF
-                             range(21,26), #BM25
-                             range(36,41), #LMIR
-                             [41,42],      #SiteMap
-                             [49,50]       #HITS
-                            ]
+
+    ranker_feature_sets =  [[x] for x in range(11,16) + range(21,26) +   range(36,41) +  [41,42] +   [49,50] ] * 2
+
     experiment = Experiment(ranker_feature_sets, click_model=args.click_model, experiment_type=args.experiment_type)
     for i in range(25):
         print "RUN", args.experiment_type, args.click_model, i
