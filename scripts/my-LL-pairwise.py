@@ -34,15 +34,19 @@ if os.path.isfile(os.path.abspath(os.path.join(os.path.dirname(__file__), os.par
     existingData = True
 if existingData == True:
     with open(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'/output_data/pairwise_LL_evaluation_data/evaluation.c', 'r') as fp:
-        evaluation = pickle.load(fp)
+        print 'Lodaded existing evaluation'
+	evaluation = pickle.load(fp)
     with open(data_out, 'r') as f:
-        thelist = f.read().split('/n')
+        thelist = f.read().split('\n')
         index = len(thelist)
+	print 'Lodaded existing index value from list'
+	print index
     thelearner = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'/output_data/pairwise_LL_evaluation_data//learnerPickle.c'
     with open(thelearner, 'rb') as fp:
         learner = pickle.load(fp)
-
+	print 'loaded learner'
 else:
+    print 'Did not find existing Data'
     learner = lerot.retrieval_system.PairwiseLearningSystem(training_queries.__num_features__, "--init_weights random --epsilon 0.0 --eta 0.001 --ranker ranker.DeterministicRankingFunction --ranker_tie first")        
     evaluation = lerot.evaluation.LivingLabsEval()
     index = 1
@@ -56,15 +60,16 @@ for repetition in range(index, 1001):
     uploads = {}
     print 'iteration: ', repetition
     print 'Uploading rankings....'
-
+    theid = 'pairwise'+str(repetition)
     for qid in training_queries.keys()[:]:
         q = training_queries[qid]
         l = learner.get_ranked_list(q)
-        payload, the_time = user_model.upload_run(q, l, repetition)
+        payload, the_time = user_model.upload_run(q, l, theid)
         uploads[qid] = {'current_l':l,
                         'payload':payload,
                         'upload_time':the_time,
-                        'current_query': q
+                        'current_query': q,
+                        'runid':theid
                         }
 
 
@@ -75,7 +80,7 @@ for repetition in range(index, 1001):
         for qid in shuffledQids:   
             q = training_queries[qid]
             feedback, c = user_model.get_clicks(uploads[qid]['current_l'], q.get_labels(), 
-                                                    query=q, ranker_list=uploads[qid]['payload'], upload_time=uploads[qid]['upload_time'])
+                                                    query=q, ranker_list=uploads[qid]['payload'], upload_time=uploads[qid]['upload_time'], run_id=uploads[qid]['runid'])
             if isinstance(c, np.ndarray):break
         if isinstance(c, np.ndarray):
             print c
@@ -92,8 +97,8 @@ for repetition in range(index, 1001):
     print evaluation.get_performance()
     out_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'/output_data/pairwise_LL_evaluation_data/data'
     evalString += eval
-    evalString += '/n'
-    if repetition >= 100 and repetition % 100 == 0:#
+    evalString += '\n'
+    if repetition >= 10 and repetition % 10 == 0:#
         with open(out_path, 'a') as f:
             f.write(str(evalString))
             evalString = ''

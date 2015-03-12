@@ -258,6 +258,7 @@ class Queries:
     def __iter__(self):
         return iter(self.__queries__.itervalues())
 
+
     def __getitem__(self, index):
         return self.get_query(index)
 
@@ -324,9 +325,12 @@ class LivingLabsQueries(Queries):
         self.__LL_queries__  = self.__get_queries__()
         self.__doc_ids__ = {}
         time.sleep(1)
+	counter = 0
         self.__num_features__ = self.__get_num_features__(self.__LL_queries__ )
         for query in self.__LL_queries__ ['queries']:
             qid = query['qid']
+	    counter += 1
+	    print counter, ' of ', len(self.__LL_queries__ ['queries'])
             print 'Getting doclist for ', qid
             doclist = self.__get_doclist__(qid)
             time.sleep(1)
@@ -388,18 +392,23 @@ class LivingLabsQueries(Queries):
                     feature_num += 1
                 return feature_num
 
-
     def __get_doclist__(self, qid):
         """
         Return the document list for a given query.
         """
         time.sleep(1)
-        print "/".join([self.__HOST__, self.__DOCLISTENDPOINT__, self.__KEY__, qid]), self.__HEADERS__
-        r = requests.get("/".join([self.__HOST__, self.__DOCLISTENDPOINT__, self.__KEY__, qid]), headers=self.__HEADERS__, timeout=20)
-        print 'Worked'
+        while True:
+            try:
+                print "/".join([self.__HOST__, self.__DOCLISTENDPOINT__, self.__KEY__, qid]), self.__HEADERS__
+                r = requests.get("/".join([self.__HOST__, self.__DOCLISTENDPOINT__, self.__KEY__, qid]), headers=self.__HEADERS__, timeout=50)
+                print 'Worked'
+                break
+            except (requests.exceptions.RequestException, requests.exceptions.ConnectionError) as e:
+                print e, 'Retrying....'
+                r = self.__get_doclist__(qid)
         if r.status_code != requests.codes.ok:
-                print r.text
-                r.raise_for_status()
+            print r.text
+            r.raise_for_status()
         return r.json()
     
 

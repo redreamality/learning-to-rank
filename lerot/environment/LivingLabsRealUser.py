@@ -58,7 +58,7 @@ class LivingLabsRealUser(AbstractUserModel):
         sleep(0.1)
         while True:
             try:
-                r = requests.get("/".join([self.__HOST__, self.__FEEDBACKENDPOINT__, self.KEY, qid, runid]), headers=self.__HEADERS__, timeout=60)
+                r = requests.get("/".join([self.__HOST__, self.__FEEDBACKENDPOINT__, self.KEY, qid, runid]), headers=self.__HEADERS__, timeout=180)
                 break
             except (requests.exceptions.RequestException, requests.exceptions.ConnectionError) as e:
                 print e, 'Retrying....'

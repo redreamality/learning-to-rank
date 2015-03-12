@@ -29,20 +29,24 @@ if not os.path.exists(directory):
 
 
 existingData = False
-if os.path.isfile(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'\output_data\listwise_LL_evaluation_data\data'):
-    data_out = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'\output_data\listwise_LL_evaluation_data\\data'
+if os.path.isfile(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'/output_data/listwise_LL_evaluation_data/data'):
+    data_out = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'/output_data/listwise_LL_evaluation_data/data'
     existingData = True
+    print 'True'
 if existingData == True:
     with open(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'/output_data/listwise_LL_evaluation_data/evaluation.c', 'r') as fp:
         evaluation = pickle.load(fp)
     with open(data_out, 'r') as f:
         thelist = f.read().split('\n')
+	print thelist
         index = len(thelist)
-    thelearner = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'\output_data\listwise_LL_evaluation_data\\learnerPickle.c'
+	print index
+    thelearner = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))+'/output_data/listwise_LL_evaluation_data/learnerPickle.c'
     with open(thelearner, 'rb') as fp:
         learner = pickle.load(fp)
-
+    print 'Existing Data'
 else:
+    print 'No existing Data'
     learner = lerot.retrieval_system.ListwiseLearningSystem(training_queries.__num_features__, '-w random -c comparison.TeamDraft -r ranker.DeterministicRankingFunction -s 3 -d 0.1 -a 0.01')
     evaluation = lerot.evaluation.LivingLabsEval()
     index = 1
@@ -52,6 +56,7 @@ user_model = lerot.environment.LivingLabsRealUser(KEY, training_queries.__doc_id
 
     
 evalString = ''
+print 'index', index
 for repetition in range(index, 1001):
     uploads = {}
     print 'iteration: ', repetition
@@ -62,7 +67,7 @@ for repetition in range(index, 1001):
         #print qid, training_queries.keys()[:].index(qid), ':', len(training_queries.keys()[:])
         q = training_queries[qid]
         l = learner.get_ranked_list(q, firstTime)
-        payload, the_time = user_model.upload_run(q, l, 'listwise'+str(repetition))
+        payload, the_time = user_model.upload_run(q, l, theid)
         firstTime = False
         uploads[qid] = {'current_l':l,
                         'payload':payload,
