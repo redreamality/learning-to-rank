@@ -57,7 +57,6 @@ class TestEvaluation(unittest.TestCase):
         zero_weight_str = "0 0 0 0 0 0"
         self.zero_weights = np.asarray([float(x) for x in
             zero_weight_str.split()])
-
         # results in ranking: 1, 3, 2, 0
         weight_str_1 = "0 0 1 0 1 0"
         self.weights_1 = np.asarray([float(x) for x in weight_str_1.split()])
