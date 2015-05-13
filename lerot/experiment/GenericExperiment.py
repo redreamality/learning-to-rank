@@ -176,10 +176,7 @@ class GenericExperiment:
             pool.close()
             pool.join()
         else:
-            r = []
-            for run_id in range(self.num_runs):
-                r.append(self._run(run_id))
-            return r
+            return [self._run(i) for i in range(self.num_runs)]
 
     def _run(self, run_id):
         logging.info("run %d starts" % run_id)
