@@ -3,41 +3,42 @@ processes: 0
 num_queries: 5000
 query_sampling_method: random
 user_model: environment.CascadeUserModel
-system: retrieval_system.PairedMultiLeaveSamplerSystem
-#system: retrieval_system.MultiLeaveSamplerSystem
-#system: retrieval_system.BaselineSamplerSystem
+system: retrieval_system.MultiLeaveSamplerSystem
 system_args: --init_weights selected
-    --comparison comparison.OptimizedMultileave 
-    --comparison_args "--bias position_bias --credit inverse_credit"
-    --delta 0.1 
-    --alpha 0.01 
+    --comparison comparison.OptimizedMultileave
+    --comparison_args "--allowed_leavings sample_prefix_constraint_constructive"
+    --comparison_args "--sample_size 100"
     --ranker ranker.DeterministicRankingFunction
     --ranker_arg 3
     --ranker_tie first
     --sampler sampler.BaselineSampler
-    --sampler_decay 1
     --nr_rankers 5
-    --nr_results 5
+    --nr_results 10
 experimenter: experiment.SamplingExperiment
 output_dir: outdir
 output_dir_overwrite: True
 evaluation:
     - evaluation.NdcgEval
-meta: --data HP2003,64,2
-    HP2004,64,2
-    NP2003,64,2
-    NP2004,64,2
-    TD2003,64,2
-    TD2004,64,2
+meta: --data HP2003,64,2,4,24,39,41,50
+    HP2004,64,2,4,24,39,41,50
+    NP2003,64,2,4,24,39,41,50
+    NP2004,64,2,4,24,39,41,50
+    TD2003,64,2,4,24,39,41,50
+    TD2004,64,2,4,24,39,41,50
+    OHSUMED,45,3,40,42,41,25,44
+    MQ2007,46,3,4,9,24,39,40
+    MQ2008,46,3,4,9,24,39,40
    --data_dir /home/aschuth1/online-learning-data/
    --output_base /datastore/aschuth/online-learning-output/sigir2014/
-   --experiment_name optimized-pairedmultileave-positionbias-inversecredit-l5
+   --experiment_name random-fullmeasure-OM-r5-l10-sample100
    --platform conf
-   --um per
+   --um ran
    --uma per,2,0:0.0,1:1,0:0.0,1:0.0
          nav,2,0:0.05,1:0.95,0:0.2,1:0.9
          inf,2,0:0.4,1:0.9,0:0.1,1:0.5
+         ran,2,0:0.5,1:0.5,0:0.0,1:0.0
          per,3,0:0.0,1:0.5,2:1,0:0.0,1:0.0,2:0.0
          nav,3,0:0.05,1:0.5,2:0.95,0:0.2,1:0.5,2:0.9
          inf,3,0:0.4,1:0.7,2:0.9,0:0.1,1:0.3,2:0.5
+         ran,3,0:0.5,1:0.5,2:0.5,0:0.0,1:0.0,2:0.0
    --analysis analysis.SummarizeAnalysis

@@ -26,6 +26,10 @@ from ProbabilisticInterleaveWithHistory import ProbabilisticInterleaveWithHistor
 from StochasticBalancedInterleave import StochasticBalancedInterleave
 from TeamDraft import TeamDraft
 from VaTdi import VaTdi, CannotInterleave
+from TdiVa1 import TdiVa1
+from OptimizedMultileave import OptimizedMultileave
+from CascadeOptimizedInterleave import CascadeOptimizedInterleave
+from TeamDraftMultileave import TeamDraftMultileave
 
 __all__ = [
     'BalancedInterleave',

@@ -20,10 +20,11 @@ from LearningExperiment import LearningExperiment
 from PrudentLearningExperiment import PrudentLearningExperiment
 from SamplingExperiment import SamplingExperiment
 from MetaExperiment import MetaExperiment
-from HistoricalComparisonExperiment import HistoricalComparisonExperiment
+#from HistoricalComparisonExperiment import HistoricalComparisonExperiment
 from SyntheticComparisonExperiment import SyntheticComparisonExperiment
 from VASyntheticComparisonExperiment import VASyntheticComparisonExperiment
-
+from SamplingExperiment import SamplingExperiment
+from SamplingExperimentTask2 import SamplingExperimentTask2
 
 __all__ = ['GenericExperiment', 'LearningExperiment', 'MetaExperiment',
            'PrudentLearningExperiment', 'HistoricalComparisonExperiment',
