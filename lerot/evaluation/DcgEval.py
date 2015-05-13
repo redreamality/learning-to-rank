@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Lerot.  If not, see <http://www.gnu.org/licenses/>.
 
-import math
+import numpy as np
 
 from .AbstractEval import AbstractEval
 
@@ -24,14 +24,10 @@ class DcgEval(AbstractEval):
     def get_dcg(self, ranked_labels, cutoff=-1):
         if (cutoff == -1):
             cutoff = len(ranked_labels)
-        dcg = 0
-        for r, label in enumerate(ranked_labels[:cutoff]):
-            # Use log2(1 + r), to be consistent with the implementation in the
-            # letor 4 evaluation tools (and wikipedia, on 6/27/2012), even
-            # though this makes discounting slightly inconsistent (indices are
-            # zero-based, so using log2(2 + r) would be more consistent).
-            dcg += (2 ** label - 1) / math.log(2 + r, 2)
-        return dcg
+
+        rank = np.arange(cutoff)
+        return ((np.power(2, np.asarray(ranked_labels[:cutoff])) - 1)
+                / np.log2(2 + rank)).sum()
 
     def get_value(self, ranking, labels, orientations, cutoff=-1):
         """ Compute the value of the metric

@@ -34,8 +34,8 @@ Running experiments
 
         $ mkdir data
         $ wget http://research.microsoft.com/en-us/um/beijing/projects/letor/LETOR4.0/Data/MQ2007.rar -O data/MQ2007.rar
-        $ unrar x data/MQ2007.rar data/
-        
+        $ (cd data && unrar x data/MQ2007.rar)
+
 2) prepare a configuration file in yml format, e.g., starting from the template below, store as ``config/experiment.yml`` (or simply use ``config/config.yml`` instead ) ::
 
         training_queries: data/MQ2007/Fold1/train.txt
@@ -65,11 +65,11 @@ Running experiments
 
 3) run the experiment using python::
         
-        $ python scripts/learning-experiment.py -f config/experiment.yml
+        $ learning-experiment.py -f config/experiment.yml
 
 4) summarize experiment outcomes::
    
-        $ python scripts/summarize-learning-experiment.py --fold_dirs outdir
+        $ summarize-learning-experiment.py --fold_dirs outdir
    
    Arbitrarily many folds can be listed per experiment. Results are aggregated  over runs and folds. The output format is a simple text file that can be  further processed using e.g., gnuplot. The columns are: mean_offline_perf stddev_offline_perf mean_online_perf stddev_online_perf
 
