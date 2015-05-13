@@ -17,10 +17,16 @@
 
 # KH, 2012/09/12
 
-from include import *
+
+try:
+    from include import *
+except:
+    raise
+
 import argparse
 import gzip
-from query import QueryStream
+
+from lerot.query import *
 
 
 if __name__ == "__main__":

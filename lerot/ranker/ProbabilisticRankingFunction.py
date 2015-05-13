@@ -125,3 +125,10 @@ class ProbabilisticRankingFunction(AbstractRankingFunction):
         self.docids.pop(pos)
         self.probs = np.delete(self.probs, pos)
         self.probs = self.probs / sum(self.probs)
+
+    def getDocs(self, numdocs=None):
+        """ Copied from StatelessRankingFunction. """
+        if numdocs is None:
+            return self.docids
+        else:
+            return self.docids[:numdocs]

@@ -29,13 +29,14 @@ class AbstractRankingFunction:
         self.feature_count = feature_count
         ranking_model_str = "ranker.model.Linear"
         for arg in ranker_arg_str:
-            if arg.startswith("ranker.model"):
+            if type(arg) is str and arg.startswith("ranker.model"):
                 ranking_model_str = arg
-            else:
+            elif type(arg) is int or type(arg) is float:
                 self.ranker_type = float(arg)
         self.ranking_model = get_class(ranking_model_str)(feature_count)
 
-        self.sample = get_class("utils." + sample)
+        if sample:
+            self.sample = get_class("utils." + sample)
 
         self.ties = ties
         self.w = self.ranking_model.initialize_weights(init)

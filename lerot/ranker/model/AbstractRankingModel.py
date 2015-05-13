@@ -38,18 +38,21 @@ class AbstractRankingModel(object):
                 v[i] = gauss(0, 1)
             return v
         else:
-            #try:
-            weights = [float(num) for num in method.split(",")]
-            if len(weights) != self.feature_count:
-                raise Exception("List of initial weights does not have the"
-                    " expected length (%d, expected $d)." %
-                    (len(weights), self.feature_count))
-            return array(weights)
-            #except Exception as ex:
-            #    raise Exception("Could not parse weight initialization method:"
-            #        " %s. Possible values: zero, random, or a comma-separated "
-            #        "list of float values that indicate specific weight values"
-            #        ". Error: %s" % (method, ex))
+            try:
+                if type(method) is str:
+                    weights = array([float(num) for num in method.split(",")])
+                else:
+                    weights = method
+                if len(weights) != self.feature_count:
+                    raise Exception("List of initial weights does not have the"
+                        " expected length (%d, expected $d)." %
+                        (len(weights, self.feature_count)))
+                return weights
+            except Exception as ex:
+                raise Exception("Could not parse weight initialization method:"
+                    " %s. Possible values: zero, random, or a comma-separated "
+                    "list of float values that indicate specific weight values"
+                    ". Error: %s" % (method, ex))
 
     def score(self, features, w):
         raise NotImplementedError("Derived class needs to implement "
