@@ -16,7 +16,7 @@
 # KH, 2012/06/19
 
 from numpy import asarray
-from random import choice
+from random import randint, choice
 
 from AbstractInterleavedComparison import AbstractInterleavedComparison
 
@@ -72,9 +72,10 @@ class TeamDraftMultileave(AbstractInterleavedComparison):
 
     def infer_outcome(self, l, a, c, query):
         """assign clicks for contributed documents"""
-        creds = []
+
+        credits = []
         for r in range(self.nrrankers):
             credit = sum([1 if val_a == r and val_c == 1 else 0
                      for val_a, val_c in zip(list(a), list(c))])
-            creds.append(credit)
-        return creds
+            credits.append(credit)
+        return credits
