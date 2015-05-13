@@ -19,6 +19,9 @@ from ListwiseLearningSystemWithCandidateSelection import (
     ListwiseLearningSystemWithCandidateSelection)
 from PairwiseLearningSystem import PairwiseLearningSystem
 from SamplerSystem import SamplerSystem
+from MultiLeaveSamplerSystem import MultiLeaveSamplerSystem
+from BaselineSamplerSystem import BaselineSamplerSystem
+from PairedMultiLeaveSamplerSystem import PairedMultiLeaveSamplerSystem
 
 
 __all__ = ['ListwiseLearningSystem', 'PrudentListwiseLearningSystem',
