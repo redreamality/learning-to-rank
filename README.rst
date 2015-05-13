@@ -147,9 +147,14 @@ The following people have contributed to Lerot:
 
 - Katja Hofmann
 - Anne Schuth
+- Harrie Oosterhuis
+- Jos van der Velde
 - Lars Buitinck
 - Aleksandr Chuklin
 - Floor Sietsma
+- Robert-Jan Bruintjes
+- David Woudenberg
+- Carla Groenland
 - Masrour Zoghi
 - Nikos Voskarides
 - Artem Grotov
