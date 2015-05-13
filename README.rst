@@ -158,6 +158,7 @@ The following people have contributed to Lerot:
 - Masrour Zoghi
 - Nikos Voskarides
 - Artem Grotov
+- Yiwei Chen
 
 If your name is missing from this list, please let us know.
 
