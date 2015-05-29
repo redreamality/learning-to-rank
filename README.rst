@@ -152,6 +152,7 @@ The following people have contributed to Lerot:
 - Lars Buitinck
 - Aleksandr Chuklin
 - Floor Sietsma
+- Spyros Michaelides
 - Robert-Jan Bruintjes
 - David Woudenberg
 - Carla Groenland
