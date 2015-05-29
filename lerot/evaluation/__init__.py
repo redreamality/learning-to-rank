@@ -23,6 +23,8 @@ from VDEval import VDEval
 from ISEval import ISEval
 from RPEval import RPEval
 
+from LivingLabsEval import LivingLabsEval
+
 __all__ = [
     'AsRbpEval'
     'DcgEval',
@@ -32,4 +34,5 @@ __all__ = [
     'VDEval',
     'ISEval',
     'RPEval',
+    'LivingLabsEval'
 ]

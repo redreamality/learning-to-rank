@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Lerot.  If not, see <http://www.gnu.org/licenses/>.
 
+
 """
 Interface to query data with functionality for reading queries from svmlight
 format, both sequentially and in batch mode.
@@ -23,9 +24,9 @@ import gc
 import gzip
 import numpy as np
 import os.path
-
+import requests
 from .document import Document
-
+import time
 __all__ = ['Query', 'Queries', 'QueryStream', 'load_queries', 'write_queries']
 
 
@@ -68,6 +69,7 @@ class Query:
     # retrieve labels, predictions, and feature vectors
     __docids__ = None
     __ideal__ = None
+   
 
     def __init__(self, qid, feature_vectors, labels=None, comments=None):
         self.__qid__ = qid
@@ -75,7 +77,8 @@ class Query:
         self.__labels__ = labels
         self.__docids__ = [Document(x) for x in range(len(labels))]
         self.__comments__ = comments
-
+        
+        
     def has_ideal(self):
         return not self.__ideal__ is None
 
@@ -146,7 +149,7 @@ class Query:
                 print >> fh, comment
             else:
                 print >> fh, ""
-
+    
 
 class QueryStream:
     """iterate over a stream of queries, only keeping one query at a time"""
@@ -217,6 +220,7 @@ class QueryStream:
                 initialized = True
             else:
                 instances = np.vstack((instances, tmp_array))
+
                 targets = np.hstack((targets, target))
                 if self.__preserve_comments__:
                     comments.append(comment)
@@ -224,6 +228,7 @@ class QueryStream:
         if not initialized:
             raise StopIteration
         else:
+            #(qid, [[featuresDoc1], [featuresDocN], targets, comments])
             return Query(prev, instances, targets, comments)
 
     # read all queries from a file at once
@@ -236,7 +241,6 @@ class QueryStream:
 
 class Queries:
     """a list of queries with some convenience functions"""
-
     __num_features__ = 0
     __queries__ = None
 
@@ -248,10 +252,12 @@ class Queries:
     def __init__(self, fh, num_features, preserve_comments=False):
         self.__queries__ = QueryStream(fh, num_features,
             preserve_comments).read_all()
+
         self.__num_features__ = num_features
 
     def __iter__(self):
         return iter(self.__queries__.itervalues())
+
 
     def __getitem__(self, index):
         return self.get_query(index)
@@ -294,6 +300,124 @@ class Queries:
 
     def get_size(self):
         return self.__len__()
+
+
+
+
+class LivingLabsQueries(Queries):
+    __KEY__ = ''
+    __HOST__ = "http://living-labs.net:5000/api"
+    __QUERYENDPOINT__ = "participant/query"
+    __DOCENDPOINT__ = "participant/doc"
+    __DOCLISTENDPOINT__ = "participant/doclist"
+    __RUNENDPOINT__ = "participant/run"
+    __FEEDBACKENDPOINT__ = "participant/feedback"
+    __KEY__ = ''
+    __HEADERS__ = {'content-type': 'application/json'}
+    __doc_ids__ = {}#used for living-labs
+    __doc_counter__ = 0
+    __LL_queries__ = {}
+
+    
+    def __init__(self, KEY):
+        self.__KEY__ = KEY
+        self.__queries__ = {}
+        self.__LL_queries__  = self.__get_queries__()
+        self.__doc_ids__ = {}
+        time.sleep(1)
+	counter = 0
+        self.__num_features__ = self.__get_num_features__(self.__LL_queries__ )
+        for query in self.__LL_queries__ ['queries']:
+            qid = query['qid']
+	    counter += 1
+	    print counter, ' of ', len(self.__LL_queries__ ['queries'])
+            print 'Getting doclist for ', qid
+            doclist = self.__get_doclist__(qid)
+            time.sleep(1)
+            instances = self.__get_features__(qid, doclist, self.__num_features__)
+            self.__queries__[qid] = Query(qid, instances, [0]*len(instances), "")#instances = self.get_features(qid, HOST, KEY) # Should by numpy array
+            self.__set_doc_ids__(qid, doclist)
+            time.sleep(1)
+
+
+    def __set_doc_ids__(self, qid, doclist):
+        """
+        Updates global dictionary of document ids for a given query. 
+        Uses document ID as used in lerot and maps this to document ID on living-labs
+        dictionary[queryID][LerotDocID] = living-labs ID
+        """
+        self.__doc_ids__[qid] = {}
+        for doc in range(len(doclist['doclist'])): 
+            self.__doc_ids__[qid][doc] = doclist['doclist'][doc]['docid']
+            
+
+
+    def __get_queries__(self):
+        """Returns a Dictionary of all Queries."""
+        time.sleep(1)
+        r = requests.get("/".join([self.__HOST__, self.__QUERYENDPOINT__, self.__KEY__]), headers=self.__HEADERS__)
+        print 'Got Queries'
+        if r.status_code != requests.codes.ok:
+            print r.text
+            r.raise_for_status()
+        return r.json()
+    
+    
+    def __get_features__(self, qid, doclist, num_features):
+        """
+        Returns numpy array of numpy arrays (of features for each document)
+        """
+        feature_list = []
+        for doc in range(len(doclist['doclist'])):
+            if 'relevance_signals' in doclist['doclist'][doc] and len(doclist['doclist'][doc]['relevance_signals'])>0:# Some documents had empty feature lists, check to avoid crash
+                doc_feature_list = np.zeros(num_features)
+                for feature in xrange(len(doclist['doclist'][doc]['relevance_signals'])-1):
+                    doc_feature_list[feature] = doclist['doclist'][doc]['relevance_signals'][feature][1]
+                feature_list.append(doc_feature_list)
+        feature_list = np.asarray(feature_list)
+        return feature_list
+    
+    
+    def __get_num_features__(self, queries):
+        """
+        Returns (integer): the number of features in the documents. Only checks one document.
+        """
+        feature_num = 0
+        for query in queries['queries']:
+            qid = query['qid']
+            time.sleep(1)
+            doclist = self.__get_doclist__(qid)
+            for doc in range(len(doclist['doclist'])):
+                for feature in doclist['doclist'][doc]['relevance_signals']:
+                    feature_num += 1
+                return feature_num
+
+    def __get_doclist__(self, qid):
+        """
+        Return the document list for a given query.
+        """
+        time.sleep(1)
+        while True:
+            try:
+                print "/".join([self.__HOST__, self.__DOCLISTENDPOINT__, self.__KEY__, qid]), self.__HEADERS__
+                r = requests.get("/".join([self.__HOST__, self.__DOCLISTENDPOINT__, self.__KEY__, qid]), headers=self.__HEADERS__, timeout=50)
+                print 'Worked'
+                break
+            except (requests.exceptions.RequestException, requests.exceptions.ConnectionError) as e:
+                print e, 'Retrying....'
+                r = self.__get_doclist__(qid)
+        if r.status_code != requests.codes.ok:
+            print r.text
+            r.raise_for_status()
+        return r.json()
+    
+
+
+def load_livinglabs_queries(key):
+    """Utility method for loading living-labs queries."""
+    queries = LivingLabsQueries(key)
+    return queries
+
 
 
 def load_queries(filename, features, preserve_comments=False):

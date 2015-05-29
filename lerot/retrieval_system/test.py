@@ -19,7 +19,7 @@ import os
 import cStringIO
 
 sys.path.insert(0, os.path.abspath('..'))
-
+print sys.path
 from lerot import query
 from numpy import array
 from ListwiseLearningSystem import ListwiseLearningSystem
