@@ -4,6 +4,9 @@ This project is designed to run experiments on online learning to rank methods f
 A paper describing Lerot can found here: http://www.anneschuth.nl/wp-content/uploads/2013/09/cikm-livinglab-2013-lerot.pdf .
 Below is a short summary of its prerequisites, how to run an experiment, and possible extensions.
 
+.. contents:: Table of Contents
+
+
 Prerequisites
 -------------
 - Python (2.6, 2.7)
@@ -16,6 +19,7 @@ Prerequisites
 All prerequisites (except for Celery and Gurobi) are included in the academic distribution of Enthought 
 Python, e.g., version 7.1.
 
+
 Installation
 ------------
 Install the prerequisites plus Lerot as follows::
@@ -27,6 +31,7 @@ Install the prerequisites plus Lerot as follows::
 In case you want to install Lerot system wide, you can do this::
   
     $ python setup.py install
+
 
 Running experiments
 -------------------
@@ -73,6 +78,7 @@ Running experiments
    
    Arbitrarily many folds can be listed per experiment. Results are aggregated  over runs and folds. The output format is a simple text file that can be  further processed using e.g., gnuplot. The columns are: mean_offline_perf stddev_offline_perf mean_online_perf stddev_online_perf
 
+
 Data
 ----
 Lerot acceptes data formatted in the SVMlight (see http://svmlight.joachims.org/) format.
@@ -97,20 +103,6 @@ The code can easily be extended with new learning and/or feedback mechanisms for
 1) comparison - extend ComparisonMethod to add new interleaving or inference methods; existing methods include balanced interleave, team draft, and  probabilistic interleave.
 2) retrieval_system - extend OnlineLearningSystem to add a new mechanism for learning from click feedback. New implementations need to be able to provide a  ranked list for a given query, and ranking solutions should have the form of a vector.
 
-License
--------
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with this program.  If not, see http://www.gnu.org/licenses/.
 
 Citation
 --------
@@ -124,22 +116,28 @@ If you use Lerot to produce results for your scientific publication, please refe
         booktitle = {Living Labs for Information Retrieval Evaluation workshop at CIKM’13.}
         }
 
+
 Publications
 ------------
-Lerot has been used in numerous publication, including these:
+Lerot has been used to produce results in numerous publication, including these:
 
-1) K. Hofmann, A. Schuth, S. A. Whiteson, M. de Rijke (2013): *Reusing Historical Interaction Data for Faster Online Learning to Rank for IR*. In: WSDM'13, 2013.
-2) A. Chuklin, A. Schuth, K. Hofmann, P. Serdyukov, M. de Rijke (2013): *Evaluating Aggregated Search Using Interleaving*. In: CIKM'14, 2013.
-3) A. Schuth, F. Sietsma, S. Whiteson, M. de Rijke (2014): *Optimizing Base Rankers Using Clicks: A Case Study using BM25*. In: ECIR’14, 2014.
-4) K. Hofmann, A. Schuth, A. Bellogin, M. de Rijke (2014): *Eﬀects of Position Bias on Click-Based Recommender Evaluation*. In: ECIR’14, 2014.
-5) A. Chuklin, K. Zhou, A. Schuth, F. Sietsma, M. de Rijke (2014): *Evaluating Intuitiveness of Vertical-Aware Click Models*. In: Proceedings of SIGIR, 2014.
-6) A. Schuth, F. Sietsma, S. Whiteson, D. Lefortier M. de Rijke (2014): *Multileaved Comparisons for Fast Online Evaluation*. In: CIKM'14, 2014.
-7) A. Chuklin, A. Schuth, K. Zhou, M. de Rijke (2015): *A comparative analysis of interleaving methods for aggregated search*. In: ACM Transactions on Information Systems, 2015.
+1) K. Hofmann, A. Schuth, S. A. Whiteson, M. de Rijke (2013): *Reusing Historical Interaction Data for Faster Online Learning to Rank for IR*. In: WSDM'13.
+2) A. Chuklin, A. Schuth, K. Hofmann, P. Serdyukov, M. de Rijke (2013): *Evaluating Aggregated Search Using Interleaving*. In: CIKM'14.
+3) A. Schuth, F. Sietsma, S. Whiteson, M. de Rijke (2014): *Optimizing Base Rankers Using Clicks: A Case Study using BM25*. In: ECIR’14.
+4) K. Hofmann, A. Schuth, A. Bellogin, M. de Rijke (2014): *Eﬀects of Position Bias on Click-Based Recommender Evaluation*. In: ECIR’14.
+5) A. Chuklin, K. Zhou, A. Schuth, F. Sietsma, M. de Rijke (2014): *Evaluating Intuitiveness of Vertical-Aware Click Models*. In: Proceedings of SIGIR.
+6) A. Schuth, F. Sietsma, S. Whiteson, D. Lefortier M. de Rijke (2014): *Multileaved Comparisons for Fast Online Evaluation*. In: CIKM'14.
+7) A. Chuklin, A. Schuth, K. Zhou, M. de Rijke (2015): *A comparative analysis of interleaving methods for aggregated search*. In: ACM Transactions on Information Systems.
+8) M. Zoghi, S. Whiteson, M. de Rijke (2015): *A Method for Large-Scale Online Ranker Evaluation*. In: WSDM'15.
+9) C. Yiwei, K. Hofmann (2015): *Online Learning to Rank: Absolute vs. Relative*. In: WWW'15.
+10) A. Schuth et al. (2015): *Probabilistic Multileave for Online Retrieval Evaluation*. In: SIGIR'15.
+
 
 If your paper is missing from this list, please let us know.
 
 A paper describing Lerot is published in the living labs workshop at CIKM’13: 
 A. Schuth, K. Hofmann, S. Whiteson, M. de Rijke (2013): *Lerot: an Online Learning to Rank Framework*. In: Living Labs for Information Retrieval Evaluation workshop at CIKM’13., 2013.
+
 
 Contributors
 ------------
@@ -163,6 +161,23 @@ The following people have contributed to Lerot:
 
 If your name is missing from this list, please let us know.
 
+
 Acknowledgements
 ----------------
 The development of Lerot is partially supported by the EU FP7 project LiMoSINe (http://www.limosine-project.eu).
+
+
+License
+-------
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
