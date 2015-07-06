@@ -24,7 +24,7 @@ from SingleQueryComparisonExperiment import SingleQueryComparisonExperiment
 from SyntheticComparisonExperiment import SyntheticComparisonExperiment
 from VASyntheticComparisonExperiment import VASyntheticComparisonExperiment
 from SamplingExperiment import SamplingExperiment
-from SamplingExperimentTask2 import SamplingExperimentTask2
+#from SamplingExperimentTask2 import SamplingExperimentTask2
 
 __all__ = ['GenericExperiment', 'LearningExperiment', 'MetaExperiment',
            'PrudentLearningExperiment', 'HistoricalComparisonExperiment',
